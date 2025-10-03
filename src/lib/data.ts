@@ -94,11 +94,12 @@ export const auditLogs: AuditLog[] = [
 
 // --- Settings Page Data ---
 
+export type IntegrationStatus = 'healthy' | 'degraded' | 'active' | 'disconnected' | 'needs_attention';
 export type Integration = {
   id: string;
   name: string;
   logo: string;
-  status: 'healthy' | 'degraded' | 'active' | 'disconnected' | 'losing';
+  status: IntegrationStatus;
   lastPingAt: string;
   latencyP95Ms: number;
   errorRate: number;
@@ -114,7 +115,7 @@ export const integrations: Integration[] = [
   { id: "linear", name: "Linear", logo: "Linear", status: "active", lastPingAt: "2025-10-02T10:32:00Z", latencyP95Ms: 120, errorRate: 0, sparkline: [5, 10, 8, 12, 15, 10, 13] },
   { id: "firebase", name: "Firebase", logo: "Firebase", status: "disconnected", lastPingAt: "2025-10-01T10:00:00Z", latencyP95Ms: 0, errorRate: 1, sparkline: [0, 0, 0, 0, 0, 0, 0] },
   { id: "neon", name: "Neon", logo: "Neon", status: "disconnected", lastPingAt: "2025-10-01T12:00:00Z", latencyP95Ms: 0, errorRate: 1, sparkline: [0, 0, 0, 0, 0, 0, 0] },
-  { id: "notion", name: "Notion", logo: "Notion", status: "losing", lastPingAt: "2025-10-02T10:25:00Z", latencyP95Ms: 800, errorRate: 0.08, sparkline: [70, 80, 75, 90, 100, 95, 110] },
+  { id: "notion", name: "Notion", logo: "Notion", status: "degraded", lastPingAt: "2025-10-02T10:25:00Z", latencyP95Ms: 800, errorRate: 0.08, sparkline: [70, 80, 75, 90, 100, 95, 110] },
 ];
 
 export const copilotSuggestions = [
@@ -141,8 +142,8 @@ export type SettingsAuditItem = {
 };
 
 export const settingsAuditLog: SettingsAuditItem[] = [
-    { id: "audit-1", title: "Operation restarted", severity: "info", timestamp: "just now" },
-    { id: "audit-2", title: "Scaling event triggered", severity: "info", timestamp: "8m ago" },
-    { id: "audit-3", title: "Key rotated", severity: "info", timestamp: "yesterday" },
-    { id: "audit-4", title: "Service removed", severity: "warning", timestamp: "1h" },
+    { id: "audit-1", title: "Operation restarted", severity: "info", timestamp: "2025-10-03T01:22:00Z" },
+    { id: "audit-2", title: "Scaling event triggered", severity: "info", timestamp: "2025-10-02T18:30:00Z" },
+    { id: "audit-3", title: "Key rotated", severity: "info", timestamp: "2025-10-01T10:00:00Z" },
+    { id: "audit-4", title: "Service removed", severity: "warning", timestamp: "2025-10-02T15:45:00Z" },
 ];

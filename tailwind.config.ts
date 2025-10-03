@@ -17,24 +17,6 @@ export default {
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        text: 'hsl(var(--text))',
-        'text-muted': 'hsl(var(--text-muted))',
-        'text-subtle': 'hsl(var(--text-subtle))',
-        surface: 'hsl(var(--surface))',
-        'surface-muted': 'hsl(var(--surface-muted))',
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        brand: {
-          DEFAULT: 'hsl(var(--brand))',
-          '600': 'hsl(var(--brand-600))',
-        },
-        info: 'hsl(var(--info))',
-        success: 'hsl(var(--success))',
-        warning: 'hsl(var(--warning))',
-        danger: 'hsl(var(--danger))',
-        graph: 'hsl(var(--graph))',
-        'chip-bg': 'hsl(var(--chip-bg))',
         
         card: {
           DEFAULT: 'hsl(var(--card))',
@@ -64,6 +46,10 @@ export default {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -113,13 +99,13 @@ export default {
           '100%': { 'background-position': '1000px 0' },
         },
         'pulse-ok': {
-          '0%': { transform: 'scale(1)', 'box-shadow': '0 0 0 0 hsla(var(--success), 0.7)' },
-          '70%': { transform: 'scale(1.1)', 'box-shadow': '0 0 0 8px hsla(var(--success), 0)' },
-          '100%': { transform: 'scale(1)', 'box-shadow': '0 0 0 0 hsla(var(--success), 0)' },
+          '0%': { transform: 'scale(1)', 'box-shadow': '0 0 0 0 hsla(var(--chart-2), 0.7)' },
+          '70%': { transform: 'scale(1.1)', 'box-shadow': '0 0 0 8px hsla(var(--chart-2), 0)' },
+          '100%': { transform: 'scale(1)', 'box-shadow': '0 0 0 0 hsla(var(--chart-2), 0)' },
         },
         'flare-fail': {
-          '0%': { 'box-shadow': '0 0 0 0 hsla(var(--danger), 0.4)' },
-          '100%': { 'box-shadow': '0 0 0 12px hsla(var(--danger), 0)' },
+          '0%': { 'box-shadow': '0 0 0 0 hsla(var(--destructive), 0.4)' },
+          '100%': { 'box-shadow': '0 0 0 12px hsla(var(--destructive), 0)' },
         },
       },
       animation: {

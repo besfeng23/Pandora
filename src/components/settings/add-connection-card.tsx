@@ -11,8 +11,7 @@ export function AddConnectionCard() {
     return (
         <>
             <Card className="rounded-2xl shadow-sm">
-                <CardContent className="p-5 flex items-center gap-2">
-                    <Button variant="outline" className="rounded-xl w-full" onClick={() => setIsDialogOpen(true)}>Add connection</Button>
+                <CardContent className="p-5">
                     <Button variant="outline" className="rounded-xl w-full" onClick={() => setIsDialogOpen(true)}>Add connection</Button>
                 </CardContent>
             </Card>

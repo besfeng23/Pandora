@@ -10,7 +10,7 @@ export function ConnectionsCard() {
     return (
         <Card className="rounded-2xl shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base font-semibold">Connections</CardTitle>
+                <CardTitle>Connections</CardTitle>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                     <Cog className="h-5 w-5" />
                 </Button>
@@ -19,11 +19,11 @@ export function ConnectionsCard() {
                 {connectionStatuses.map((item) => (
                     <div key={item.label} className="flex items-center h-9">
                         {item.status === 'ok' ? (
-                            <CheckCircle2 className="h-5 w-5 text-success mr-3"/>
+                            <CheckCircle2 className="h-5 w-5 text-green-500 mr-3"/>
                         ) : (
-                            <AlertCircle className="h-5 w-5 text-danger mr-3"/>
+                            <AlertCircle className="h-5 w-5 text-red-500 mr-3"/>
                         )}
-                        <p className="text-sm text-text">{item.label}</p>
+                        <p className="text-sm text-foreground">{item.label}</p>
                     </div>
                 ))}
             </CardContent>

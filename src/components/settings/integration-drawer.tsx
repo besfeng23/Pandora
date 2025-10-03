@@ -28,7 +28,7 @@ export function IntegrationDrawer({ integration, open, onOpenChange }: Integrati
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[420px] sm:max-w-none rounded-tl-2xl rounded-bl-2xl">
+      <SheetContent className="w-[420px] sm:max-w-none rounded-tl-2xl rounded-bl-2xl anim-slide-in-right">
         <SheetHeader>
           <SheetTitle>{integration.name} Integration</SheetTitle>
           <SheetDescription>
@@ -63,7 +63,7 @@ export function IntegrationDrawer({ integration, open, onOpenChange }: Integrati
              <p className="font-medium">Last test</p>
              <p className="text-muted-foreground">{integration.lastPingAt}</p>
              <p className="text-muted-foreground">RTT: {integration.latencyP95Ms} ms</p>
-             <p className="text-muted-foreground capitalize">Status: {integration.status}</p>
+             <p className="text-muted-foreground capitalize">{integration.status}</p>
            </div>
         </div>
         <SheetFooter className="gap-2 sm:justify-between">

@@ -23,11 +23,11 @@ function StatTile({ label, footerText, footerStatus = 'neutral' }: { label: stri
     }
     
     return (
-        <div className="bg-surface-muted rounded-xl p-4 flex flex-col justify-between w-[160px] h-[72px]">
-            <p className="text-sm text-text-muted">{label}</p>
+        <div className="bg-muted/50 rounded-xl p-4 flex flex-col justify-between w-[160px] h-[72px]">
+            <p className="text-sm text-muted-foreground">{label}</p>
             <button 
                 onClick={footerText === 'Test connection' ? handleTestConnection : undefined}
-                className={`text-sm font-medium text-left ${footerStatus === 'success' ? 'text-success' : 'text-text-muted'} hover:underline`}
+                className={`text-sm font-medium text-left ${footerStatus === 'success' ? 'text-green-600' : 'text-muted-foreground'} hover:underline`}
             >
                 {footerText}
             </button>
@@ -39,7 +39,9 @@ export function BridgeConfigCard() {
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader className="flex flex-row items-start justify-between">
-        <CardTitle className="text-base font-semibold">Bridge Configuration</CardTitle>
+        <div>
+            <CardTitle>Bridge Configuration</CardTitle>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">

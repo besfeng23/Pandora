@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from '@/components/ui/sidebar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCommandPalette } from './command-palette';
+import { ThemeToggle } from './theme-toggle';
 
 function getTitleFromPathname(pathname: string) {
     if (pathname === '/') return 'Dashboard';
@@ -50,20 +51,21 @@ export default function Header() {
       </Button>
 
       <div className="flex-1">
-        <h1 className="font-semibold text-xl">{title}</h1>
+        <h1 className="font-semibold text-xl hidden sm:block">{title}</h1>
       </div>
 
-      <div className="hidden sm:flex flex-1 items-center justify-center gap-4">
+      <div className="flex flex-1 items-center justify-center gap-4">
         <Button variant="outline" className="w-full max-w-[520px] justify-start text-muted-foreground rounded-lg" onClick={() => setOpen(true)}>
           <Search className="h-5 w-5 mr-2" />
-          Search or run a command...
+          <span className="hidden lg:inline-flex">Search or run a command...</span>
+          <span className="inline-flex lg:hidden">Search...</span>
           <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center gap-1 rounded border bg-surface-muted px-2 font-mono text-sm font-medium opacity-100 sm:flex">
             <span className="text-base">⌘</span>/
           </kbd>
         </Button>
       </div>
 
-      <div className="flex items-center justify-end gap-4 flex-1">
+      <div className="flex items-center justify-end gap-2 flex-1">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2 rounded-lg">
@@ -80,6 +82,8 @@ export default function Header() {
                 <DropdownMenuItem>Manage environments</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+
+        <ThemeToggle />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

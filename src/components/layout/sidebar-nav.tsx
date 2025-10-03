@@ -4,58 +4,42 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  HardDrive,
-  FileText,
   Settings,
   Star,
   Zap,
+  Home,
+  Network,
+  Search,
+  Cog,
+  ChevronsRightLeft,
 } from "lucide-react";
 import {
   Sidebar,
-  SidebarHeader,
   SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarSeparator,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "../ui/separator";
 
 const mainNavItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/services", label: "Services", icon: HardDrive },
-  { href: "/audit", label: "Audit Log", icon: FileText },
+  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/settings", label: "System", icon: Settings },
+  { href: "/search", label: "Search", icon: Search },
+  { href: "/connections", label: "Connections", icon: Network },
 ];
 
-const settingsNavItem = { href: "/settings", label: "Settings", icon: Settings };
+const globalSettingsItem = { href: "/global-settings", label: "Global Settings", icon: Cog };
+const quickActionsItem = { href: "/actions", label: "Quick Actions", icon: ChevronsRightLeft };
 
-const favorites = [
-    { label: "Restart Pods", icon: Zap },
-    { label: "Scale Workers", icon: Zap },
-    { label: "Flush CDN", icon: Zap },
-]
 
 export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-3 p-2">
-          <Avatar className="h-10 w-10 rounded-lg">
-            <AvatarImage src="https://picsum.photos/seed/logo/100/100" alt="Pandora Logo" data-ai-hint="abstract logo" />
-            <AvatarFallback className="rounded-lg">P</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="font-headline text-lg font-semibold">Pandora</span>
-            <span className="text-sm text-muted-foreground">Workspace</span>
-          </div>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
+    <Sidebar variant="inset" collapsible="icon" className="w-[72px] rounded-2xl m-2 border-none -mr-[72px] shadow-none">
+      <SidebarContent className="justify-center">
         <SidebarMenu>
           {mainNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
@@ -63,49 +47,39 @@ export function SidebarNav() {
                 asChild
                 isActive={pathname === item.href}
                 className="rounded-xl"
+                tooltip={item.label}
               >
                 <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
+                  <item.icon className="w-5 h-5"/>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-        <SidebarSeparator />
-        <SidebarGroup>
-            <SidebarGroupLabel className="flex items-center gap-2">
-                <Star className="size-4"/>
-                <span>Favorites</span>
-            </SidebarGroupLabel>
-            <SidebarMenu>
-                {favorites.map((item) => (
-                    <SidebarMenuItem key={item.label}>
-                    <SidebarMenuButton
-                        asChild
-                        className="rounded-xl"
-                    >
-                        <Link href="#">
-                        <item.icon />
-                        <span>{item.label}</span>
-                        </Link>
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
-        </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="justify-center">
         <SidebarMenu>
-          <SidebarMenuItem>
+           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              isActive={pathname === settingsNavItem.href}
+              isActive={pathname === globalSettingsItem.href}
               className="rounded-xl"
+              tooltip={globalSettingsItem.label}
             >
-              <Link href={settingsNavItem.href}>
-                <settingsNavItem.icon />
-                <span>{settingsNavItem.label}</span>
+              <Link href={globalSettingsItem.href}>
+                <globalSettingsItem.icon className="w-5 h-5"/>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+           <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === quickActionsItem.href}
+              className="rounded-xl"
+              tooltip={quickActionsItem.label}
+            >
+              <Link href={quickActionsItem.href}>
+                <quickActionsItem.icon className="w-5 h-5"/>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

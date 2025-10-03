@@ -2,7 +2,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy } from 'lucide-react';
+import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import { useCommandPalette } from './command-palette';
 
 function getTitleFromPathname(pathname: string) {
     if (pathname === '/') return 'Dashboard';
+    if (pathname.startsWith('/services')) return 'Services';
     const title = pathname.split('/').pop()?.replace(/-/g, ' ') ?? 'Dashboard';
     return title.charAt(0).toUpperCase() + title.slice(1);
 }
@@ -32,7 +33,7 @@ export default function Header() {
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         setOpen((open) => !open)
       }
@@ -42,28 +43,44 @@ export default function Header() {
   }, [setOpen])
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-6 backdrop-blur-sm">
       <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleSidebar}>
         <PanelLeft className="h-5 w-5" />
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
 
       <div className="flex-1">
-        <h1 className="font-headline text-xl font-semibold md:text-2xl">{title}</h1>
+        <h1 className="font-semibold text-xl">{title}</h1>
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-4">
-        <Button variant="outline" className="w-full max-w-sm justify-start text-muted-foreground rounded-xl" onClick={() => setOpen(true)}>
-          <Search className="h-4 w-4 mr-2" />
-          Search...
-          <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-            <span className="text-xs">⌘</span>K
+      <div className="flex flex-1 items-center justify-center gap-4">
+        <Button variant="outline" className="w-full max-w-[520px] justify-start text-muted-foreground rounded-lg" onClick={() => setOpen(true)}>
+          <Search className="h-5 w-5 mr-2" />
+          Search or run a command...
+          <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center gap-1 rounded border bg-surface-muted px-2 font-mono text-sm font-medium opacity-100 sm:flex">
+            <span className="text-base">⌘</span>/
           </kbd>
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
-        </Button>
+      </div>
+
+      <div className="flex items-center justify-end gap-4 flex-1">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2 rounded-lg">
+                    <span>Env:</span>
+                    <span className="font-semibold">Dev</span>
+                    <ChevronDown className="h-4 w-4 text-text-subtle" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="rounded-xl">
+                <DropdownMenuItem>Development</DropdownMenuItem>
+                <DropdownMenuItem>Staging</DropdownMenuItem>
+                <DropdownMenuItem>Production</DropdownMenuItem>
+                <DropdownMenuSeparator/>
+                <DropdownMenuItem>Manage environments</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">

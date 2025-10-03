@@ -85,3 +85,57 @@ export const auditLogs: AuditLog[] = [
   { id: "log-10", event: "service.degraded", user: "system", severity: "warning", timestamp: "2023-10-27T10:15:00Z", details: "'User Profiles' service status changed to degraded" },
   { id: "log-11", event: "service.down", user: "system", severity: "error", timestamp: "2023-10-27T10:16:30Z", details: "'Realtime Analytics' service status changed to down" },
 ];
+
+
+// --- Settings Page Data ---
+
+export type Integration = {
+  id: string;
+  name: string;
+  logo: string;
+  status: 'healthy' | 'degraded' | 'active' | 'disconnected' | 'losing';
+  lastPingAt: string;
+  latencyP95Ms: number;
+  errorRate: number;
+  sparkline: number[];
+};
+
+export const integrations: Integration[] = [
+  { id: "github", name: "GitHub", logo: "Github", status: "healthy", lastPingAt: "2025-10-02T10:32:00Z", latencyP95Ms: 180, errorRate: 0.003, sparkline: [10, 20, 15, 25, 30, 22, 28] },
+  { id: "openai", name: "OpenAI", logo: "Openai", status: "degraded", lastPingAt: "2025-10-02T10:30:00Z", latencyP95Ms: 600, errorRate: 0.02, sparkline: [50, 60, 55, 70, 80, 75, 90] },
+  { id: "gcp", name: "GCP", logo: "Gcp", status: "degraded", lastPingAt: "2025-10-02T10:31:00Z", latencyP95Ms: 1200, errorRate: 0.05, sparkline: [100, 120, 110, 130, 150, 140, 160] },
+  { id: "linear", name: "Linear", logo: "Linear", status: "active", lastPingAt: "2025-10-02T10:32:00Z", latencyP95Ms: 120, errorRate: 0, sparkline: [5, 10, 8, 12, 15, 10, 13] },
+  { id: "firebase", name: "Firebase", logo: "Firebase", status: "disconnected", lastPingAt: "2025-10-01T10:00:00Z", latencyP95Ms: 0, errorRate: 1, sparkline: [0, 0, 0, 0, 0, 0, 0] },
+  { id: "neon", name: "Neon", logo: "Neon", status: "disconnected", lastPingAt: "2025-10-01T12:00:00Z", latencyP95Ms: 0, errorRate: 1, sparkline: [0, 0, 0, 0, 0, 0, 0] },
+  { id: "notion", name: "Notion", logo: "Notion", status: "losing", lastPingAt: "2025-10-02T10:25:00Z", latencyP95Ms: 800, errorRate: 0.08, sparkline: [70, 80, 75, 90, 100, 95, 110] },
+];
+
+export const copilotSuggestions = [
+    { id: "sug-1", title: "Rotate API Key for GitHub", subtext: "Rotation suggested", status: "info" as const, cta: "Apply" },
+    { id: "sug-2", title: "Reconnect Notion", subtext: "Invalid credentials", status: "warning" as const, cta: "Fix" },
+];
+
+export type ConnectionStatus = {
+    label: string;
+    status: 'ok' | 'error';
+};
+
+export const connectionStatuses: ConnectionStatus[] = [
+    { label: "Auth keys defined", status: "ok" },
+    { label: "Email sender connected", status: "ok" },
+    { label: "Database accessible", status: "ok" },
+];
+
+export type SettingsAuditItem = {
+    id: string;
+    title: string;
+    severity: 'info' | 'warning';
+    timestamp: string;
+};
+
+export const settingsAuditLog: SettingsAuditItem[] = [
+    { id: "audit-1", title: "Operation restarted", severity: "info", timestamp: "just now" },
+    { id: "audit-2", title: "Scaling event triggered", severity: "info", timestamp: "8m ago" },
+    { id: "audit-3", title: "Key rotated", severity: "info", timestamp: "yesterday" },
+    { id: "audit-4", title: "Service removed", severity: "warning", timestamp: "1h" },
+];

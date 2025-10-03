@@ -1,16 +1,24 @@
-import BridgeConfig from "@/components/settings/bridge-config";
-import EnvImport from "@/components/settings/env-import";
+import { BridgeConfigCard } from '@/components/settings/bridge-config-card';
+import { AiCopilotCard } from '@/components/settings/ai-copilot-card';
+import { IntegrationsCard } from '@/components/settings/integrations-card';
+import { ConnectionsCard } from '@/components/settings/connections-card';
+import { SettingsAuditLog } from '@/components/settings/settings-audit-log';
+import { EnvImportCard } from '@/components/settings/env-import-card';
+import { AddConnectionCard } from '@/components/settings/add-connection-card';
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-headline text-3xl font-semibold">Settings</h1>
-        <p className="text-muted-foreground">Manage your Pandora workspace and integrations.</p>
+    <div className="mx-auto w-full max-w-[1200px] grid grid-cols-12 gap-6">
+      <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
+        <BridgeConfigCard />
+        <IntegrationsCard />
+        <AddConnectionCard />
       </div>
-      <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
-        <BridgeConfig />
-        <EnvImport />
+      <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+        <AiCopilotCard />
+        <ConnectionsCard />
+        <SettingsAuditLog />
+        <EnvImportCard />
       </div>
     </div>
   );

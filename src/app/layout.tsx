@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="light">
       <body
         className={cn(
           "min-h-screen bg-background font-body antialiased",
@@ -32,7 +32,7 @@ export default function RootLayout({
           <SidebarNav />
           <SidebarInset>
             <Header />
-            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
+            <main className="flex flex-1 flex-col gap-6 p-6">
               {children}
             </main>
           </SidebarInset>

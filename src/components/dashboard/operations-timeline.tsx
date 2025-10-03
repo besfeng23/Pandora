@@ -44,7 +44,7 @@ export default function OperationsTimeline() {
                 cursor={{ stroke: "hsl(var(--border))", strokeWidth: 2, strokeDasharray: '3 3' }}
               />
               <Legend />
-              <Line type="monotone" dataKey="success" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="success" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ className: 'tl-dot tl-ok' }} />
               <Line type="monotone" dataKey="failure" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
               {failurePoints.map((point, index) => (
                   <ReferenceDot 
@@ -54,7 +54,8 @@ export default function OperationsTimeline() {
                       r={5} 
                       fill="hsl(var(--chart-3))" 
                       stroke="white" 
-                      strokeWidth={2} 
+                      strokeWidth={2}
+                      className="tl-dot tl-fail"
                   />
               ))}
             </LineChart>

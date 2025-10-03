@@ -30,6 +30,19 @@
     --chart-3: 40 90% 51%; /* --warning: #F59E0B */
     --chart-4: 356 79% 52%; /* --danger: #EF4444 */
     --chart-5: 176 49% 50%; /* --graph: #58C3BC */
+
+    /* Motion Tokens */
+    --dur-xxs: 80ms;
+    --dur-xs: 160ms;
+    --dur-sm: 240ms;
+    --dur-md: 300ms;
+    --dur-lg: 450ms;
+    --dur-xl: 700ms;
+
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-emph: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+    --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   }
 
   .dark {
@@ -60,6 +73,20 @@
     --chart-4: 356 79% 52%;
     --chart-5: 176 49% 50%;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-delay: -1ms !important;
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      background-attachment: initial !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0s !important;
+      transition-delay: 0s !important;
+    }
+  }
 }
 
 @layer base {
@@ -70,5 +97,87 @@
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .anim-lift {
+    transition: transform var(--dur-xs) var(--ease-standard), box-shadow var(--dur-xs) var(--ease-standard);
+  }
+  .anim-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  }
+  .anim-tap:active {
+    transform: translateY(0px) scale(0.98);
+    opacity: 0.92;
+    transition-duration: var(--dur-xxs);
+  }
+  .icon-spin {
+    animation: spin 1s linear infinite;
+  }
+  .skeleton {
+    animation: shimmer 1.2s infinite;
+    background: linear-gradient(
+      to right,
+      hsl(var(--muted)) 4%,
+      hsl(var(--secondary)) 25%,
+      hsl(var(--muted)) 36%
+    );
+    background-size: 1000px 100%;
+  }
+  .tl-dot {
+    animation-duration: 600ms;
+    animation-timing-function: var(--ease-standard);
+  }
+  .tl-dot.tl-ok {
+    animation-name: pulse-ok;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+  .tl-dot.tl-fail {
+    animation-name: flare-fail;
+    animation-iteration-count: 1;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes pulse-ok {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 hsla(var(--success), 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 8px hsla(var(--success), 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 hsla(var(--success), 0); }
+}
+
+@keyframes flare-fail {
+  0% { box-shadow: 0 0 0 0 hsla(var(--danger), 0.4); }
+  100% { box-shadow: 0 0 0 12px hsla(var(--danger), 0); }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
   }
 }

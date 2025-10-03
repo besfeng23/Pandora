@@ -22,7 +22,7 @@ export default function KpiCard({ title, value, change, description, status }: K
   const isNegative = change?.startsWith('-');
 
   return (
-    <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+    <Card className="rounded-2xl shadow-sm anim-lift anim-tap">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className={cn("h-2 w-2 rounded-full", {

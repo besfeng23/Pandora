@@ -35,7 +35,7 @@ const statusClasses = {
 const IntegrationTile = ({ integration }: { integration: Integration }) => {
     const chartData = integration.sparkline.map((value, index) => ({ name: index, value }));
     return (
-        <div className="border border-border rounded-xl p-4 min-h-[104px] cursor-pointer hover:bg-surface-muted transition-colors">
+        <div className="border border-border rounded-xl p-4 min-h-[104px] cursor-pointer hover:bg-surface-muted anim-lift">
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     <IntegrationLogo name={integration.name} />
@@ -72,7 +72,7 @@ export function IntegrationsCard() {
     return (
         <Card className="rounded-2xl shadow-sm">
             <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                <CardTitle className="text-base font-semibold">Integrations</CardTitle>
+                <CardTitle>Integrations</CardTitle>
                 <div className="flex items-center gap-2 flex-wrap">
                     {["All", "Connected", "Needs attention"].map((item) => (
                         <Button 

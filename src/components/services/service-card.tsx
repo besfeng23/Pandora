@@ -35,7 +35,7 @@ const chartConfig = {
 export default function ServiceCard({ service }: ServiceCardProps) {
   return (
     <Link href={`/services/${service.id}`} className="flex">
-      <Card className="rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col w-full">
+      <Card className="rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col w-full anim-lift anim-tap">
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">

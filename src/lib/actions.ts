@@ -4,6 +4,8 @@ import { getPersonalizedRecommendations, type PersonalizedRecommendationsInput }
 import { naturalLanguageLogQuery, type NaturalLanguageLogQueryInput } from "@/ai/flows/natural-language-log-query";
 import { predictAlert, type PredictiveAlertInput } from "@/ai/flows/predictive-alerting";
 import { performRootCauseAnalysis, type RootCauseAnalysisInput } from "@/ai/flows/root-cause-analysis";
+import { automatedCodeReview, type AutomatedCodeReviewInput } from "@/ai/flows/automated-code-review";
+
 
 export async function getRecommendations(input: PersonalizedRecommendationsInput) {
     try {
@@ -21,7 +23,7 @@ export async function queryLogs(input: NaturalLanguageLogQueryInput) {
         return result;
     } catch (error) {
         console.error("Error querying logs:", error);
-        return { results: "Could not perform search at this time." };
+        return { results: JSON.stringify([]) };
     }
 }
 
@@ -42,5 +44,16 @@ export async function analyzeRootCause(input: RootCauseAnalysisInput) {
     } catch (error) {
         console.error("Error analyzing root cause:", error);
         return null;
+    }
+}
+
+
+export async function reviewCode(input: AutomatedCodeReviewInput) {
+    try {
+        const result = await automatedCodeReview(input);
+        return result;
+    } catch (error) {
+        console.error("Error reviewing code:", error);
+        return { securityIssues: [], performanceIssues: [], suggestions: ["Could not review code at this time."] };
     }
 }

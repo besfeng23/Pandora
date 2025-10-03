@@ -27,12 +27,12 @@ const severityClasses = {
 
 export default function AuditLogTable() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<AuditLog[]>(initialLogs);
+  const [searchResults, setSearchResults] = useState<AuditLog[] | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleSearch = () => {
     if (!searchQuery) {
-      setSearchResults(initialLogs);
+      setSearchResults(null);
       return;
     }
 
@@ -40,13 +40,23 @@ export default function AuditLogTable() {
       const allLogsString = JSON.stringify(initialLogs);
       const result = await queryLogs({ query: searchQuery, logs: allLogsString });
       try {
-        const parsedResults = JSON.parse(result.results);
-        setSearchResults(Array.isArray(parsedResults) ? parsedResults : []);
+        // The AI sometimes returns a JSON object with a 'results' key, and sometimes just the array.
+        const parsedResult = JSON.parse(result.results);
+        if (Array.isArray(parsedResult)) {
+          setSearchResults(parsedResult);
+        } else if (parsedResult.results && Array.isArray(parsedResult.results)) {
+           setSearchResults(parsedResult.results);
+        } else {
+          setSearchResults([]);
+        }
       } catch (e) {
+        console.error("Failed to parse search results:", e);
         setSearchResults([]);
       }
     });
   };
+  
+  const logsToDisplay = searchResults === null ? initialLogs : searchResults;
 
   return (
     <div className="space-y-4">
@@ -87,10 +97,11 @@ export default function AuditLogTable() {
                 <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
                         <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+                        <p className="mt-2 text-sm text-muted-foreground">Analyzing logs...</p>
                     </TableCell>
                 </TableRow>
-            ) : searchResults.length > 0 ? (
-              searchResults.map((log) => (
+            ) : logsToDisplay.length > 0 ? (
+              logsToDisplay.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell className="font-medium">{log.event}</TableCell>
                   <TableCell>
@@ -107,8 +118,8 @@ export default function AuditLogTable() {
               ))
             ) : (
                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                        No results found.
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                        No results found for your query.
                     </TableCell>
                 </TableRow>
             )}

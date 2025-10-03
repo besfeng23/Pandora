@@ -43,8 +43,8 @@ export default function ServiceDetailPage() {
   const chartData = service.performance.map((value, index) => ({ name: `T-${service.performance.length - index}`, value }));
 
   return (
-    <div className="space-y-6">
-       <div className="flex items-center gap-4">
+    <div className="grid gap-6 md:grid-cols-12">
+       <div className="col-span-12 flex items-center gap-4">
         <ServiceIcon name={service.icon} className="h-10 w-10 text-muted-foreground" />
         <div>
           <h1 className="text-3xl font-headline font-bold flex items-center gap-3">
@@ -55,7 +55,7 @@ export default function ServiceDetailPage() {
         </div>
       </div>
       
-      <Card className="rounded-2xl shadow-lg">
+      <Card className="col-span-12 rounded-2xl shadow-lg">
         <CardHeader>
             <CardTitle>Performance</CardTitle>
             <CardDescription>Response time over the last hour.</CardDescription>
@@ -77,8 +77,8 @@ export default function ServiceDetailPage() {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="rounded-2xl shadow-lg">
+      <div className="col-span-12 md:col-span-6">
+        <Card className="rounded-2xl shadow-lg h-full">
             <CardHeader>
                 <CardTitle>Metadata</CardTitle>
             </CardHeader>
@@ -104,7 +104,9 @@ export default function ServiceDetailPage() {
                 </div>
             </CardFooter>
         </Card>
-        <Card className="rounded-2xl shadow-lg">
+      </div>
+      <div className="col-span-12 md:col-span-6">
+        <Card className="rounded-2xl shadow-lg h-full">
             <CardHeader>
                 <CardTitle>Recent Events</CardTitle>
             </CardHeader>

@@ -14,10 +14,10 @@ import {
 } from 'lucide-react';
 
 export const kpis = [
-  { title: "Uptime", value: "99.98%", change: "+0.02%", status: "success" as const, description: "24h" },
-  { title: "Healthy", value: "62/64", change: "", status: "success" as const, description: "Services" },
-  { title: "Degraded", value: "1", change: "", status: "warning" as const, description: "Services" },
-  { title: "Down", value: "1", change: "", status: "destructive" as const, description: "Services" },
+  { title: "Uptime", value: "99.98%", change: "+0.02%", status: "success" as const, description: "last 30d" },
+  { title: "Healthy", value: "62/64", change: "", status: "success" as const, description: "SLO > 99.9%" },
+  { title: "Degraded", value: "1", change: "", status: "warning" as const, description: "p95 > 300ms" },
+  { title: "Down", value: "1", change: "", status: "destructive" as const, description: "Error rate > 5%" },
   { title: "Active Ops", value: "1.2k", change: "+15%", status: "success" as const, description: "per minute" },
   { title: "Failures", value: "0.1%", change: "-0.05%", status: "success" as const, description: "per minute" },
   { title: "Connected", value: "12", change: "", status: "neutral" as const, description: "Services" },
@@ -47,19 +47,23 @@ export type Service = {
   tags: string[];
   lastSuccess: string;
   runCount: number;
+  p95_ms: number;
+  err_rate_pct: number;
+  rps: number;
+  commit: string;
 };
 
 export const services: Service[] = [
-  { id: "svc-1", name: "Auth Service", status: "healthy", performance: [5, 6, 5, 7, 8, 6, 7, 8, 9, 10], icon: "ShieldCheck", tags: ['auth', 'core'], lastSuccess: '2m ago', runCount: 1250 },
-  { id: "svc-2", name: "Billing API", status: "healthy", performance: [8, 9, 8, 10, 9, 8, 7, 8, 9, 10], icon: "Database", tags: ['billing', 'api'], lastSuccess: '1m ago', runCount: 3420 },
-  { id: "svc-3", name: "User Profiles", status: "degraded", performance: [10, 9, 12, 15, 13, 16, 18, 15, 14, 12], icon: "Users", tags: ['user', 'db'], lastSuccess: '15m ago', runCount: 890 },
-  { id: "svc-4", name: "Content Processor", status: "healthy", performance: [3, 4, 3, 5, 4, 3, 4, 5, 6, 5], icon: "Cpu", tags: ['media', 'worker'], lastSuccess: '5m ago', runCount: 540 },
-  { id: "svc-5", name: "Realtime Analytics", status: "down", performance: [20, 22, 25, 30, 28, 32, 40, 55, 60, 0], icon: "Activity", tags: ['data', 'realtime'], lastSuccess: '1h ago', runCount: 2100 },
-  { id: "svc-6", name: "Cloud Storage Gateway", status: "healthy", performance: [2, 3, 2, 3, 4, 3, 2, 3, 4, 3], icon: "Cloud", tags: ['storage', 'aws'], lastSuccess: '30s ago', runCount: 8765 },
-  { id: "svc-7", name: "CI/CD Pipeline", status: "unknown", performance: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5], icon: "Code", tags: ['devops', 'automation'], lastSuccess: '4h ago', runCount: 120 },
-  { id: "svc-8", name: "Webhook Dispatcher", status: "healthy", performance: [1, 2, 1, 2, 1, 1, 2, 1, 2, 1], icon: "Webhook", tags: ['integration', 'events'], lastSuccess: '10s ago', runCount: 10987 },
-  { id: "svc-9", name: "CLI Tool Runner", status: "healthy", performance: [4, 5, 4, 6, 5, 4, 5, 6, 7, 6], icon: "Terminal", tags: ['cli', 'tooling'], lastSuccess: '8m ago', runCount: 432 },
-  { id: "svc-10", name: "Docs Generator", status: "healthy", performance: [7, 8, 7, 9, 8, 7, 8, 9, 10, 9], icon: "FileText", tags: ['docs', 'generator'], lastSuccess: '22m ago', runCount: 215 },
+  { id: "svc-1", name: "Auth Service", status: "healthy", performance: [5, 6, 5, 7, 8, 6, 7, 8, 9, 10], icon: "ShieldCheck", tags: ['auth', 'core'], lastSuccess: '2m ago', runCount: 1250, p95_ms: 88, err_rate_pct: 0.1, rps: 120, commit: "a8b3c1d" },
+  { id: "svc-2", name: "Billing API", status: "healthy", performance: [8, 9, 8, 10, 9, 8, 7, 8, 9, 10], icon: "Database", tags: ['billing', 'api'], lastSuccess: '1m ago', runCount: 3420, p95_ms: 120, err_rate_pct: 0.05, rps: 340, commit: "f2e9g4h" },
+  { id: "svc-3", name: "User Profiles", status: "degraded", performance: [10, 9, 12, 15, 13, 16, 18, 15, 14, 12], icon: "Users", tags: ['user', 'db'], lastSuccess: '15m ago', runCount: 890, p95_ms: 450, err_rate_pct: 1.2, rps: 80, commit: "k5l6m7n" },
+  { id: "svc-4", name: "Content Processor", status: "healthy", performance: [3, 4, 3, 5, 4, 3, 4, 5, 6, 5], icon: "Cpu", tags: ['media', 'worker'], lastSuccess: '5m ago', runCount: 540, p95_ms: 55, err_rate_pct: 0, rps: 50, commit: "p9q8r7s" },
+  { id: "svc-5", name: "Realtime Analytics", status: "down", performance: [20, 22, 25, 30, 28, 32, 40, 55, 60, 0], icon: "Activity", tags: ['data', 'realtime'], lastSuccess: '1h ago', runCount: 2100, p95_ms: 2100, err_rate_pct: 15.3, rps: 2, commit: "t1u2v3w" },
+  { id: "svc-6", name: "Cloud Storage Gateway", status: "healthy", performance: [2, 3, 2, 3, 4, 3, 2, 3, 4, 3], icon: "Cloud", tags: ['storage', 'aws'], lastSuccess: '30s ago', runCount: 8765, p95_ms: 30, err_rate_pct: 0.01, rps: 900, commit: "x4y5z6a" },
+  { id: "svc-7", name: "CI/CD Pipeline", status: "unknown", performance: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5], icon: "Code", tags: ['devops', 'automation'], lastSuccess: '4h ago', runCount: 120, p95_ms: 0, err_rate_pct: 0, rps: 0, commit: "b7c8d9e" },
+  { id: "svc-8", name: "Webhook Dispatcher", status: "healthy", performance: [1, 2, 1, 2, 1, 1, 2, 1, 2, 1], icon: "Webhook", tags: ['integration', 'events'], lastSuccess: '10s ago', runCount: 10987, p95_ms: 12, err_rate_pct: 0, rps: 1500, commit: "f0g1h2i" },
+  { id: "svc-9", name: "CLI Tool Runner", status: "healthy", performance: [4, 5, 4, 6, 5, 4, 5, 6, 7, 6], icon: "Terminal", tags: ['cli', 'tooling'], lastSuccess: '8m ago', runCount: 432, p95_ms: 65, err_rate_pct: 0.2, rps: 45, commit: "j3k4l5m" },
+  { id: "svc-10", name: "Docs Generator", status: "healthy", performance: [7, 8, 7, 9, 8, 7, 8, 9, 10, 9], icon: "FileText", tags: ['docs', 'generator'], lastSuccess: '22m ago', runCount: 215, p95_ms: 95, err_rate_pct: 0, rps: 10, commit: "n6p7q8r" },
 ];
 
 
@@ -98,12 +102,14 @@ export type Integration = {
   latencyP95Ms: number;
   errorRate: number;
   sparkline: number[];
+  hasWebhook?: boolean;
+  baseUrl?: string;
 };
 
 export const integrations: Integration[] = [
-  { id: "github", name: "GitHub", logo: "Github", status: "healthy", lastPingAt: "2025-10-02T10:32:00Z", latencyP95Ms: 180, errorRate: 0.003, sparkline: [10, 20, 15, 25, 30, 22, 28] },
+  { id: "github", name: "GitHub", logo: "Github", status: "healthy", lastPingAt: "2025-10-02T10:32:00Z", latencyP95Ms: 180, errorRate: 0.003, sparkline: [10, 20, 15, 25, 30, 22, 28], hasWebhook: true, baseUrl: "https://api.github.com" },
   { id: "openai", name: "OpenAI", logo: "Openai", status: "degraded", lastPingAt: "2025-10-02T10:30:00Z", latencyP95Ms: 600, errorRate: 0.02, sparkline: [50, 60, 55, 70, 80, 75, 90] },
-  { id: "gcp", name: "GCP", logo: "Gcp", status: "degraded", lastPingAt: "2025-10-02T10:31:00Z", latencyP95Ms: 1200, errorRate: 0.05, sparkline: [100, 120, 110, 130, 150, 140, 160] },
+  { id: "gcp", name: "Gcp", logo: "Gcp", status: "degraded", lastPingAt: "2025-10-02T10:31:00Z", latencyP95Ms: 1200, errorRate: 0.05, sparkline: [100, 120, 110, 130, 150, 140, 160] },
   { id: "linear", name: "Linear", logo: "Linear", status: "active", lastPingAt: "2025-10-02T10:32:00Z", latencyP95Ms: 120, errorRate: 0, sparkline: [5, 10, 8, 12, 15, 10, 13] },
   { id: "firebase", name: "Firebase", logo: "Firebase", status: "disconnected", lastPingAt: "2025-10-01T10:00:00Z", latencyP95Ms: 0, errorRate: 1, sparkline: [0, 0, 0, 0, 0, 0, 0] },
   { id: "neon", name: "Neon", logo: "Neon", status: "disconnected", lastPingAt: "2025-10-01T12:00:00Z", latencyP95Ms: 0, errorRate: 1, sparkline: [0, 0, 0, 0, 0, 0, 0] },

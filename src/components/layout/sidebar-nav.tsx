@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Settings,
-  Star,
-  Zap,
   Home,
-  Network,
+  Settings,
   Search,
+  Network,
   Cog,
   ChevronsRightLeft,
+  FileText,
+  LayoutGrid
 } from "lucide-react";
 import {
   Sidebar,
@@ -21,24 +20,26 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Separator } from "../ui/separator";
 
 const mainNavItems = [
   { href: "/", label: "Dashboard", icon: Home },
-  { href: "/settings", label: "System", icon: Settings },
+  { href: "/services", label: "Services", icon: LayoutGrid },
+  { href: "/audit", label: "Audit Log", icon: FileText },
   { href: "/search", label: "Search", icon: Search },
   { href: "/connections", label: "Connections", icon: Network },
 ];
 
-const globalSettingsItem = { href: "/global-settings", label: "Global Settings", icon: Cog };
-const quickActionsItem = { href: "/actions", label: "Quick Actions", icon: ChevronsRightLeft };
+const bottomNavItems = [
+    { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/actions", label: "Quick Actions", icon: ChevronsRightLeft },
+];
 
 
 export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <Sidebar variant="inset" collapsible="icon" className="w-[72px] rounded-2xl m-2 border-none -mr-[72px] shadow-none">
+    <Sidebar variant="inset" collapsible="icon" className="w-[72px] rounded-2xl m-2 border-none -mr-[72px] shadow-none bg-card">
       <SidebarContent className="justify-center">
         <SidebarMenu>
           {mainNavItems.map((item) => (
@@ -59,30 +60,20 @@ export function SidebarNav() {
       </SidebarContent>
       <SidebarFooter className="justify-center">
         <SidebarMenu>
-           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === globalSettingsItem.href}
-              className="rounded-xl"
-              tooltip={globalSettingsItem.label}
-            >
-              <Link href={globalSettingsItem.href}>
-                <globalSettingsItem.icon className="w-5 h-5"/>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === quickActionsItem.href}
-              className="rounded-xl"
-              tooltip={quickActionsItem.label}
-            >
-              <Link href={quickActionsItem.href}>
-                <quickActionsItem.icon className="w-5 h-5"/>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+           {bottomNavItems.map((item) => (
+             <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                className="rounded-xl"
+                tooltip={item.label}
+              >
+                <Link href={item.href}>
+                  <item.icon className="w-5 h-5"/>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+           ))}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

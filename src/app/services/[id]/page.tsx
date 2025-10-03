@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ServiceIcon } from "@/components/services/service-icon";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -24,6 +24,13 @@ const statusClasses = {
   down: "bg-red-500",
   unknown: "bg-gray-400",
 };
+
+const chartConfig = {
+  value: {
+    label: "ms",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
 
 export default function ServiceDetailPage() {
   const params = useParams();
@@ -55,15 +62,17 @@ export default function ServiceDetailPage() {
         </CardHeader>
         <CardContent>
             <div className="h-64">
-                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip content={<ChartTooltipContent indicator="dot" />} cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: '' }}/>
-                        <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                    </LineChart>
-                </ResponsiveContainer>
+                <ChartContainer config={chartConfig}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                            <Tooltip content={<ChartTooltipContent indicator="dot" />} cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: '' }}/>
+                            <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </ChartContainer>
             </div>
         </CardContent>
       </Card>

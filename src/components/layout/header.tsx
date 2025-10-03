@@ -12,10 +12,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from '@/components/ui/sidebar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useCommandPalette } from './command-palette';
 
 function getTitleFromPathname(pathname: string) {
     if (pathname === '/') return 'Dashboard';
@@ -26,9 +26,20 @@ function getTitleFromPathname(pathname: string) {
 export default function Header() {
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
+  const { setOpen } = useCommandPalette();
   const title = getTitleFromPathname(pathname);
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
+  React.useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setOpen((open) => !open)
+      }
+    }
+    document.addEventListener("keydown", down)
+    return () => document.removeEventListener("keydown", down)
+  }, [setOpen])
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
@@ -42,13 +53,13 @@ export default function Header() {
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-4">
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search services, connections, users, settings..." 
-            className="pl-10 rounded-xl"
-          />
-        </div>
+        <Button variant="outline" className="w-full max-w-sm justify-start text-muted-foreground rounded-xl" onClick={() => setOpen(true)}>
+          <Search className="h-4 w-4 mr-2" />
+          Search...
+          <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+            <span className="text-xs">⌘</span>K
+          </kbd>
+        </Button>
         <Button variant="ghost" size="icon" className="rounded-full">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>

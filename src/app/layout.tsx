@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/layout/header";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { CommandPalette } from "@/components/layout/command-palette";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -37,6 +38,7 @@ export default function RootLayout({
           </SidebarInset>
         </SidebarProvider>
         <Toaster />
+        <CommandPalette />
       </body>
     </html>
   );

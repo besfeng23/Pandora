@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -10,6 +12,7 @@ import { cn } from "@/lib/utils";
 import type { Service } from "@/lib/data";
 import { ChartContainer } from "@/components/ui/chart";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
+import { ServiceIcon } from "./service-icon";
 
 type ServiceCardProps = {
   service: Service;
@@ -34,7 +37,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-             <service.icon className="h-6 w-6 text-muted-foreground" />
+             <ServiceIcon name={service.icon} className="h-6 w-6 text-muted-foreground" />
              <CardTitle className="text-lg font-headline font-semibold">{service.name}</CardTitle>
           </div>
           <div className="flex items-center gap-2">

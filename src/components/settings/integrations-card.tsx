@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { integrations, type Integration } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Github, FileJson, AlertTriangle, Cloud, Bot, Blocks, Database, FileText } from "lucide-react";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { Github, FileJson, Cloud, Bot, Blocks, Database, FileText, Component } from "lucide-react";
+import { ChartContainer } from "@/components/ui/chart";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 
 const IntegrationLogo = ({ name }: { name: string }) => {
@@ -15,13 +15,13 @@ const IntegrationLogo = ({ name }: { name: string }) => {
         Openai: Bot,
         Gcp: Cloud,
         Linear: Blocks,
-        Firebase,
+        Firebase: Component,
         Neon: Database,
         Notion: FileText,
     };
     const LogoComponent = logos[name];
     if (!LogoComponent) return <FileJson />;
-    return <LogoComponent className="h-8 w-8 text-text" />;
+    return <LogoComponent className="h-8 w-8" />;
 };
 
 const statusClasses = {
@@ -62,6 +62,13 @@ const IntegrationTile = ({ integration }: { integration: Integration }) => {
 export function IntegrationsCard() {
     const [filter, setFilter] = useState("All");
 
+    const filteredIntegrations = integrations.filter(integration => {
+        if (filter === 'All') return true;
+        if (filter === 'Connected') return integration.status === 'healthy' || integration.status === 'active';
+        if (filter === 'Needs attention') return integration.status === 'degraded' || integration.status === 'losing' || integration.status === 'disconnected';
+        return false;
+    })
+
     return (
         <Card className="rounded-2xl shadow-sm">
             <CardHeader className="flex flex-row items-center gap-4">
@@ -81,7 +88,7 @@ export function IntegrationsCard() {
                 </div>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {integrations.map((integration) => (
+                {filteredIntegrations.map((integration) => (
                     <IntegrationTile key={integration.id} integration={integration} />
                 ))}
             </CardContent>

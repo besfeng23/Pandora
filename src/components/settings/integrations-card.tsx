@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -12,7 +13,7 @@ import { LineChart, Line, ResponsiveContainer } from "recharts";
 const IntegrationLogo = ({ name }: { name: string }) => {
     const logos: { [key: string]: React.ElementType } = {
         Github,
-        Openai: Bot,
+        OpenAI: Bot,
         Gcp: Cloud,
         Linear: Blocks,
         Firebase: Component,
@@ -32,10 +33,16 @@ const statusClasses = {
   disconnected: "text-danger",
 };
 
-const IntegrationTile = ({ integration }: { integration: Integration }) => {
+const IntegrationTile = ({ integration, onSelect }: { integration: Integration, onSelect: () => void }) => {
     const chartData = integration.sparkline.map((value, index) => ({ name: index, value }));
     return (
-        <div className="border border-border rounded-xl p-4 min-h-[104px] cursor-pointer hover:bg-surface-muted anim-lift">
+        <div 
+            className="border border-border rounded-xl p-4 min-h-[104px] cursor-pointer hover:bg-surface-muted anim-lift"
+            onClick={onSelect}
+            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect()}
+            role="button"
+            tabIndex={0}
+        >
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     <IntegrationLogo name={integration.name} />
@@ -59,7 +66,7 @@ const IntegrationTile = ({ integration }: { integration: Integration }) => {
 };
 
 
-export function IntegrationsCard() {
+export function IntegrationsCard({ onSelectIntegration }: { onSelectIntegration: (integration: Integration) => void }) {
     const [filter, setFilter] = useState("All");
 
     const filteredIntegrations = integrations.filter(integration => {
@@ -89,7 +96,7 @@ export function IntegrationsCard() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredIntegrations.map((integration) => (
-                    <IntegrationTile key={integration.id} integration={integration} />
+                    <IntegrationTile key={integration.id} integration={integration} onSelect={() => onSelectIntegration(integration)} />
                 ))}
             </CardContent>
         </Card>

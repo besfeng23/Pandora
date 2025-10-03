@@ -1,0 +1,157 @@
+# **App Name**: Pandora
+
+## Core Features:
+
+- System Health Monitoring: Display key performance indicators (KPIs) such as uptime, healthy, degraded, down, unknown, active operations, failures, and connected services.
+- Operations Timeline: Visualize operations data over time using a line chart with success and failure indicators.
+- Incident Galaxy Map: Show a 3D visualization of incidents and their relationships.
+- AI Copilot Suggestions: Display AI-driven suggestions based on real-time events. The reasoning tool uses embeddings and similarity measures to incorporate suggestions relevant to a situation, but has guardrails that prevent it from recommending irrelevant ones. Policy: only suggest actions that are (a) permitted by RBAC, (b) below spend threshold, (c) pass static allowlist per env. Scoring: relevance_score 0..1 with minimum, plus evidence[] linking to metrics/events. Appeals: one-click why was this suggested? showing the features used. Provides actions to 'Apply' or request 'More' suggestions, tied to audit entries. “unsafe_tool” toast when a suggestion gets blocked with a one-line reason (scope, spend, or DAG).
+- Services Grid: Present a grid of services with status indicators and sparklines for performance trends.
+- Audit Log: Maintain an audit log of system events with severity levels and timestamps. Includes virtualization for handling large datasets.
+- Incident Command: Allow the user to execute and visualize actions related to incident resolution
+- Bridge Configuration: Display and configure bridge settings including URL and token. Includes actions for viewing logs, rotating token, and copying URL.
+- .env Import: Allow importing settings from a .env file with parsing and saving capabilities. Inline diff for .env import: unified diff format with context lines and hunk headers; green/red line diff before Save All. ENV diff: Max 2k lines shown with “Download full diff” beyond that. Prevents the right panel from melting.
+- Search/Command: Global command bar inside top input. Searchable targets: services, connection names, users, settings toggles.
+- Favorites Strip: Horizontal pinned tools with tiny sparklines; one-tap Run; kebab: Run, Dry-run, Open in Service, Docs, Unfavorite. Favorites sort: manual drag order and pin to top across sessions.
+- Tool Page: Rows show icon, name, tag chips, run count, last success; actions Run, Sort, Config; virtualized for >50.
+- Right Panel: Sticky panel for Tool details + Execution + Audit.
+- Orchestration & Safety: YAML/JSON recipe with Steps (atomic tool calls), branching, parallel maps, policy gates, retries/timeouts, approvals, Triggers, Policy gates, Idempotency, Rollback and Observability. State store: per-step checkpointing and resumption tokens. Compensations registry: declarative compensates: <tool> not ad-hoc code.
+- Roles & Permissions: Admin, Operator, Viewer, Auditor, Maintainer and Tool-level ACLs. Tool-level dangerous scope requiring dual-approval in prod.
+- API Contract: GET /api/catalog/services?env=prod --> [Service], GET /api/catalog/services/:service_id/tools?search=&tags[]=&sort=&page=&limit= --> { items: [Tool], total }, POST /api/catalog/execute --> { exec_id }, GET /api/catalog/execute/:exec_id --> Execution record, GET /api/catalog/execute/:exec_id/stream (SSE/WebSocket) --> status|log|chunk|done|error, GET /api/catalog/history?tool_id=&service_id=&actor=&limit=50 --> { items, next_cursor }, POST /api/catalog/favorites { tool_id } and DELETE /api/catalog/favorites/:tool_id
+- Integration Model: Service, Tool and Connector SDK TS/Node reference package that wraps auth, rate-limits, retries, and emits audit events by default.
+- Data Model: Service, Tool and Execution record.
+- Interactions: Search prefixes, Batch and States.
+- Settings Interactions & States: Command bar, Status logic, Validation and Test via Bridge.
+- Telemetry & Audit (Global): Emit structured events for:catalog.view|service.view|tool.view|tool.run|tool.fail|tool.success,favorite.add|favorite.remove|filter.change|sort.changesettings.bridge.test_clicked|settings.integration.open_drawer|settings.env_import.parse
+- Security & Compliance: Secrets in KMS; rotate via UI; audit every access.PII fields masked at rest; decrypt on demand with just in time grants.SSO with OIDC; per env RBAC; signed execution manifests.Exportable audit CSV; immutable log hash chain.
+- Tenancy & Spend Limits and Rate Caps: Tenant boundary: every API accepts and emits X-Tenant-Id, stored on all rows, enforced by DB row-level policies. Spend caps: {daily_usd=50, monthly_usd=500, burst_usd=10} with actions block|throttle|warn. Rate limits: sliding window per tenant per tool. Return x-ratelimit-* headers.
+- Deployment & Release Strategy: Blue/green + canary percentages per env; automatic rollback on error budget burn. Config versioning: all integration configs are versioned; rollback_to(versionId) endpoint. Migration safety: schema migrations are idempotent and reversible; preflight “dry run migrations” in stage.
+- DR, Retention, Deletion: RTO/RPO targets per data class; nightly backups; quarterly restore drills. Retention: execution logs 90d hot, 1y warm, 7y for audit (configurable). Erase flows: DSAR/right-to-erasure pipeline with redaction map for PII fields.
+- Event Ingress & Replay: Webhooks intake: /api/events/inbox with HMAC verification, replay window, dedupe key, DLQ, and signature rotation. Replay UI: filter by event_id, re-deliver with new trace id.
+- Frontend Security Hardening: CSP: strict default-src 'self', lock frame-ancestors 'none', hash all inline. CSRF: same-site cookies + anti-CSRF token for mutating routes. Session: idle timeout, absolute max age, step-up MFA for “dangerous” tools.
+- Logging & Privacy: DLP filters on client and server logs; field masks for secrets and user identifiers. Log sampling for high-volume success noise; keep errors at 100%.
+- Testing Strategy: Contract tests for each connector against provider sandboxes. Golden fixtures for tool params and expected responses. E2E headless: runbook from “click Run” to “see incident created,” with seeded data. Perf budgets: TTI < 2.5s on 4G, CLS < 0.1, Lighthouse PWA ≥ 85.
+- On-call & ChatOps Glue: PagerDuty/opsgenie integration, on-call schedule sync. ChatOps commands: /pandora incident create ..., /pandora run tool ....
+- CodeMirror Component: Build a code editor component with syntax highlighting and autocompletion.
+- Permit Graph: Copilot can only call tools reachable through a policy allowlist DAG; log denied edges.
+- Agent Based Monitoring: In addition to agentless monitoring, allow the option to install agents on the target machine
+- Root Cause Analysis: AI-driven root cause analysis to quickly identify the source of incidents.
+- Predictive Analytics: Use machine learning to predict potential future incidents and proactively address them.
+- Automated Remediation: Automatically execute pre-defined remediation steps when certain conditions are met.
+- Customizable Dashboards: Allow users to create custom dashboards tailored to their specific needs.
+- Mobile App: Provide a mobile app for on-the-go monitoring and incident management.
+- Multi-Tenancy Support: Full multi-tenancy support with hard isolation in storage and audit.
+- Compliance Reporting: Generate compliance reports based on system events and audit logs.
+- Federated Authentication: Support for federated authentication protocols such as SAML and OAuth.
+- Automated Documentation Generation: Automatically generate documentation for services and tools.
+- Code Execution Sandboxing: Sandbox for safely executing custom code snippets.
+- Real-time Collaboration: Allow multiple users to collaborate on incidents in real-time.
+- Notebook Integration: Integration with Jupyter or other notebook environments for advanced analysis.
+- ChatOps Integration: Enable interaction with Pandora through chat platforms like Slack or Microsoft Teams.
+- Visual Query Builder: A visual interface for building complex queries for logs and metrics.
+- Anomaly Detection: Use machine learning to automatically detect anomalous behavior.
+- Chaos Engineering Integration: Integrate with chaos engineering tools to proactively identify weaknesses in the system.
+- Policy as Code: Define and enforce policies using code, allowing for automated governance.
+- Cost Optimization Recommendations: Provide AI-driven recommendations for optimizing cloud costs.
+- Automated Rollback: Automatically trigger rollback procedures based on predefined criteria.
+- Integrated Knowledge Base: Build and maintain a knowledge base of solutions to common incidents.
+- Customizable Alerting Rules: Allow users to define custom alerting rules based on specific metrics and conditions.
+- Predictive Scaling: Automatically scale resources based on predicted future demand.
+- Network Visualization: A graphical representation of the network topology, highlighting traffic flow, dependencies, and potential bottlenecks.
+- Performance Benchmarking: Tools and processes for comparing the performance of different system configurations.
+- Data Loss Prevention (DLP): Implement measures to prevent sensitive data from leaving the system.
+- Intrusion Detection System (IDS): Monitor the system for malicious activity and unauthorized access attempts.
+- Vulnerability Scanning: Proactively identify security vulnerabilities in the system and applications.
+- Security Information and Event Management (SIEM): Centralized platform for collecting, analyzing, and managing security-related data.
+- Automated Patch Management: Automatically apply security patches and updates to keep the system secure.
+- Dynamic Resource Allocation: Automatically adjust resource allocation based on real-time demand.
+- Predictive Maintenance: Use machine learning to predict equipment failures and schedule maintenance proactively.
+- Digital Twins: Create digital replicas of physical systems to simulate their behavior and optimize performance.
+- Geospatial Analysis: Integrate location data for visualizing and analyzing system performance based on geographical location.
+- Automated Issue Resolution: Automatically resolve common issues and provide self-service solutions to users.
+- Personalized Recommendations: Provide tailored recommendations to users based on their individual needs and preferences.
+- API Gateway Integration: Integrate with API gateways for centralized API management and security.
+- Service Mesh Integration: Integrate with service mesh technologies like Istio for enhanced service-to-service communication and observability.
+- Serverless Function Monitoring: Monitor the performance and health of serverless functions.
+- Cloud Native Buildpacks: Support for Cloud Native Buildpacks to create container images from application source code.
+- GitOps Integration: Integrate with GitOps workflows for automated infrastructure and application deployments.
+- Natural Language Querying: Allow users to query logs and metrics using natural language.
+- Predictive Cost Management: Use machine learning to predict future cloud costs and proactively manage budgets.
+- Automated Threat Hunting: Use AI to automatically identify and investigate potential security threats.
+- Real-time Threat Intelligence: Integrate with threat intelligence feeds to identify and respond to emerging threats.
+- Blockchain Integration: Integrate with blockchain technologies for secure and transparent data management.
+- Quantum Computing Integration: Explore integration with quantum computing for advanced data analysis and problem-solving.
+- Digital Experience Monitoring (DEM): Focus on monitoring and improving the end-user experience for web applications.
+- Synthetic Monitoring: Simulate user interactions with applications to proactively identify performance issues.
+- Session Recording: Record user sessions for detailed analysis of user behavior and troubleshooting.
+- Advanced Correlation: Use AI to correlate events and metrics from multiple sources for deeper insights.
+- Time Series Database: Utilize a time-series database (TSDB) to handle and analyze time-stamped data efficiently.
+- AIOps Capabilities: Implement AIOps practices using machine learning to automate IT operations processes.
+- Predictive Failure Analysis: Use machine learning to predict potential failures in infrastructure and applications.
+- Intelligent Alert Grouping: Use AI to group related alerts together for efficient incident management.
+- Automated Incident Enrichment: Automatically enrich incident data with relevant information from multiple sources.
+- Collaborative Incident Management: Provide tools for real-time collaboration and communication during incident resolution.
+- Post-Incident Analysis: Automate the process of creating and analyzing post-incident reports.
+- Automated Compliance Checks: Regularly audit infrastructure and applications to ensure they meet compliance requirements.
+- Risk-Based Alerting: Prioritize alerts based on their potential impact and likelihood of occurrence.
+- Federated Search: Seamlessly search across multiple data sources and platforms.
+- OpenTelemetry Support: Natively support OpenTelemetry for standardized telemetry data collection.
+- eBPF-Based Observability: Use eBPF technology to gain deeper insights into system behavior and performance.
+- Multi-Cloud Support: Offer comprehensive monitoring and management capabilities across multiple cloud providers.
+- Edge Computing Monitoring: Extend monitoring capabilities to edge computing environments.
+- Serverless Security: Implement specialized security measures for serverless functions.
+- Kubernetes Security Posture Management (KSPM): Provide automated assessment and remediation of security risks in Kubernetes environments.
+- Cloud Workload Protection Platform (CWPP): Offer integrated security for cloud workloads, including container security and vulnerability management.
+- Cloud Security Posture Management (CSPM): Automate the identification and remediation of security misconfigurations in cloud environments.
+- Supply Chain Security: Implement measures to secure the software supply chain and prevent malicious code from entering the system.
+- Threat Modeling: Automated threat modeling to identify and prioritize security risks in infrastructure and applications.
+- Log Aggregation and Analysis: Centralized collection, indexing, and analysis of logs from various sources.
+- Configuration Management: Automate the management and enforcement of configuration settings across the infrastructure.
+- Infrastructure as Code (IaC) Support: Integrate with IaC tools and frameworks for automated infrastructure provisioning and management.
+- Business Intelligence (BI) Integration: Connect with BI platforms to visualize and analyze operational data in the context of business metrics.
+- Real-User Monitoring (RUM): Capture and analyze real user interactions with web applications to identify performance bottlenecks and user experience issues.
+- Dynamic Thresholds: Automatically adjust alerting thresholds based on historical data and seasonal trends.
+- Predictive Alerting: Use machine learning to predict when an alert is likely to fire based on current trends.
+- Serverless Cost Visibility: Tools to track the true cost of serverless functions, including their dependencies and hidden resources.
+- Cloud Wastage Detection: Identify idle cloud resources and provide suggestions to optimize resources.
+- Automated Workload Migration: Assist in automatically migrating workloads with near-zero downtime.
+- Multi-Factor Authentication: Adds security measures to make sure that users are who they say they are.
+- Automated Data Archiving: Tools and configuration to automatically archive and delete data according to industry and regulatory standards.
+- External API Monitoring: Monitor both the uptime and performance of any external API.
+- Endpoint Protection: Protect all endpoints by implementing firewalls and antivirus software to keep unwanted users off the platform.
+- Automated Code Review: AI-driven code review to automatically flag potential security and performance issues.
+- Visual Test Coverage: Visualize all the testing in each environment to know what code is safe and effective.
+- Compliance Alerts: Automatically receive alerts when new regulations have been added to your code that you need to follow.
+- Predictive Log Search: Speed up searches by recommending the keywords used in the logs.
+- Data Lineage Tracking: Visually show all the places where data is being sent and where its coming from.
+- Simplified Single Sign-On (SSO): Streamline user authentication across different systems with easy SSO integration and configuration.
+- Automated Connector Creation: Enable users to easily create connectors to new systems and data sources through a guided, low-code/no-code interface.
+- Context-Aware Authentication: Dynamically adjust authentication requirements based on the user's location, device, and behavior to enhance security and user experience.
+- Centralized User Management: Provide a single pane of glass for managing user identities, access rights, and permissions across all integrated systems.
+- Automated Onboarding/Offboarding: Automate the process of granting and revoking access to systems for new and departing employees, ensuring security and compliance.
+
+## Style Guidelines:
+
+- Viewport target: 1440 auto (desktop-first), min 1280.
+- Content max-width: 1280 px inside shell. Page padding 24 px.
+- Grid: 12 columns; gutter 16 px; margins 24 px; row baseline 8 px.
+- Corner radius: Panels 20; Cards 12; Pills 8; Inputs 12.
+- BG.base #F8FAFF
+- BG.surface #FFFFFF
+- BG.muted #EDF2F7
+- INK.primary #0B1020
+- INK.secondary #3B4257
+- INK.muted #6C738A
+- Brand.primary #2563EB
+- Accent.teal #0EA5E9
+- Success #10B981
+- Warning #F59E0B
+- Error #EF4444
+- Info #3B82F6
+- Chart.green #16B19E
+- Chart.blue #4A78FF
+- Chart.red #EF4444
+- Node.cyan #37D2E6
+- Node.blue #3B82F6
+- Node.orange #FF8C42
+- Inter; sizes 12/14/16/18/24/32. H1 24–32 semibold; section 16–18 semibold; body 14–16 regular; data 20–24 semibold. Line-height 1.4 headers / 1.55 body. KPI

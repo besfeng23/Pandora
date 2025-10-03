@@ -7,7 +7,6 @@ import {
   Settings,
   Search,
   Network,
-  Cog,
   ChevronsRightLeft,
   FileText,
   LayoutGrid

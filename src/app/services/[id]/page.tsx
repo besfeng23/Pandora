@@ -1,7 +1,8 @@
+
 "use client";
 
 import { services, type Service } from "@/lib/data";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -24,7 +25,8 @@ const statusClasses = {
   unknown: "bg-gray-400",
 };
 
-export default function ServiceDetailPage({ params }: { params: { id: string } }) {
+export default function ServiceDetailPage() {
+  const params = useParams();
   const service = services.find((s) => s.id === params.id);
 
   if (!service) {

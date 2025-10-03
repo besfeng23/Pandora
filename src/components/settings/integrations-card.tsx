@@ -71,9 +71,9 @@ export function IntegrationsCard() {
 
     return (
         <Card className="rounded-2xl shadow-sm">
-            <CardHeader className="flex flex-row items-center gap-4">
+            <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <CardTitle className="text-base font-semibold">Integrations</CardTitle>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     {["All", "Connected", "Needs attention"].map((item) => (
                         <Button 
                             key={item} 
@@ -87,7 +87,7 @@ export function IntegrationsCard() {
                     ))}
                 </div>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredIntegrations.map((integration) => (
                     <IntegrationTile key={integration.id} integration={integration} />
                 ))}

@@ -13,11 +13,11 @@ export default function DashboardPage() {
         <HealthOverview />
       </div>
 
-      <div className="col-span-12 lg:col-span-8">
+      <div className="col-span-12 xl:col-span-8">
         <OperationsTimeline />
       </div>
 
-      <div className="col-span-12 lg:col-span-4">
+      <div className="col-span-12 xl:col-span-4">
         <AiCopilot />
       </div>
       
@@ -29,11 +29,11 @@ export default function DashboardPage() {
         <RootCauseAnalysisCard />
       </div>
       
-      <div className="col-span-12 lg:col-span-8">
+      <div className="col-span-12 xl:col-span-8">
         <ServicesOverview />
       </div>
       
-      <div className="col-span-12 lg:col-span-4">
+      <div className="col-span-12 xl:col-span-4">
         <IncidentGalaxy />
       </div>
     </div>

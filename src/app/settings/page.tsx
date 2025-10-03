@@ -9,12 +9,12 @@ import { AddConnectionCard } from '@/components/settings/add-connection-card';
 export default function SettingsPage() {
   return (
     <div className="mx-auto w-full max-w-[1200px] grid grid-cols-12 gap-6">
-      <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
+      <div className="col-span-12 xl:col-span-8 flex flex-col gap-6">
         <BridgeConfigCard />
         <IntegrationsCard />
         <AddConnectionCard />
       </div>
-      <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+      <div className="col-span-12 xl:col-span-4 flex flex-col gap-6">
         <AiCopilotCard />
         <ConnectionsCard />
         <SettingsAuditLog />

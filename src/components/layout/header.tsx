@@ -53,7 +53,7 @@ export default function Header() {
         <h1 className="font-semibold text-xl">{title}</h1>
       </div>
 
-      <div className="flex flex-1 items-center justify-center gap-4">
+      <div className="hidden sm:flex flex-1 items-center justify-center gap-4">
         <Button variant="outline" className="w-full max-w-[520px] justify-start text-muted-foreground rounded-lg" onClick={() => setOpen(true)}>
           <Search className="h-5 w-5 mr-2" />
           Search or run a command...

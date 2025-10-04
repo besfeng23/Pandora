@@ -35,8 +35,8 @@ async function fetchServices(params: {
 export default function ServicesPage() {
   const firestore = useFirestore();
   // filters
-  const [query, setQuery] = React.useState("");
-  const debouncedQuery = useDebounced(query, 300);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const debouncedQuery = useDebounced(searchQuery, 300);
   const [category, setCategory] = React.useState("");
   const [status, setStatus] = React.useState("");
 
@@ -76,8 +76,8 @@ export default function ServicesPage() {
             {/* search */}
             <div className="relative flex-1">
               <input
-                value={query}
-                onChange={e => setQuery(e.target.value)}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search services, tags…"
                 aria-label="Search services"
                 className="w-full h-10 rounded-lg border border-input bg-background px-3 pr-9 text-sm outline-none ring-0 placeholder:text-muted-foreground focus:border-ring"
@@ -138,7 +138,7 @@ export default function ServicesPage() {
             ) : items.length === 0 ? (
               <EmptyState
                 onClear={() => {
-                  setQuery("");
+                  setSearchQuery("");
                   setCategory("");
                   setStatus("");
                 }}
@@ -320,5 +320,3 @@ function SkeletonGrid() {
     </ul>
   );
 }
-
-    

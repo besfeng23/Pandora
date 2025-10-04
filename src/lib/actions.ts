@@ -1,3 +1,4 @@
+
 "use server";
 
 import { getPersonalizedRecommendations, type PersonalizedRecommendationsInput } from "@/ai/flows/personalized-recommendations";
@@ -5,6 +6,8 @@ import { naturalLanguageLogQuery, type NaturalLanguageLogQueryInput } from "@/ai
 import { predictAlert, type PredictiveAlertInput } from "@/ai/flows/predictive-alerting";
 import { performRootCauseAnalysis, type RootCauseAnalysisInput } from "@/ai/flows/root-cause-analysis";
 import { automatedCodeReview, type AutomatedCodeReviewInput } from "@/ai/flows/automated-code-review";
+import { cloudWastageDetection as cloudWastageDetectionFlow, type CloudWastageDetectionInput } from "@/ai/flows/cloud-wastage-detection";
+import { predictEquipmentFailure as predictEquipmentFailureFlow, type PredictiveMaintenanceInput } from "@/ai/flows/predictive-maintenance";
 
 
 export async function getRecommendations(input: PersonalizedRecommendationsInput) {
@@ -66,5 +69,25 @@ export async function reviewCode(input: AutomatedCodeReviewInput) {
     } catch (error) {
         console.error("Error reviewing code:", error);
         return { securityIssues: [], performanceIssues: [], suggestions: ["Could not review code at this time."] };
+    }
+}
+
+export async function cloudWastageDetection(input: CloudWastageDetectionInput) {
+    try {
+        const result = await cloudWastageDetectionFlow(input);
+        return result;
+    } catch (error) {
+        console.error("Error detecting cloud wastage:", error);
+        return { idleResources: [] };
+    }
+}
+
+export async function predictEquipmentFailure(input: PredictiveMaintenanceInput) {
+    try {
+        const result = await predictEquipmentFailureFlow(input);
+        return result;
+    } catch (error) {
+        console.error("Error predicting equipment failure:", error);
+        return null;
     }
 }

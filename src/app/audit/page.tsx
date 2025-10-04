@@ -2,8 +2,8 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, Filter, Download, RefreshCw, Search, ChevronLeft, ChevronRight, Loader2, ShieldAlert, CheckCircle2, CircleHelp } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { Calendar as CalendarIcon, Filter, Download, RefreshCw, Search, ChevronLeft, ChevronRight, Loader2, ShieldAlert, CheckCircle2, CircleHelp, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +13,6 @@ import { Separator } from "@/components/ui/separator";
 import {
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue
 } from "@/components/ui/select";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,36 +20,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { auditLogs, type AuditEvent } from "@/lib/data";
 
 // ---------- Types ----------
-type Severity = "info" | "warning" | "critical";
-type Status = "success" | "failed" | "pending";
-
-type AuditRow = {
-  id: string;
-  ts: string;              // ISO date
-  service: string;
-  action: string;
-  actor: string;
-  status: Status;
-  severity: Severity;
-  resource: string;
-  details?: string;
-};
+type Severity = AuditEvent['severity'];
+type Status = AuditEvent['result'];
 
 // ---------- Config ----------
 const PAGE_SIZE = 20;
-// Set your Cloud Run or API base here or via env
-const API_BASE =
-  (process as any)?.env?.NEXT_PUBLIC_API_BASE ||
-  ""; // if blank, we’ll mock
 
 // ---------- Helpers ----------
 function severityBadge(sev: Severity) {
   const map: Record<Severity, { variant: "default" | "secondary" | "destructive"; icon: React.ReactNode; className?: string }> = {
-    info: { variant: "secondary", icon: <CircleHelp className="h-3.5 w-3.5 mr-1.5" /> },
-    warning: { variant: "default", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> },
-    critical: { variant: "destructive", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> },
+    info: { variant: "secondary", icon: <CircleHelp className="h-3.5 w-3.5 mr-1.5" />, className: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-700"},
+    warn: { variant: "default", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" />, className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
+    error: { variant: "destructive", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" />, className: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-700" },
+    critical: { variant: "destructive", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" />, className: "bg-fuchsia-200 text-fuchsia-900 dark:bg-fuchsia-900/50 dark:text-fuchsia-200 border-fuchsia-300 dark:border-fuchsia-700 font-bold" },
   };
   const x = map[sev];
   return (
@@ -66,8 +49,7 @@ function severityBadge(sev: Severity) {
 function statusBadge(status: Status) {
   const map: Record<Status, { className: string; icon: React.ReactNode }> = {
     success: { className: "bg-emerald-50 text-emerald-700 border border-emerald-200", icon: <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> },
-    failed: { className: "bg-rose-50 text-rose-700 border border-rose-200", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> },
-    pending: { className: "bg-amber-50 text-amber-700 border border-amber-200", icon: <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> },
+    fail: { className: "bg-rose-50 text-rose-700 border border-rose-200", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> },
   };
   const x = map[status];
   return (
@@ -78,78 +60,53 @@ function statusBadge(status: Status) {
   );
 }
 
-function toCSV(rows: AuditRow[]) {
-  const header = ["Timestamp","Service","Action","Actor","Status","Severity","Resource","Details"];
+function toCSV(rows: AuditEvent[]) {
+  const header = ["Timestamp","Service","Action", "Actor ID", "Actor Type", "Actor Name", "Actor Email","Status","Severity","Resource Type", "Resource ID", "Resource Name"];
   const body = rows.map(r => [
-    r.ts, r.service, r.action, r.actor, r.status, r.severity, r.resource, (r.details ?? "").replace(/\n/g, " "),
+    r.ts,
+    r.service,
+    r.action,
+    r.actor.id,
+    r.actor.type,
+    r.actor.name || '',
+    r.actor.email || '',
+    r.result,
+    r.severity,
+    r.resource?.type || '',
+    r.resource?.id || '',
+    r.resource?.name || '',
   ]);
   const csv = [header, ...body].map(line => line.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
   return new Blob([csv], { type: "text/csv;charset=utf-8;" });
 }
 
-// ---------- Data fetching (mock fallback) ----------
+// ---------- Data fetching ----------
 async function fetchAudits(
   page: number,
   pageSize: number,
   q: string,
   filters: { severity?: Severity | "all"; status?: Status | "all"; service?: string | "all"; from?: Date | null; to?: Date | null; }
-): Promise<{ rows: AuditRow[]; total: number; }> {
-  const params = new URLSearchParams();
-  params.set("page", String(page));
-  params.set("pageSize", String(pageSize));
-  if (q) params.set("q", q);
-  if (filters.severity && filters.severity !== "all") params.set("severity", filters.severity);
-  if (filters.status && filters.status !== "all") params.set("status", filters.status);
-  if (filters.service && filters.service !== "all") params.set("service", filters.service);
-  if (filters.from) params.set("from", filters.from.toISOString());
-  if (filters.to) params.set("to", filters.to.toISOString());
+): Promise<{ rows: AuditEvent[]; total: number; }> {
+  // Simulate network delay
+  await new Promise(r => setTimeout(r, 400));
+  
+  let rows = [...auditLogs];
 
-  if (API_BASE) {
-    const res = await fetch(`${API_BASE}/audit?${params.toString()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    return res.json();
-  }
-
-  // Mock data if no API is wired yet. You’re welcome.
-  await new Promise(r => setTimeout(r, 400)); // pretend network
-  const services = ["Orchestrator","Compliance Logger","FX Rate","Partner Mgmt","Adapter","Health Check","Studio"];
-  const actions = ["CREATE","APPROVE","FLAG","REJECT","SYNC","POLL","EXPORT","RUNBOOK"];
-  const statuses: Status[] = ["success","failed","pending"];
-  const severities: Severity[] = ["info","warning","critical"];
-
-  const base: AuditRow[] = Array.from({ length: 137 }).map((_, i) => {
-    const sev = severities[i % 3];
-    const st = statuses[(i * 7) % 3];
-    const svc = services[(i * 11) % services.length];
-    const act = actions[(i * 13) % actions.length];
-    const dt = new Date(Date.now() - i * 3600_000).toISOString();
-    return {
-      id: `mock-${i}`,
-      ts: dt,
-      service: svc,
-      action: act,
-      actor: i % 5 === 0 ? "system" : i % 2 ? "eve@edenos" : "admin@redapplex",
-      status: st,
-      severity: sev,
-      resource: `txn/${100000 + i}`,
-      details: sev === "critical" ? "Exceeded risk threshold; STR flag proposed." : sev === "warning" ? "Latency above SLO for FX quotes." : "Periodic health ping.",
-    };
-  });
-
-  // Filter client-side for mock
-  let rows = base;
+  // Filter client-side for demo
   if (q) {
     const qq = q.toLowerCase();
     rows = rows.filter(r =>
       r.service.toLowerCase().includes(qq) ||
       r.action.toLowerCase().includes(qq) ||
-      r.actor.toLowerCase().includes(qq) ||
-      r.resource.toLowerCase().includes(qq) ||
-      (r.details ?? "").toLowerCase().includes(qq)
+      r.actor.id.toLowerCase().includes(qq) ||
+      (r.actor.name || '').toLowerCase().includes(qq) ||
+      (r.actor.email || '').toLowerCase().includes(qq) ||
+      (r.resource?.id || '').toLowerCase().includes(qq) ||
+      (r.resource?.name || '').toLowerCase().includes(qq)
     );
   }
   if (filters.severity && filters.severity !== "all") rows = rows.filter(r => r.severity === filters.severity);
-  if (filters.status && filters.status !== "all") rows = rows.filter(r => r.status === filters.status);
+  if (filters.status && filters.status !== "all") rows = rows.filter(r => r.result === filters.status);
   if (filters.service && filters.service !== "all") rows = rows.filter(r => r.service === filters.service);
   if (filters.from) rows = rows.filter(r => new Date(r.ts) >= filters.from!);
   if (filters.to) rows = rows.filter(r => new Date(r.ts) <= filters.to!);
@@ -176,11 +133,12 @@ export default function AuditPage() {
   // paging & data
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
-  const [rows, setRows] = React.useState<AuditRow[]>([]);
+  const [rows, setRows] = React.useState<AuditEvent[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   // derive
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const serviceOptions = React.useMemo(() => [...new Set(auditLogs.map(log => log.service))], []);
 
   // debounce search
   React.useEffect(() => {
@@ -233,9 +191,6 @@ export default function AuditPage() {
     URL.revokeObjectURL(url);
   }
 
-  // dummy service list (replace with API list if you have one)
-  const serviceOptions = ["Orchestrator","Compliance Logger","FX Rate","Partner Mgmt","Adapter","Health Check","Studio"];
-
   return (
     <div className="space-y-6">
       <div className="rounded-xl p-4 border bg-card">
@@ -246,7 +201,7 @@ export default function AuditPage() {
               aria-label="Search audit"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search service, action, actor, resource, details..."
+              placeholder="Search service, action, actor, resource..."
               className="pl-8"
             />
           </div>
@@ -260,7 +215,8 @@ export default function AuditPage() {
               <SelectContent>
                 <SelectItem value="all">All severities</SelectItem>
                 <SelectItem value="info">Info</SelectItem>
-                <SelectItem value="warning">Warning</SelectItem>
+                <SelectItem value="warn">Warning</SelectItem>
+                <SelectItem value="error">Error</SelectItem>
                 <SelectItem value="critical">Critical</SelectItem>
               </SelectContent>
             </Select>
@@ -268,13 +224,12 @@ export default function AuditPage() {
             {/* Status */}
             <Select value={status} onValueChange={(v: any) => setStatus(v)}>
               <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Result" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All status</SelectItem>
+                <SelectItem value="all">All results</SelectItem>
                 <SelectItem value="success">Success</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="fail">Fail</SelectItem>
               </SelectContent>
             </Select>
 
@@ -291,7 +246,8 @@ export default function AuditPage() {
 
             <DateRangePicker from={from} to={to} onChange={({ from, to }) => { setFrom(from); setTo(to); }} />
 
-            <Button variant="ghost" size="sm" onClick={resetFilters}>
+            <Button variant="ghost" size="sm" onClick={resetFilters} className="flex items-center">
+              <X className="h-4 w-4 mr-1 md:hidden" />
               Reset
             </Button>
           </div>
@@ -303,7 +259,7 @@ export default function AuditPage() {
         <KpiCard title="Events (page)" value={loading ? "—" : rows.length.toString()} hint="Current page count" />
         <KpiCard title="Total (filtered)" value={loading ? "—" : total.toString()} hint="Across all pages" />
         <KpiCard title="Critical (page)" value={loading ? "—" : rows.filter(r => r.severity === "critical").length.toString()} hint="High priority" />
-        <KpiCard title="Failed (page)" value={loading ? "—" : rows.filter(r => r.status === "failed").length.toString()} hint="Needs attention" />
+        <KpiCard title="Failed (page)" value={loading ? "—" : rows.filter(r => r.result === "fail").length.toString()} hint="Needs attention" />
       </div>
 
       {/* Data area */}
@@ -311,7 +267,7 @@ export default function AuditPage() {
         <CardContent className="p-0">
             {/* Mobile cards */}
             <div className="md:hidden">
-              <ScrollArea className="h-[70vh] pr-3">
+              <ScrollArea className="h-[calc(100vh-28rem)] pr-3">
                 {loading ? (
                   <MobileSkeleton />
                 ) : rows.length === 0 ? (
@@ -336,13 +292,12 @@ export default function AuditPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[210px]">Timestamp</TableHead>
-                        <TableHead>Service</TableHead>
-                        <TableHead>Action</TableHead>
                         <TableHead>Actor</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Severity</TableHead>
+                        <TableHead>Action</TableHead>
                         <TableHead>Resource</TableHead>
-                        <TableHead>Details</TableHead>
+                        <TableHead>Result</TableHead>
+                        <TableHead>Severity</TableHead>
+                        <TableHead>Env</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -356,17 +311,27 @@ export default function AuditPage() {
                         rows.map(r => (
                           <TableRow key={r.id} className="hover:bg-muted/50">
                             <TableCell className="whitespace-nowrap text-muted-foreground">
-                              {format(new Date(r.ts), "yyyy-MM-dd HH:mm:ss")}
+                              {format(parseISO(r.ts), "yyyy-MM-dd HH:mm:ss")}
                             </TableCell>
-                            <TableCell className="font-medium">{r.service}</TableCell>
-                            <TableCell className="text-muted-foreground">{r.action}</TableCell>
-                            <TableCell className="text-muted-foreground">{r.actor}</TableCell>
-                            <TableCell>{statusBadge(r.status)}</TableCell>
+                            <TableCell>
+                                <div className="font-medium">{r.actor.name || r.actor.id}</div>
+                                <div className="text-xs text-muted-foreground">{r.actor.email || r.actor.type}</div>
+                            </TableCell>
+                            <TableCell>
+                                <div className="font-medium">{r.action}</div>
+                                <div className="text-xs text-muted-foreground">{r.service}</div>
+                            </TableCell>
+                            <TableCell>
+                                {r.resource && (
+                                  <>
+                                    <div className="font-medium">{r.resource.name || r.resource.id}</div>
+                                    <div className="text-xs text-muted-foreground font-mono">{r.resource.type}</div>
+                                  </>
+                                )}
+                            </TableCell>
+                            <TableCell>{statusBadge(r.result)}</TableCell>
                             <TableCell>{severityBadge(r.severity)}</TableCell>
-                            <TableCell className="font-mono text-xs">{r.resource}</TableCell>
-                            <TableCell className="max-w-[320px]">
-                              <div className="truncate text-muted-foreground">{r.details}</div>
-                            </TableCell>
+                            <TableCell><Badge variant="outline" className="capitalize">{r.env}</Badge></TableCell>
                           </TableRow>
                         ))
                       )}
@@ -426,22 +391,26 @@ function EmptyState({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function MobileAuditCard({ row }: { row: AuditRow }) {
+function MobileAuditCard({ row }: { row: AuditEvent }) {
   return (
     <div className="rounded-xl border p-3 bg-card">
       <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">{format(new Date(row.ts), "yyyy-MM-dd HH:mm:ss")}</div>
-        {statusBadge(row.status)}
+        <div className="text-xs text-muted-foreground">{format(parseISO(row.ts), "yyyy-MM-dd HH:mm:ss")}</div>
+        {statusBadge(row.result)}
       </div>
       <Separator className="my-2" />
       <div className="flex items-center justify-between">
-        <div className="font-medium">{row.service}</div>
+        <div className="font-medium">{row.action} on <span className="text-muted-foreground">{row.service}</span></div>
         {severityBadge(row.severity)}
       </div>
-      <div className="mt-1 text-muted-foreground">{row.action}</div>
-      <div className="mt-1 text-xs text-muted-foreground">{row.actor}</div>
-      <div className="mt-2 font-mono text-[11px] text-muted-foreground">{row.resource}</div>
-      {row.details && <div className="mt-2 text-sm text-muted-foreground">{row.details}</div>}
+      <div className="mt-1 text-sm text-muted-foreground">by <span className="font-medium text-foreground">{row.actor.name || row.actor.id}</span></div>
+      
+      {row.resource && (
+        <div className="mt-2 font-mono text-[11px] text-muted-foreground bg-muted p-2 rounded-md">
+          <p className="font-semibold text-foreground">{row.resource.type}</p>
+          {row.resource.name} ({row.resource.id})
+        </div>
+      )}
     </div>
   );
 }
@@ -464,7 +433,7 @@ function MobileSkeleton() {
             <Skeleton className="h-4 w-40" />
           </div>
           <div className="mt-2">
-            <Skeleton className="h-3 w-56" />
+            <Skeleton className="h-10 w-full" />
           </div>
         </div>
       ))}
@@ -496,43 +465,37 @@ function DateRangePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="w-full sm:w-[220px] justify-start">
+        <Button variant="outline" size="sm" className="w-full sm:w-[220px] justify-start text-left font-normal">
           <CalendarIcon className="mr-2 h-4 w-4" />
           {range.from ? (
             range.to ? (
               <>
-                {format(range.from, "yyyy-MM-dd")} — {format(range.to, "yyyy-MM-dd")}
+                {format(range.from, "LLL dd, y")} - {format(range.to, "LLL dd, y")}
               </>
             ) : (
-              format(range.from, "yyyy-MM-dd")
+              format(range.from, "LLL dd, y")
             )
           ) : (
             <span>Date range</span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-3" align="end">
-        <div className="grid gap-2">
-          <div className="text-sm font-medium">From</div>
-          <Calendar
-            mode="single"
-            selected={range.from ?? undefined}
-            onSelect={(d) => setRange(prev => ({ ...prev, from: d ?? null }))}
+      <PopoverContent className="w-auto p-0" align="end">
+        <Calendar
             initialFocus
+            mode="range"
+            defaultMonth={from ?? new Date()}
+            selected={{ from: range.from!, to: range.to! }}
+            onSelect={(range) => setRange({ from: range?.from ?? null, to: range?.to ?? null })}
+            numberOfMonths={2}
           />
-          <Separator />
-          <div className="text-sm font-medium pt-1">To</div>
-          <Calendar
-            mode="single"
-            selected={range.to ?? undefined}
-            onSelect={(d) => setRange(prev => ({ ...prev, to: d ?? null }))}
-          />
-          <div className="flex items-center justify-end gap-2 pt-1">
+          <div className="flex items-center justify-end gap-2 p-3 border-t">
             <Button variant="ghost" size="sm" onClick={clear}>Clear</Button>
             <Button size="sm" onClick={apply}>Apply</Button>
           </div>
-        </div>
       </PopoverContent>
     </Popover>
   );
 }
+
+    

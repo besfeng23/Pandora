@@ -35,7 +35,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
             <span className={cn("size-2 rounded-full", statusClasses[service.status])} />
             <span className="font-semibold">{service.name}</span>
           </div>
-          <code className="rounded bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 text-[11px] text-slate-500 dark:text-slate-400">{service.commit.slice(0,7)}</code>
+          <code className="rounded bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 text-[11px] text-slate-500 dark:text-slate-400">{service.commit?.slice(0,7)}</code>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-3 text-xs text-slate-600 dark:text-slate-300">
           <div><div className="text-slate-400 dark:text-slate-500">p95</div><div className="font-medium">{service.p95_ms} ms</div></div>
@@ -46,3 +46,5 @@ export default function ServiceCard({ service }: ServiceCardProps) {
     </Link>
   );
 }
+
+    

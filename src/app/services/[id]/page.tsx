@@ -33,7 +33,8 @@ const chartConfig = {
 
 export default function ServiceDetailPage() {
   const params = useParams();
-  const service = services.find((s) => s.id === params.id);
+  const serviceId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const service = services.find((s) => s.id === serviceId);
 
   if (!service) {
     notFound();
@@ -118,3 +119,5 @@ export default function ServiceDetailPage() {
     </div>
   );
 }
+
+    

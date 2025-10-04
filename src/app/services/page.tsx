@@ -246,20 +246,20 @@ export default function ServicesPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-neutral-50 text-neutral-900">
+    <div className="min-h-[100dvh] bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
       {/* Page shell */}
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8 py-5">
         <header className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Services</h1>
-            <p className="text-sm text-neutral-600">
-              Integrate providers across auth, data, storage, payments, and more. Built for screens from 320 to IMAX.
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              Integrate providers across auth, data, storage, payments, and more.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <a
               href="/services"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-neutral-200 bg-white px-3 text-sm hover:bg-neutral-50"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700"
             >
               Browse catalog
             </a>
@@ -267,7 +267,7 @@ export default function ServicesPage() {
         </header>
 
         {/* Toolbar */}
-        <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 border-b border-neutral-200 bg-neutral-50/90 backdrop-blur supports-[backdrop-filter]:bg-neutral-50/70">
+        <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-900/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-50/70 dark:supports-[backdrop-filter]:bg-neutral-900/70">
           <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               {/* search */}
@@ -277,7 +277,7 @@ export default function ServicesPage() {
                   onChange={e => setQuery(e.target.value)}
                   placeholder="Search services, tags, descriptions…"
                   aria-label="Search services"
-                  className="w-full h-10 rounded-lg border border-neutral-300 bg-white px-3 pr-9 text-sm outline-none ring-0 placeholder:text-neutral-400 focus:border-neutral-400"
+                  className="w-full h-10 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 pr-9 text-sm outline-none ring-0 placeholder:text-neutral-400 focus:border-neutral-400 dark:focus:border-neutral-600"
                 />
                 <svg
                   aria-hidden
@@ -296,7 +296,7 @@ export default function ServicesPage() {
                 value={category}
                 onChange={e => setCategory(e.target.value)}
                 aria-label="Filter by category"
-                className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm"
+                className="h-10 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 text-sm"
               >
                 <option value="">All categories</option>
                 {CATEGORIES.map(c => (
@@ -311,7 +311,7 @@ export default function ServicesPage() {
                 value={status}
                 onChange={e => setStatus(e.target.value)}
                 aria-label="Filter by status"
-                className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm"
+                className="h-10 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 text-sm"
               >
                 <option value="">All status</option>
                 {STATUS.map(s => (
@@ -327,7 +327,7 @@ export default function ServicesPage() {
         {/* Content */}
         <main className="py-5">
           {error ? (
-            <ErrorState message={error} onRetry={() => { setPage(1); setItems([]); setHasMore(true); }} />
+            <ErrorState message={error} onRetry={() => { setItems([]); setHasMore(true); setPage(1); setLoading(true); }} />
           ) : (
             <>
               {loading && items.length === 0 ? (
@@ -359,7 +359,7 @@ export default function ServicesPage() {
                   </ul>
                   {/* loader sentinel */}
                   {hasMore && (
-                    <div ref={loaderRef} className="py-8 text-center text-sm text-neutral-500">
+                    <div ref={loaderRef} className="py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
                       {loading ? "Loading more..." : ""}
                     </div>
                   )}
@@ -375,7 +375,7 @@ export default function ServicesPage() {
         <div
           role="status"
           className={clsx(
-            "fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-lg px-3 py-2 text-sm shadow",
+            "fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-lg px-3 py-2 text-sm shadow animate-toast-in",
             toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
           )}
           onAnimationEnd={() => setToast(null)}
@@ -400,30 +400,31 @@ function ServiceCard({
   onDisconnect: () => void;
 }) {
   const connected = service.status === "connected";
-  const error = service.status === "error";
   const initial = service.name?.[0]?.toUpperCase() ?? "?";
   const logo = service.logoUrl || `/logos/${service.slug}.svg`;
 
   return (
-    <article className="group h-full rounded-xl border border-neutral-200 bg-white p-3 shadow-[0_1px_0_#0000000f] transition-colors hover:border-neutral-300">
+    <article className="group h-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-[0_1px_0_#0000000f] dark:shadow-none transition-colors hover:border-neutral-300 dark:hover:border-neutral-700">
       <div className="flex items-start gap-3">
-        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-neutral-100 ring-1 ring-inset ring-neutral-200">
+        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800 ring-1 ring-inset ring-neutral-200 dark:ring-neutral-700">
           {/* Use explicit width/height + lazy to avoid CLS */}
           <img
             src={logo}
-            alt=""
+            alt={`${service.name} logo`}
             loading="lazy"
             width="40"
             height="40"
             className="h-full w-full object-contain p-1.5"
-            onError={e => {
+            onError={(e) => {
               const el = e.currentTarget;
+              el.onerror = null; // prevent infinite loop
               el.style.display = "none";
               const parent = el.parentElement;
               if (!parent) return;
+              if (parent.querySelector('.fallback-initial')) return;
               const fallback = document.createElement("div");
               fallback.className =
-                "absolute inset-0 grid place-items-center text-sm font-semibold text-neutral-500";
+                "fallback-initial absolute inset-0 grid place-items-center text-sm font-semibold text-neutral-500 dark:text-neutral-400";
               fallback.textContent = initial;
               parent.appendChild(fallback);
             }}
@@ -433,18 +434,18 @@ function ServiceCard({
           <div className="flex items-start justify-between gap-2">
             <h3 className="truncate text-sm font-medium">
               <span className="align-middle">{service.name}</span>
-              <span className="ml-2 align-middle text-[11px] font-normal text-neutral-500">
+              <span className="ml-2 align-middle text-[11px] font-normal text-neutral-500 dark:text-neutral-400">
                 {service.category || "Other"}
               </span>
             </h3>
             <StatusBadge status={service.status} />
           </div>
           {service.description ? (
-            <p className="mt-1 line-clamp-2 text-xs leading-5 text-neutral-600">
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-neutral-600 dark:text-neutral-400">
               {service.description}
             </p>
           ) : (
-            <p className="mt-1 text-xs text-neutral-400">No description.</p>
+            <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">No description.</p>
           )}
 
           {service.tags && service.tags.length > 0 && (
@@ -452,13 +453,13 @@ function ServiceCard({
               {service.tags.slice(0, 4).map(tag => (
                 <span
                   key={tag}
-                  className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-[11px] text-neutral-600"
+                  className="rounded-full border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-600 dark:text-neutral-300"
                 >
                   {tag}
                 </span>
               ))}
               {service.tags.length > 4 && (
-                <span className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-[11px] text-neutral-500">
+                <span className="rounded-full border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
                   +{service.tags.length - 4}
                 </span>
               )}
@@ -466,7 +467,7 @@ function ServiceCard({
           )}
 
           <div className="mt-3 flex items-center justify-between">
-            <div className="text-[11px] text-neutral-500">Updated {timeAgo(service.updatedAt)}</div>
+            <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Updated {timeAgo(service.updatedAt)}</div>
             <div className="flex gap-1.5">
               {!connected ? (
                 <button
@@ -474,7 +475,7 @@ function ServiceCard({
                   onClick={onConnect}
                   className={clsx(
                     "inline-flex h-8 items-center justify-center rounded-lg px-2.5 text-xs font-medium",
-                    "border border-emerald-600 text-emerald-700 hover:bg-emerald-50",
+                    "border border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
                     busy && "opacity-60"
                   )}
                 >
@@ -483,8 +484,8 @@ function ServiceCard({
               ) : (
                 <>
                   <a
-                    href={`/services/${service.slug}`}
-                    className="inline-flex h-8 items-center justify-center rounded-lg border border-neutral-200 px-2.5 text-xs hover:bg-neutral-50"
+                    href={`/services/${service.id}`}
+                    className="inline-flex h-8 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 px-2.5 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-800"
                   >
                     Manage
                   </a>
@@ -493,7 +494,7 @@ function ServiceCard({
                     onClick={onDisconnect}
                     className={clsx(
                       "inline-flex h-8 items-center justify-center rounded-lg px-2.5 text-xs font-medium",
-                      "border border-neutral-300 text-neutral-700 hover:bg-neutral-100",
+                      "border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800",
                       busy && "opacity-60"
                     )}
                   >
@@ -513,10 +514,10 @@ function ServiceCard({
 function StatusBadge({ status }: { status: Service["status"] }) {
   const styles =
     status === "connected"
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30"
       : status === "error"
-      ? "bg-red-50 text-red-700 border-red-200"
-      : "bg-neutral-50 text-neutral-700 border-neutral-200";
+      ? "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-500/30"
+      : "bg-neutral-50 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700";
   const label =
     status === "connected" ? "Connected" : status === "error" ? "Error" : "Disconnected";
   return (
@@ -535,18 +536,18 @@ function StatusBadge({ status }: { status: Service["status"] }) {
 // ---------- Empty / Error / Skeleton ----------
 function EmptyState({ onClear }: { onClear: () => void }) {
   return (
-    <div className="grid place-items-center rounded-xl border border-dashed border-neutral-300 bg-white py-16">
+    <div className="grid place-items-center rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 py-16">
       <div className="text-center">
-        <div className="mx-auto mb-3 h-10 w-10 rounded-full border border-neutral-300 bg-neutral-50" />
+        <div className="mx-auto mb-3 h-10 w-10 rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800" />
         <h2 className="text-sm font-medium">No services found</h2>
-        <p className="mx-auto mt-1 max-w-sm px-6 text-xs text-neutral-600">
+        <p className="mx-auto mt-1 max-w-sm px-6 text-xs text-neutral-600 dark:text-neutral-400">
           Try another search term or clear filters. If you’re expecting data, verify the backend
           endpoint is returning items.
         </p>
         <div className="mt-4">
           <button
             onClick={onClear}
-            className="inline-flex h-9 items-center justify-center rounded-lg border border-neutral-300 bg-white px-3 text-sm hover:bg-neutral-50"
+            className="inline-flex h-9 items-center justify-center rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700"
           >
             Clear filters
           </button>
@@ -558,14 +559,14 @@ function EmptyState({ onClear }: { onClear: () => void }) {
 
 function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div className="grid place-items-center rounded-xl border border-red-200 bg-red-50 py-12">
+    <div className="grid place-items-center rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 py-12">
       <div className="text-center">
-        <h2 className="text-sm font-semibold text-red-800">Failed to load</h2>
-        <p className="mt-1 text-xs text-red-700">{message}</p>
+        <h2 className="text-sm font-semibold text-red-800 dark:text-red-200">Failed to load</h2>
+        <p className="mt-1 text-xs text-red-700 dark:text-red-300">{message}</p>
         <div className="mt-4">
           <button
             onClick={onRetry}
-            className="inline-flex h-9 items-center justify-center rounded-lg border border-red-300 bg-white px-3 text-sm text-red-700 hover:bg-red-50"
+            className="inline-flex h-9 items-center justify-center rounded-lg border border-red-300 dark:border-red-700 bg-white dark:bg-red-900/30 px-3 text-sm text-red-700 dark:text-red-200 hover:bg-red-50 dark:hover:bg-red-900/40"
           >
             Retry
           </button>
@@ -583,16 +584,16 @@ function SkeletonGrid() {
       className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
     >
       {Array.from({ length: 12 }).map((_, i) => (
-        <li key={i} className="animate-pulse rounded-xl border border-neutral-200 bg-white p-3">
+        <li key={i} className="animate-pulse rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-lg bg-neutral-200" />
+            <div className="h-10 w-10 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
             <div className="min-w-0 flex-1">
-              <div className="h-3 w-40 rounded bg-neutral-200" />
-              <div className="mt-2 h-3 w-5/6 rounded bg-neutral-200" />
-              <div className="mt-2 h-3 w-3/5 rounded bg-neutral-200" />
+              <div className="h-3 w-40 rounded bg-neutral-200 dark:bg-neutral-800" />
+              <div className="mt-2 h-3 w-5/6 rounded bg-neutral-200 dark:bg-neutral-800" />
+              <div className="mt-2 h-3 w-3/5 rounded bg-neutral-200 dark:bg-neutral-800" />
               <div className="mt-4 flex gap-2">
-                <div className="h-7 w-16 rounded bg-neutral-200" />
-                <div className="h-7 w-20 rounded bg-neutral-200" />
+                <div className="h-7 w-16 rounded bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-7 w-20 rounded bg-neutral-200 dark:bg-neutral-800" />
               </div>
             </div>
           </div>
@@ -636,3 +637,5 @@ const DEMO_DATA: Service[] = [
   },
   // add as many as you like to test scrolling
 ];
+
+    

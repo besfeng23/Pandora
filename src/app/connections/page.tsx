@@ -457,5 +457,3 @@ function TestsTab({ connection, onRunTests }: { connection: Connection, onRunTes
         </div>
     )
 }
-
-    

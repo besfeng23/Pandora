@@ -106,7 +106,8 @@ export const auditLogs: AuditEvent[] = [
     severity: 'info',
     result: 'success',
     latency_ms: 120,
-    integrity: { signed: true, hash: 'abc1' }
+    integrity: { signed: true, hash: 'abc1' },
+    raw: {}
   },
   {
     id: "evt-2",
@@ -135,7 +136,8 @@ export const auditLogs: AuditEvent[] = [
     resource: { type: 'favorite', id: 'fav-flush-cache' },
     severity: 'info',
     result: 'success',
-    integrity: { signed: true, hash: 'abc3' }
+    integrity: { signed: true, hash: 'abc3' },
+    raw: {}
   },
   {
     id: "evt-4",
@@ -149,7 +151,8 @@ export const auditLogs: AuditEvent[] = [
     severity: 'info',
     result: 'success',
     latency_ms: 88,
-    integrity: { signed: true, hash: 'abc4' }
+    integrity: { signed: true, hash: 'abc4' },
+    raw: {}
   },
   {
     id: "evt-5",
@@ -163,7 +166,8 @@ export const auditLogs: AuditEvent[] = [
     severity: 'critical',
     result: 'success',
     policy: { rbac: 'allow' },
-    integrity: { signed: true, hash: 'abc5' }
+    integrity: { signed: true, hash: 'abc5' },
+    raw: {}
   },
   {
     id: "evt-6",
@@ -177,7 +181,8 @@ export const auditLogs: AuditEvent[] = [
     severity: 'warn',
     result: 'fail',
     network: { ip: '123.45.67.89' },
-    integrity: { signed: false, hash: 'abc6' }
+    integrity: { signed: false, hash: 'abc6' },
+    raw: {}
   }
 ];
 
@@ -308,4 +313,3 @@ export const quickConnectProviders = [
     { id: 'stripe', name: 'Stripe', icon: 'CreditCard' },
     { id: 'box', name: 'Box', icon: 'Box' },
 ]
-

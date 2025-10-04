@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
@@ -981,4 +982,6 @@ function IconSlack() { return (<svg viewBox="0 0 24 24" className="h-full w-full
 function IconGcp() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="#60a5fa" d="M12 2 3 7l9 5 9-5z" opacity=".6"/><path fill="#93c5fd" d="m3 7 9 5v9L3 16z"/><path fill="#3b82f6" d="m12 12 9-5v9l-9 5z"/></svg>); }
 function IconOpenAI() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".1"/><path fill="currentColor" d="M12 6a6 6 0 1 1-6 6h2a4 4 0 1 0 4-4z"/></svg>); }
 function IconStripe() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="5" width="18" height="14" rx="4" fill="currentColor" opacity=".1"/><path fill="currentColor" d="M8 12c0-2 2-3 4-3s4 .9 4 3-2 3-4 3-4-1-4-3z"/></svg>); }
-function IconBox() { return (<svg viewBox="0 <strong>...</strong>
+function IconBox() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor" opacity=".08"/><path fill="currentColor" d="M6 9h12v2H6zm0 4h12v2H6z"/></svg>); }
+function IconJira() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="#1d4ed8" d="M12 2 4 10l8 12 8-12z" opacity=".25"/><path fill="#1d4ed8" d="M12 6 7 11l5 7 5-7z"/></svg>); }
+function IconDb() { return (<svg viewBox="0 <strong>...</strong>

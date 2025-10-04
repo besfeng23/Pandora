@@ -15,13 +15,13 @@ import {
 } from 'lucide-react';
 
 export const kpis = [
-  { title: "Uptime", value: "99.98%", change: "+0.02%", status: "success" as const, description: "last 30d" },
-  { title: "Healthy", value: "62/64", change: "", status: "success" as const, description: "SLO > 99.9%" },
-  { title: "Degraded", value: "1", change: "", status: "warning" as const, description: "p95 > 300ms" },
-  { title: "Down", value: "1", change: "", status: "destructive" as const, description: "Error rate > 5%" },
-  { title: "Active Ops", value: "1.2k", change: "+15%", status: "success" as const, description: "per minute" },
-  { title: "Failures", value: "0.1%", change: "-0.05%", status: "success" as const, description: "per minute" },
-  { title: "Connected", value: "12", change: "", status: "neutral" as const, description: "Services" },
+  { title: "Uptime", value: "99.98%", description: "last 30d", change: "+0.02%", status: "success" as const },
+  { title: "Healthy", value: "62/64", description: "SLO > 99.9%", change: "", status: "success" as const },
+  { title: "Degraded", value: "1", description: "p95 > 300ms", change: "", status: "warning" as const },
+  { title: "Down", value: "1", description: "Error rate > 5%", change: "", status: "destructive" as const },
+  { title: "Active Ops", value: "1.2k", description: "per minute", change: "+15%", status: "success" as const },
+  { title: "Failures", value: "0.1%", description: "per minute", change: "-0.05%", status: "success" as const },
+  { title: "Connected", value: "12", description: "Services", change: "", status: "neutral" as const },
 ];
 
 export const operationsTimelineData = [
@@ -147,3 +147,69 @@ export const settingsAuditLog: SettingsAuditItem[] = [
     { id: "audit-3", title: "Key rotated", severity: "info", timestamp: "2025-10-01T10:00:00Z" },
     { id: "audit-4", title: "Service removed", severity: "warning", timestamp: "2025-10-02T15:45:00Z" },
 ];
+
+
+// --- Connections Page v3 Data ---
+
+export type Connection = {
+  id: string;
+  providerId: string;
+  name: string;
+  env: 'dev' | 'staging' | 'prod';
+  status: 'active' | 'warning' | 'error' | 'pending' | 'paused';
+  health: {
+    lastSync: string;
+    latencyP95: number;
+    error24h: number;
+    quotaUsedPct: number;
+  };
+  scopes: string[];
+  secretRef: string;
+  usage7d: number[];
+  icon: string;
+};
+
+export const connectionData: Connection[] = [
+    {
+        id: 'conn-github',
+        providerId: 'github',
+        name: 'GitHub',
+        env: 'prod',
+        status: 'active',
+        health: {
+            lastSync: '2023-10-27T10:00:00Z',
+            latencyP95: 120,
+            error24h: 2,
+            quotaUsedPct: 15,
+        },
+        scopes: ['repo', 'user', 'admin:org'],
+        secretRef: 'vault:github-prod-key',
+        usage7d: [100, 120, 110, 130, 150, 140, 160],
+        icon: 'Github',
+    },
+    {
+        id: 'conn-notion',
+        providerId: 'notion',
+        name: 'Notion',
+        env: 'prod',
+        status: 'pending',
+        health: {
+            lastSync: '',
+            latencyP95: 0,
+            error24h: 0,
+            quotaUsedPct: 0,
+        },
+        scopes: [],
+        secretRef: '',
+        usage7d: [0, 0, 0, 0, 0, 0, 0],
+        icon: 'Notion',
+    }
+];
+
+export const quickConnectProviders = [
+    { id: 'notion', name: 'Notion', icon: 'Notion'},
+    { id: 'linear', name: 'Linear', icon: 'Blocks'},
+    { id: 'github', name: 'GitHub', icon: 'Github'},
+    { id: 'slack', name: 'Slack', icon: 'Slack'}, // Assuming a 'Slack' icon exists
+    { id: 'gcp', name: 'GCP', icon: 'Cloud'},
+]

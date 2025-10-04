@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Service } from "@/lib/data";
 import { ServiceIcon } from "./service-icon";
+import { LineChart, Line, ResponsiveContainer } from "recharts";
 
 type ServiceCardProps = {
   service: Service;

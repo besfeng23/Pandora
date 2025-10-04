@@ -106,8 +106,8 @@ export const auditLogs: AuditEvent[] = [
     severity: 'info',
     result: 'success',
     latency_ms: 120,
-    integrity: { signed: true, hash: 'abc1' },
-    raw: {}
+    integrity: { signed: true, hash: 'abc1', prev_hash: 'abc0' },
+    raw: { "details": "Pod restarted successfully" }
   },
   {
     id: "evt-2",
@@ -119,9 +119,10 @@ export const auditLogs: AuditEvent[] = [
     actor: { id: 'auto-scaler', type: 'automation', name: 'MCP Autoscaler' },
     source: 'Automation',
     resource: { type: 'deployment', id: 'realtime-analytics', name: 'realtime-analytics' },
+    session: 'session-xyz',
     severity: 'error',
     result: 'fail',
-    integrity: { signed: true, hash: 'abc2' },
+    integrity: { signed: true, hash: 'abc2', prev_hash: 'abc1' },
     raw: { "reason": "quota exceeded" }
   },
   {
@@ -134,9 +135,10 @@ export const auditLogs: AuditEvent[] = [
     actor: { id: 'user-sara', type: 'user', email: 'sara@pandora.dev', name: 'Sara' },
     source: 'UI',
     resource: { type: 'favorite', id: 'fav-flush-cache' },
+    session: 'session-abc',
     severity: 'info',
     result: 'success',
-    integrity: { signed: true, hash: 'abc3' },
+    integrity: { signed: true, hash: 'abc3', prev_hash: 'abc2' },
     raw: {}
   },
   {
@@ -148,10 +150,12 @@ export const auditLogs: AuditEvent[] = [
     action: 'test_connection',
     actor: { id: 'user-admin', type: 'user', email: 'admin@pandora.dev', name: 'Admin' },
     source: 'UI',
+    resource: { type: 'integration', id: 'github' },
+    session: 'session-def',
     severity: 'info',
     result: 'success',
     latency_ms: 88,
-    integrity: { signed: true, hash: 'abc4' },
+    integrity: { signed: true, hash: 'abc4', prev_hash: 'abc3' },
     raw: {}
   },
   {
@@ -163,10 +167,12 @@ export const auditLogs: AuditEvent[] = [
     action: 'delete_database',
     actor: { id: 'user-sara', type: 'user', email: 'sara@pandora.dev', name: 'Sara' },
     source: 'CLI',
+    resource: { type: 'database', id: 'db-user-profiles-prod' },
+    session: 'session-ghi',
     severity: 'critical',
     result: 'success',
-    policy: { rbac: 'allow' },
-    integrity: { signed: true, hash: 'abc5' },
+    policy: { rbac: 'allow', spend_cap: 'ok' },
+    integrity: { signed: true, hash: 'abc5', prev_hash: 'abc4' },
     raw: {}
   },
   {
@@ -178,11 +184,12 @@ export const auditLogs: AuditEvent[] = [
     action: 'user_login',
     actor: { id: 'unknown', type: 'user' },
     source: 'API',
+    session: 'session-jkl',
     severity: 'warn',
     result: 'fail',
-    network: { ip: '123.45.67.89' },
-    integrity: { signed: false, hash: 'abc6' },
-    raw: {}
+    network: { ip: '123.45.67.89', region: 'us-west-1' },
+    integrity: { signed: false, hash: 'abc6', prev_hash: 'abc5' },
+    raw: { "error": "Invalid credentials provided for user 'hacker@evil.com'" }
   }
 ];
 

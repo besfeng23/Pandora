@@ -20,7 +20,18 @@ export async function getRecommendations(input: PersonalizedRecommendationsInput
 export async function queryLogs(input: NaturalLanguageLogQueryInput) {
     try {
         const result = await naturalLanguageLogQuery(input);
-        return result;
+        // The AI might return a string that contains a JSON object with a 'results' key.
+        // Or it might return the array directly as a string. We need to handle both.
+        try {
+            const parsed = JSON.parse(result.results);
+            if (parsed.results) {
+                return { results: JSON.stringify(parsed.results) };
+            }
+            return { results: JSON.stringify(parsed) };
+        } catch (e) {
+             // If parsing fails, maybe the AI returned the JSON string directly without the outer object.
+             return result;
+        }
     } catch (error) {
         console.error("Error querying logs:", error);
         return { results: JSON.stringify([]) };

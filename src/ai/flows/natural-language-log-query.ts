@@ -55,7 +55,7 @@ type AuditEvent = {
   raw: unknown;
 };
 
-Your response should be a JSON object with a single key "results" which contains a JSON string of the array of matching log objects.
+Your response must be a JSON object with a single key "results" which contains a JSON string of the array of matching log objects. Do not include any other text or explanation.
 
 Query: {{{query}}}
 Logs: {{{logs}}}`,

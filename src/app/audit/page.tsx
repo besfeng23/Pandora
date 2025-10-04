@@ -241,81 +241,80 @@ export default function AuditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="border rounded-xl">
-        <div className="p-4 border-b">
-            <div className="flex flex-col md:flex-row md:items-center gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
-                <Input
-                  aria-label="Search audit"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search service, action, actor, resource, details..."
-                  className="pl-8"
-                />
-              </div>
+      <div className="border rounded-xl p-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
+            <Input
+              aria-label="Search audit"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search service, action, actor, resource, details..."
+              className="pl-8"
+            />
+          </div>
 
-              <div className="flex items-center gap-2">
-                {/* Severity */}
-                <Select value={severity} onValueChange={(v: any) => setSeverity(v)}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Severity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All severities</SelectItem>
-                    <SelectItem value="info">Info</SelectItem>
-                    <SelectItem value="warning">Warning</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="flex items-center gap-2">
+            {/* Severity */}
+            <Select value={severity} onValueChange={(v: any) => setSeverity(v)}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="Severity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All severities</SelectItem>
+                <SelectItem value="info">Info</SelectItem>
+                <SelectItem value="warning">Warning</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
 
-                {/* Status */}
-                <Select value={status} onValueChange={(v: any) => setStatus(v)}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All status</SelectItem>
-                    <SelectItem value="success">Success</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
+            {/* Status */}
+            <Select value={status} onValueChange={(v: any) => setStatus(v)}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All status</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
 
-                {/* Service */}
-                <Select value={service} onValueChange={(v: any) => setService(v)}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All services</SelectItem>
-                    {serviceOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+            {/* Service */}
+            <Select value={service} onValueChange={(v: any) => setService(v)}>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="Service" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All services</SelectItem>
+                {serviceOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
 
-                {/* Date range */}
-                <DateRangePicker from={from} to={to} onChange={({ from, to }) => { setFrom(from); setTo(to); }} />
+            <DateRangePicker from={from} to={to} onChange={({ from, to }) => { setFrom(from); setTo(to); }} />
 
-                <Button variant="ghost" size="sm" onClick={resetFilters}>
-                  Reset
-                </Button>
-              </div>
-            </div>
+            <Button variant="ghost" size="sm" onClick={resetFilters}>
+              Reset
+            </Button>
+          </div>
         </div>
+      </div>
 
-        {/* KPI cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-px bg-border">
-          <KpiCard title="Events (page)" value={loading ? "—" : rows.length.toString()} hint="Current page count" />
-          <KpiCard title="Total (filtered)" value={loading ? "—" : total.toString()} hint="Across all pages" />
-          <KpiCard title="Critical (page)" value={loading ? "—" : rows.filter(r => r.severity === "critical").length.toString()} hint="High priority" />
-          <KpiCard title="Failed (page)" value={loading ? "—" : rows.filter(r => r.status === "failed").length.toString()} hint="Needs attention" />
-        </div>
+      {/* KPI cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KpiCard title="Events (page)" value={loading ? "—" : rows.length.toString()} hint="Current page count" />
+        <KpiCard title="Total (filtered)" value={loading ? "—" : total.toString()} hint="Across all pages" />
+        <KpiCard title="Critical (page)" value={loading ? "—" : rows.filter(r => r.severity === "critical").length.toString()} hint="High priority" />
+        <KpiCard title="Failed (page)" value={loading ? "—" : rows.filter(r => r.status === "failed").length.toString()} hint="Needs attention" />
+      </div>
 
-        {/* Data area */}
-        <div>
+      {/* Data area */}
+      <Card>
+        <CardContent className="p-0">
             {/* Mobile cards */}
             <div className="md:hidden">
-              <ScrollArea className="h-[70dvh] pr-3">
+              <ScrollArea className="h-[70vh] pr-3">
                 {loading ? (
                   <MobileSkeleton />
                 ) : rows.length === 0 ? (
@@ -395,8 +394,8 @@ export default function AuditPage() {
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
   );
 }
@@ -404,11 +403,15 @@ export default function AuditPage() {
 // ---------- Subcomponents ----------
 function KpiCard(props: { title: string; value: string; hint?: string }) {
   return (
-    <div className="bg-card p-4">
-      <div className="text-sm text-muted-foreground">{props.title}</div>
-      <div className="text-2xl font-semibold tracking-tight">{props.value}</div>
-      {props.hint && <div className="text-xs text-muted-foreground mt-1">{props.hint}</div>}
-    </div>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-muted-foreground">{props.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="text-2xl font-semibold tracking-tight">{props.value}</div>
+        {props.hint && <div className="text-xs text-muted-foreground mt-1">{props.hint}</div>}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -448,7 +451,7 @@ function MobileAuditCard({ row }: { row: AuditRow }) {
 
 function MobileSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 p-4">
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="rounded-xl border p-3 bg-card">
           <div className="flex items-center justify-between">
@@ -496,7 +499,7 @@ function DateRangePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="w-[220px] justify-start">
+        <Button variant="outline" size="sm" className="w-full sm:w-[220px] justify-start">
           <CalendarIcon className="mr-2 h-4 w-4" />
           {range.from ? (
             range.to ? (
@@ -536,5 +539,3 @@ function DateRangePicker({
     </Popover>
   );
 }
-
-    

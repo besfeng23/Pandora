@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 function StatTile({ label, footerText, footerStatus = 'neutral' }: { label: string, footerText: string, footerStatus?: 'success' | 'neutral' }) {
     const { toast } = useToast();

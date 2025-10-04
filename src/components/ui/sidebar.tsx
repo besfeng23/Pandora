@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -209,7 +210,9 @@ const Sidebar = React.forwardRef<
             <SheetHeader className="p-4">
               <SheetTitle className="text-lg font-semibold">Pandora</SheetTitle>
             </SheetHeader>
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <ScrollArea className="h-[calc(100vh_-_4rem)]">
+              <div className="flex h-full w-full flex-col">{children}</div>
+            </ScrollArea>
           </SheetContent>
         </Sheet>
       )

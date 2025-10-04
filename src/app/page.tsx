@@ -1,3 +1,6 @@
+
+"use client";
+
 import HealthOverview from "@/components/dashboard/health-overview";
 import OperationsTimeline from "@/components/dashboard/operations-timeline";
 import AiCopilot from "@/components/dashboard/ai-copilot";

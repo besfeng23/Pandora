@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -9,7 +10,10 @@ import {
   Network,
   ChevronsRightLeft,
   FileText,
-  LayoutGrid
+  LayoutGrid,
+  HeartPulse,
+  Code,
+  DollarSign
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,8 +33,11 @@ const mainNavItems = [
 ];
 
 const bottomNavItems = [
-    { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/maintenance", label: "Maintenance", icon: HeartPulse },
+    { href: "/code-review", label: "Code Review", icon: Code },
+    { href: "/cost-optimization", label: "Cost", icon: DollarSign },
     { href: "/actions", label: "Quick Actions", icon: ChevronsRightLeft },
+    { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 
@@ -63,7 +70,7 @@ export function SidebarNav() {
              <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href}
+                isActive={pathname.startsWith(item.href)}
                 className="rounded-xl"
                 tooltip={item.label}
               >

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Wand2, RefreshCw, Check, MoreHorizontal } from "lucide-react";
 import {
   Card,
@@ -26,6 +27,7 @@ export default function AiCopilot() {
   const [reasoning, setReasoning] = useState<string>("");
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const router = useRouter();
 
   const fetchRecommendations = () => {
     startTransition(async () => {
@@ -47,11 +49,8 @@ export default function AiCopilot() {
   };
 
   const handleApply = (recommendation: string) => {
-    toast({
-        title: "Action Applied",
-        description: `Successfully applied: "${recommendation}"`,
-        action: <Check className="h-5 w-5 text-green-500" />,
-    })
+    const prompt = encodeURIComponent(recommendation);
+    router.push(`/actions?prompt=${prompt}`);
   }
 
   return (
@@ -81,7 +80,7 @@ export default function AiCopilot() {
               <li key={index} className="flex items-start justify-between gap-2 p-3 bg-secondary/50 rounded-xl">
                 <p className="text-sm leading-relaxed">{rec}</p>
                 <div className="flex gap-1">
-                    <Button size="sm" variant="ghost" className="shrink-0" onClick={() => handleApply(rec)}>Apply</Button>
+                    <Button size="sm" variant="ghost" className="shrink-0" onClick={() => handleApply(rec)}>View Action</Button>
                 </div>
               </li>
             ))}

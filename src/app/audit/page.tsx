@@ -22,6 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-client-helpers";
 import { auditLogs, type AuditEvent } from "@/lib/data";
+import { queryLogs } from "@/lib/actions";
 
 // ---------- Types ----------
 type Severity = AuditEvent['severity'];
@@ -86,26 +87,44 @@ async function fetchAudits(
   page: number,
   pageSize: number,
   q: string,
-  filters: { severity?: Severity | "all"; status?: Status | "all"; service?: string | "all"; from?: Date | null; to?: Date | null; }
+  filters: { severity?: Severity | "all"; status?: Status | "all"; service?: string | "all"; from?: Date | null; to?: Date | null; },
+  isAiSearch?: boolean
 ): Promise<{ rows: AuditEvent[]; total: number; }> {
   // Simulate network delay
   await new Promise(r => setTimeout(r, 400));
   
   let rows = [...auditLogs];
 
-  // Filter client-side for demo
-  if (q) {
-    const qq = q.toLowerCase();
-    rows = rows.filter(r =>
-      r.service.toLowerCase().includes(qq) ||
-      r.action.toLowerCase().includes(qq) ||
-      r.actor.id.toLowerCase().includes(qq) ||
-      (r.actor.name || '').toLowerCase().includes(qq) ||
-      (r.actor.email || '').toLowerCase().includes(qq) ||
-      (r.resource?.id || '').toLowerCase().includes(qq) ||
-      (r.resource?.name || '').toLowerCase().includes(qq)
-    );
+  // AI Search
+  if (q && isAiSearch) {
+    const allLogsString = JSON.stringify(rows);
+    const result = await queryLogs({ query: q, logs: allLogsString });
+    try {
+      const parsedResult = JSON.parse(result.results);
+      if (Array.isArray(parsedResult)) {
+        rows = parsedResult;
+      } else if (parsedResult.results && Array.isArray(parsedResult.results)) {
+        rows = parsedResult.results;
+      }
+    } catch (e) {
+      console.error("Failed to parse AI search results:", e);
+      rows = [];
+    }
+  } else { // Standard Filter
+    if (q) {
+      const qq = q.toLowerCase();
+      rows = rows.filter(r =>
+        r.service.toLowerCase().includes(qq) ||
+        r.action.toLowerCase().includes(qq) ||
+        r.actor.id.toLowerCase().includes(qq) ||
+        (r.actor.name || '').toLowerCase().includes(qq) ||
+        (r.actor.email || '').toLowerCase().includes(qq) ||
+        (r.resource?.id || '').toLowerCase().includes(qq) ||
+        (r.resource?.name || '').toLowerCase().includes(qq)
+      );
+    }
   }
+
   if (filters.severity && filters.severity !== "all") rows = rows.filter(r => r.severity === filters.severity);
   if (filters.status && filters.status !== "all") rows = rows.filter(r => r.result === filters.status);
   if (filters.service && filters.service !== "all") rows = rows.filter(r => r.service === filters.service);
@@ -121,10 +140,11 @@ async function fetchAudits(
 // ---------- Page ----------
 export default function AuditPage() {
   const { toast } = useToast();
+  const [isAiSearch, setIsAiSearch] = React.useState(false);
 
   // query state
   const [q, setQ] = React.useState("");
-  const debouncedQ = useDebounced(q, 250);
+  const debouncedQ = useDebounced(q, 300);
   const [severity, setSeverity] = React.useState<Severity | "all">("all");
   const [status, setStatus] = React.useState<Status | "all">("all");
   const [service, setService] = React.useState<string | "all">("all");
@@ -141,23 +161,26 @@ export default function AuditPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const serviceOptions = React.useMemo(() => [...new Set(auditLogs.map(log => log.service))], []);
 
+  const [isTransitioning, startTransition] = React.useTransition();
   // fetch
-  const load = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      const { rows, total } = await fetchAudits(page, PAGE_SIZE, debouncedQ, { severity, status, service, from, to });
-      setRows(rows);
-      setTotal(total);
-    } catch (e: any) {
-      toast({ title: "Failed to load audit", description: String(e?.message || e), variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  }, [page, debouncedQ, severity, status, service, from, to, toast]);
+  const load = React.useCallback(() => {
+    startTransition(async () => {
+      setLoading(true);
+      try {
+        const { rows, total } = await fetchAudits(page, PAGE_SIZE, debouncedQ, { severity, status, service, from, to }, isAiSearch);
+        setRows(rows);
+        setTotal(total);
+      } catch (e: any) {
+        toast({ title: "Failed to load audit", description: String(e?.message || e), variant: "destructive" });
+      } finally {
+        setLoading(false);
+      }
+    });
+  }, [page, debouncedQ, severity, status, service, from, to, isAiSearch, toast]);
 
   React.useEffect(() => {
     setPage(1); // reset page when filters/search change
-  }, [debouncedQ, severity, status, service, from, to]);
+  }, [debouncedQ, severity, status, service, from, to, isAiSearch]);
 
   React.useEffect(() => {
     load();
@@ -170,6 +193,7 @@ export default function AuditPage() {
     setService("all");
     setFrom(null);
     setTo(null);
+    setIsAiSearch(false);
   }
 
   function exportCSV() {
@@ -196,10 +220,14 @@ export default function AuditPage() {
               aria-label="Search audit"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search service, action, actor, resource..."
+              placeholder={isAiSearch ? "Ask a question about the logs..." : "Search service, action, actor, resource..."}
               className="pl-8"
             />
           </div>
+          
+          <Button variant={isAiSearch ? "secondary" : "outline"} onClick={() => setIsAiSearch(!isAiSearch)}>
+            {isAiSearch ? "AI Search" : "Keyword Search"}
+          </Button>
 
           <div className="flex flex-col sm:flex-row items-center gap-2">
             {/* Severity */}
@@ -278,7 +306,7 @@ export default function AuditPage() {
             {/* Desktop table */}
             <div className="hidden md:block">
               <div className="relative">
-                  {loading && (
+                  {(loading || isTransitioning) && (
                     <div className="absolute inset-0 z-10 grid place-items-center bg-background/60">
                       <Loader2 className="h-6 w-6 animate-spin text-slate-600" />
                     </div>
@@ -296,7 +324,7 @@ export default function AuditPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {!loading && rows.length === 0 ? (
+                      {!(loading || isTransitioning) && rows.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={8}>
                             <EmptyState compact />
@@ -341,11 +369,11 @@ export default function AuditPage() {
                 Page <span className="font-medium">{page}</span> of <span className="font-medium">{totalPages}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                <Button variant="outline" size="sm" disabled={page <= 1 || loading || isTransitioning} onClick={() => setPage(p => Math.max(1, p - 1))}>
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Prev
                 </Button>
-                <Button variant="outline" size="sm" disabled={page >= totalPages || loading} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                <Button variant="outline" size="sm" disabled={page >= totalPages || loading || isTransitioning} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
                   Next
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>

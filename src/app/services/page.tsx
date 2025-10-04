@@ -5,7 +5,7 @@ import * as React from "react";
 import { services as allServices, type Service } from "@/lib/data";
 import { ServiceIcon } from "@/components/services/service-icon";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, useDebounced } from "@/lib/utils";
 import Link from "next/link";
 
 
@@ -26,15 +26,6 @@ function timeAgo(iso?: string) {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
-}
-
-function useDebouncedValue<T>(value: T, delay = 250) {
-  const [v, setV] = React.useState(value);
-  React.useEffect(() => {
-    const t = setTimeout(() => setV(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return v;
 }
 
 // ---------- API calls (wired to mock data) ----------
@@ -73,7 +64,7 @@ async function fetchServices(params: {
 export default function ServicesPage() {
   // filters
   const [query, setQuery] = React.useState("");
-  const debouncedQuery = useDebouncedValue(query, 300);
+  const debouncedQuery = useDebounced(query, 300);
   const [category, setCategory] = React.useState("");
   const [status, setStatus] = React.useState("");
 

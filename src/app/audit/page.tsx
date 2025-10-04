@@ -181,7 +181,7 @@ export default function AuditPage() {
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
   const [rows, setRows] = React.useState<AuditRow[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
 
   // derive
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -537,3 +537,5 @@ function DateRangePicker({
     </Popover>
   );
 }
+
+    

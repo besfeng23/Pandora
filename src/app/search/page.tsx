@@ -6,7 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from '@/components/ui/button';
 import { Search as SearchIcon, FileText, LayoutGrid, BookOpen, Loader2 } from "lucide-react";
-import { services } from '@/lib/data';
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import type { Service } from "@/lib/data-types";
 
 type SearchResult = {
   title: string;
@@ -25,13 +27,17 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResults | null>(null);
 
+  const firestore = useFirestore();
+  const servicesQuery = useMemoFirebase(() => collection(firestore, 'services'), [firestore]);
+  const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
+
   const handleSearch = () => {
-    if (!query) {
+    if (!query || !services) {
       setResults(null);
       return;
     }
     setLoading(true);
-    // Simulate API call
+    // Simulate API call for other results, but use live services data
     setTimeout(() => {
       setResults({
         services: services.filter(s => s.name.toLowerCase().includes(query.toLowerCase())).slice(0, 3)
@@ -90,7 +96,7 @@ export default function SearchPage() {
                   placeholder="Search for 'Billing API', user emails, incident IDs..." 
                   className="pl-10 h-11 rounded-xl text-base"
               />
-              <Button onClick={handleSearch} disabled={loading} className="h-11 rounded-xl">
+              <Button onClick={handleSearch} disabled={loading || servicesLoading} className="h-11 rounded-xl">
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Search'}
               </Button>
           </div>

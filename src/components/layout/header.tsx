@@ -42,7 +42,8 @@ const pageDetails: { [key: string]: { title: string; description: string; action
   '/search': { title: 'Search', description: 'Search across all services, logs, and events.' },
   '/connections': { title: 'Connections', description: 'Manage and monitor your service integrations.' },
   '/settings': { title: 'Settings', description: 'Manage your system configuration and integrations.' },
-  '/profile': { title: 'User Profile', description: 'View and manage your profile details.'}
+  '/profile': { title: 'User Profile', description: 'View and manage your profile details.'},
+  '/support': { title: 'Support', description: 'Get help and find answers.'}
 };
 
 function getDetailsFromPathname(pathname: string) {
@@ -123,9 +124,11 @@ export default function Header({ onRefresh, onExport }: { onRefresh?: () => void
                 <span>Settings</span>
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <LifeBuoy className="mr-2 h-4 w-4" />
-              <span>Support</span>
+            <DropdownMenuItem asChild>
+              <Link href="/support">
+                <LifeBuoy className="mr-2 h-4 w-4" />
+                <span>Support</span>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -14,10 +15,10 @@ type Todo = {
   completed: boolean;
 };
 
-const initialTodos: Todo[] = Array.from({ length: 150 }, (_, i) => ({
+const initialTodos: Todo[] = Array.from({ length: 100 }, (_, i) => ({
   id: i + 1,
   text: `Task number ${i + 1}`,
-  completed: i < 20,
+  completed: i < 5,
 }));
 
 export default function TodosPage() {
@@ -47,7 +48,7 @@ export default function TodosPage() {
     <Card className="rounded-2xl shadow-lg h-[calc(100vh-8rem)] flex flex-col">
       <CardHeader>
         <CardTitle className="font-headline text-3xl font-semibold">Todo List</CardTitle>
-        <CardDescription>You have 150 tasks to complete. Good luck!</CardDescription>
+        <CardDescription>You have 100 tasks to complete. Good luck!</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col flex-grow">
         <div className="flex gap-2 mb-4">

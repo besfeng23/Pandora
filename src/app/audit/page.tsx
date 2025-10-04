@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-client-helpers";
 import { queryLogs } from "@/lib/actions";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import type { AuditEvent } from "@/lib/data";
+import type { AuditEvent } from "@/lib/data-types";
 
 // ---------- Types ----------
 type Severity = AuditEvent['severity'];
@@ -105,6 +105,7 @@ export default function AuditPage() {
   const [isTransitioning, startTransition] = React.useTransition();
   
   const auditLogQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
     const constraints = [];
     if (severity !== 'all') constraints.push(where('severity', '==', severity));
     if (status !== 'all') constraints.push(where('result', '==', status));
@@ -120,7 +121,7 @@ export default function AuditPage() {
 
   const { data: auditLogs, isLoading: loading } = useCollection<AuditEvent>(auditLogQuery);
 
-  const { data: serviceOptionsData } = useCollection<{name: string}>(collection(firestore, 'services'));
+  const { data: serviceOptionsData } = useCollection<{name: string}>(useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]));
   const serviceOptions = React.useMemo(() => [...new Set(serviceOptionsData?.map(s => s.name) || [])], [serviceOptionsData]);
 
   const rows = React.useMemo(() => {

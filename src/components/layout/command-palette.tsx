@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -28,7 +29,7 @@ import {
 import { DialogTitle } from "@/components/ui/dialog"
 import { ServiceIcon } from "@/components/services/service-icon"
 import { create } from 'zustand'
-import { useCollection, useFirestore } from "@/firebase"
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection } from "firebase/firestore"
 import type { Service } from "@/lib/data-types"
 
@@ -48,7 +49,8 @@ export function CommandPalette() {
   const prefersReduced = useReducedMotion();
 
   const firestore = useFirestore();
-  const { data: services } = useCollection<Service>(collection(firestore, 'services'));
+  const servicesQuery = useMemoFirebase(() => collection(firestore, 'services'), [firestore]);
+  const { data: services } = useCollection<Service>(servicesQuery);
 
   const variants = prefersReduced
     ? { hidden: { opacity: 0 }, show: { opacity: 1 } }

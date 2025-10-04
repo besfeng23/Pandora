@@ -1,16 +1,20 @@
 
+"use client";
+
 import ServiceCard from "@/components/services/service-card-dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { ArrowRight } from "lucide-react";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, limit, query } from "firebase/firestore";
 import type { Service } from "@/lib/data-types";
 
 export default function ServicesOverview() {
   const firestore = useFirestore();
-  const servicesQuery = query(collection(firestore, 'services'), limit(6));
+  const servicesQuery = useMemoFirebase(() => 
+    query(collection(firestore, 'services'), limit(6))
+  , [firestore]);
   const { data: overviewServices } = useCollection<Service>(servicesQuery);
 
   return (
@@ -36,5 +40,3 @@ export default function ServicesOverview() {
     </Card>
   );
 }
-
-    

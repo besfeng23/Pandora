@@ -1,348 +1,603 @@
+// app/audit/page.tsx  (Next.js App Router)
+// or src/pages/audit/index.tsx (CRA/Vite; adjust default export accordingly)
+
 "use client";
 
-// Base44 / Pandora — Audit "Polaris" (Aligned, Accessible, Mobile-first)
-// Single-file page using shadcn/ui + Tailwind + lucide-react.
-// Highlights:
-// - Container-based layout aligned to app grid (1/8/12 cols)
-// - Mobile Sheet for Filters, sticky header with actions
-// - KPI strip responsive (2 cols on mobile, 4 on md+)
-// - Timeline cards and Copilot rail; Ledger placeholder
-// - Virtualization kept simple for clarity (can be swapped later)
-// - A11y: roles/labels on Tabs, toggles, search; focus-visible maintained
-// - No external providers, no useToast
-
 import * as React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Bell, CheckCircle2, Clock, Download, ExternalLink, Filter, Loader2,
-  Pause, Play, Search, ShieldCheck, TriangleAlert, ChevronDown, ChevronUp
-} from "lucide-react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon, Filter, Download, RefreshCw, Search, ChevronLeft, ChevronRight, Loader2, ShieldAlert, CheckCircle2, CircleHelp } from "lucide-react";
 
-// shadcn/ui
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Toggle } from "@/components/ui/toggle";
+import {
+  Select, SelectTrigger, SelectContent, SelectItem, SelectValue
+} from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Calendar } from "@/components/ui/calendar";
+import { useToast, Toaster } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
-// Types
-export type AuditEvent = {
+// ---------- Types ----------
+type Severity = "info" | "warning" | "critical";
+type Status = "success" | "failed" | "pending";
+
+type AuditRow = {
   id: string;
-  ts: string;
+  ts: string;              // ISO date
   service: string;
-  env: "Dev" | "Prod" | "Stg";
-  region: string;
-  title: string;
-  result: "Success" | "Fail";
-  latency_ms?: number;
-  severity: "info" | "warn" | "error" | "critical";
-  badges?: { label: string; variant: "default" | "warning" | "destructive" }[];
+  action: string;
+  actor: string;
+  status: Status;
+  severity: Severity;
+  resource: string;
+  details?: string;
 };
 
-export type KPIs = {
-  events: number; eventsDelta: number;
-  actors: number; actorsDelta: number;
-  services: number; servicesDelta: number;
-  failures: number; failuresDelta: number;
-};
+// ---------- Config ----------
+const PAGE_SIZE = 20;
+// Set your Cloud Run or API base here or via env
+const API_BASE =
+  (process as any)?.env?.NEXT_PUBLIC_API_BASE ||
+  ""; // if blank, we’ll mock
 
-// Mock API (swap to real)
-async function fetchAudit(fromIso: string, toIso: string): Promise<{ items: AuditEvent[]; kpis: KPIs }>{
-  await new Promise(r=>setTimeout(r, 220));
-  const now = Date.now();
-  const items: AuditEvent[] = [
-    { id: "1", ts: new Date(now - 5*60*1000).toISOString(), service: "GitHub", env: "Dev", region: "us-central1", title: "User updated settings", result: "Success", latency_ms: 22, severity: "info" },
-    { id: "2", ts: new Date(now - 18*60*1000).toISOString(), service: "Notion", env: "Prod", region: "us-east1", title: "Token modified layout", result: "Fail", latency_ms: 122, severity: "error", badges:[{label:"BSAC", variant:"warning"},{label:"Maintenance window", variant:"default"}] },
-    { id: "3", ts: new Date(now - 41*60*1000).toISOString(), service: "Linear", env: "Prod", region: "us-east1", title: "System ran job", result: "Success", latency_ms: 222, severity: "info" },
-    { id: "4", ts: new Date(now - 63*60*1000).toISOString(), service: "Stripe", env: "Prod", region: "us-west2", title: "User created checkout", result: "Success", latency_ms: 1500, severity: "info" },
-  ];
-  const kpis: KPIs = { events: 987, eventsDelta: +15, actors: 54, actorsDelta: +22, services: 16, servicesDelta: +9, failures: 12, failuresDelta: -18 };
-  return { items, kpis };
+// ---------- Helpers ----------
+function severityBadge(sev: Severity) {
+  const map: Record<Severity, { variant: "default" | "secondary" | "destructive"; icon: React.ReactNode; className?: string }> = {
+    info: { variant: "secondary", icon: <CircleHelp className="h-3.5 w-3.5 mr-1.5" /> },
+    warning: { variant: "default", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> },
+    critical: { variant: "destructive", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> },
+  };
+  const x = map[sev];
+  return (
+    <Badge variant={x.variant} className={cn("capitalize", x.className)}>
+      {x.icon}
+      {sev}
+    </Badge>
+  );
 }
 
-const sevDot: Record<AuditEvent["severity"], string> = {
-  info: "bg-sky-500", warn: "bg-amber-500", error: "bg-rose-500", critical: "bg-red-700",
-};
-const resIcon: Record<AuditEvent["result"], React.ReactNode> = {
-  Success: <CheckCircle2 className="h-4 w-4 text-emerald-600"/>,
-  Fail: <TriangleAlert className="h-4 w-4 text-rose-600"/>,
-};
-const fmtMs = (n?: number) => n!=null ? `${n}ms` : "—";
+function statusBadge(status: Status) {
+  const map: Record<Status, { className: string; icon: React.ReactNode }> = {
+    success: { className: "bg-emerald-50 text-emerald-700 border border-emerald-200", icon: <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> },
+    failed: { className: "bg-rose-50 text-rose-700 border border-rose-200", icon: <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> },
+    pending: { className: "bg-amber-50 text-amber-700 border border-amber-200", icon: <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> },
+  };
+  const x = map[status];
+  return (
+    <span className={cn("inline-flex items-center rounded-md px-2 py-1 text-xs font-medium", x.className)}>
+      {x.icon}
+      {status}
+    </span>
+  );
+}
 
-export default function AuditPolaris(){
-  const [range, setRange] = useState("Last 24 hours");
-  const [live, setLive] = useState(false);
-  const [q, setQ] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [events, setEvents] = useState<AuditEvent[]>([]);
-  const [kpis, setKpis] = useState<KPIs | null>(null);
-  const [drawer, setDrawer] = useState<AuditEvent | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+function toCSV(rows: AuditRow[]) {
+  const header = ["Timestamp","Service","Action","Actor","Status","Severity","Resource","Details"];
+  const body = rows.map(r => [
+    r.ts, r.service, r.action, r.actor, r.status, r.severity, r.resource, (r.details ?? "").replace(/\n/g, " "),
+  ]);
+  const csv = [header, ...body].map(line => line.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  return new Blob([csv], { type: "text/csv;charset=utf-8;" });
+}
 
-  const timeWindow = useMemo(()=>{
-    const now = new Date(); const to = now.toISOString(); const from = new Date(now.getTime() - 24*3600000).toISOString();
-    return {from, to};
-  },[]);
+// ---------- Data fetching (mock fallback) ----------
+async function fetchAudits(
+  page: number,
+  pageSize: number,
+  q: string,
+  filters: { severity?: Severity | "all"; status?: Status | "all"; service?: string | "all"; from?: Date | null; to?: Date | null; }
+): Promise<{ rows: AuditRow[]; total: number; }> {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("pageSize", String(pageSize));
+  if (q) params.set("q", q);
+  if (filters.severity && filters.severity !== "all") params.set("severity", filters.severity);
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+  if (filters.service && filters.service !== "all") params.set("service", filters.service);
+  if (filters.from) params.set("from", filters.from.toISOString());
+  if (filters.to) params.set("to", filters.to.toISOString());
 
-  const load = useCallback(async ()=>{
+  if (API_BASE) {
+    const res = await fetch(`${API_BASE}/audit?${params.toString()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    return res.json();
+  }
+
+  // Mock data if no API is wired yet. You’re welcome.
+  await new Promise(r => setTimeout(r, 400)); // pretend network
+  const services = ["Orchestrator","Compliance Logger","FX Rate","Partner Mgmt","Adapter","Health Check","Studio"];
+  const actions = ["CREATE","APPROVE","FLAG","REJECT","SYNC","POLL","EXPORT","RUNBOOK"];
+  const statuses: Status[] = ["success","failed","pending"];
+  const severities: Severity[] = ["info","warning","critical"];
+
+  const base: AuditRow[] = Array.from({ length: 137 }).map((_, i) => {
+    const sev = severities[i % 3];
+    const st = statuses[(i * 7) % 3];
+    const svc = services[(i * 11) % services.length];
+    const act = actions[(i * 13) % actions.length];
+    const dt = new Date(Date.now() - i * 3600_000).toISOString();
+    return {
+      id: `mock-${i}`,
+      ts: dt,
+      service: svc,
+      action: act,
+      actor: i % 5 === 0 ? "system" : i % 2 ? "eve@edenos" : "admin@redapplex",
+      status: st,
+      severity: sev,
+      resource: `txn/${100000 + i}`,
+      details: sev === "critical" ? "Exceeded risk threshold; STR flag proposed." : sev === "warning" ? "Latency above SLO for FX quotes." : "Periodic health ping.",
+    };
+  });
+
+  // Filter client-side for mock
+  let rows = base;
+  if (q) {
+    const qq = q.toLowerCase();
+    rows = rows.filter(r =>
+      r.service.toLowerCase().includes(qq) ||
+      r.action.toLowerCase().includes(qq) ||
+      r.actor.toLowerCase().includes(qq) ||
+      r.resource.toLowerCase().includes(qq) ||
+      (r.details ?? "").toLowerCase().includes(qq)
+    );
+  }
+  if (filters.severity && filters.severity !== "all") rows = rows.filter(r => r.severity === filters.severity);
+  if (filters.status && filters.status !== "all") rows = rows.filter(r => r.status === filters.status);
+  if (filters.service && filters.service !== "all") rows = rows.filter(r => r.service === filters.service);
+  if (filters.from) rows = rows.filter(r => new Date(r.ts) >= filters.from!);
+  if (filters.to) rows = rows.filter(r => new Date(r.ts) <= filters.to!);
+
+  const total = rows.length;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  return { rows: rows.slice(start, end), total };
+}
+
+// ---------- Page ----------
+export default function AuditPage() {
+  const { toast } = useToast();
+
+  // query state
+  const [q, setQ] = React.useState("");
+  const [debouncedQ, setDebouncedQ] = React.useState("");
+  const [severity, setSeverity] = React.useState<Severity | "all">("all");
+  const [status, setStatus] = React.useState<Status | "all">("all");
+  const [service, setService] = React.useState<string | "all">("all");
+  const [from, setFrom] = React.useState<Date | null>(null);
+  const [to, setTo] = React.useState<Date | null>(null);
+
+  // paging & data
+  const [page, setPage] = React.useState(1);
+  const [total, setTotal] = React.useState(0);
+  const [rows, setRows] = React.useState<AuditRow[]>([]);
+  const [loading, setLoading] = React.useState(false);
+
+  // derive
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // debounce search
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q), 250);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  // fetch
+  const load = React.useCallback(async () => {
     setLoading(true);
-    const res = await fetchAudit(timeWindow.from, timeWindow.to);
-    setEvents(res.items); setKpis(res.kpis);
-    setLoading(false);
-  },[timeWindow]);
+    try {
+      const { rows, total } = await fetchAudits(page, PAGE_SIZE, debouncedQ, { severity, status, service, from, to });
+      setRows(rows);
+      setTotal(total);
+    } catch (e: any) {
+      toast({ title: "Failed to load audit", description: String(e?.message || e), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [page, debouncedQ, severity, status, service, from, to, toast]);
 
-  useEffect(()=>{ load(); },[load]);
-  useEffect(()=>{ if(!live) return; const t = window.setInterval(load, 3000); return ()=>window.clearInterval(t); },[live, load]);
+  React.useEffect(() => {
+    setPage(1); // reset page when filters/search change
+  }, [debouncedQ, severity, status, service, from, to]);
+
+  React.useEffect(() => {
+    load();
+  }, [load]);
+
+  function resetFilters() {
+    setQ("");
+    setSeverity("all");
+    setStatus("all");
+    setService("all");
+    setFrom(null);
+    setTo(null);
+  }
+
+  function exportCSV() {
+    if (!rows?.length) {
+      toast({ title: "Nothing to export", description: "Filter less aggressively or try another page." });
+      return;
+    }
+    const blob = toCSV(rows);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `audit-page-${page}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // dummy service list (replace with API list if you have one)
+  const serviceOptions = ["Orchestrator","Compliance Logger","FX Rate","Partner Mgmt","Adapter","Health Check","Studio"];
 
   return (
-    <div className="container mx-auto">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="py-4">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl md:text-2xl font-semibold tracking-tight">Audit</h1>
-            <div className="ml-auto flex items-center gap-2">
-              <div className="relative">
-                <Input aria-label="Search events, actors, resources" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search events, actors, resources…" className="pl-9 w-[70vw] max-w-[520px]" />
-                <Search className="h-4 w-4 text-slate-400 absolute left-2.5 top-2.5"/>
+    <div className="min-h-[100dvh] bg-gradient-to-b from-white to-slate-50">
+      {/* Global toaster so your toasts actually render */}
+      <Toaster />
+
+      {/* Header */}
+      <div className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
+        <div className="mx-auto max-w-[1280px] px-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-slate-900 text-white grid place-items-center font-semibold">A</div>
+              <div>
+                <h1 className="text-lg font-semibold tracking-tight">Audit</h1>
+                <p className="text-xs text-slate-500">Immutable event trail across services</p>
               </div>
-              <Select value={range} onValueChange={setRange}>
-                <SelectTrigger className="w-[150px]"><SelectValue placeholder="Last 24 hours"/></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Last 1 hour">Last 1 hour</SelectItem>
-                  <SelectItem value="Last 24 hours">Last 24 hours</SelectItem>
-                  <SelectItem value="Last 7 days">Last 7 days</SelectItem>
-                  <SelectItem value="Last 30 days">Last 30 days</SelectItem>
-                </SelectContent>
-              </Select>
-              <Toggle aria-label="Live Tail" aria-pressed={live} pressed={live} onPressedChange={setLive} className="gap-2 rounded-full">
-                {live? <Pause className="h-4 w-4"/> : <Play className="h-4 w-4"/>} Live Tail
-              </Toggle>
-              <Button className="gap-2"><Bell className="h-4 w-4"/>Create Alert</Button>
-              <Button variant="outline" className="md:hidden" onClick={()=>setFiltersOpen(true)}><Filter className="h-4 w-4 mr-2"/>Filters</Button>
+            </div>
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={load}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+              <Button size="sm" onClick={exportCSV}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Toolbar */}
+        <div className="border-t">
+          <div className="mx-auto max-w-[1280px] px-4 py-3">
+            <div className="flex flex-col md:flex-row md:items-center gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
+                <Input
+                  aria-label="Search audit"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Search service, action, actor, resource, details..."
+                  className="pl-8"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Severity */}
+                <Select value={severity} onValueChange={(v: any) => setSeverity(v)}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Severity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All severities</SelectItem>
+                    <SelectItem value="info">Info</SelectItem>
+                    <SelectItem value="warning">Warning</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Status */}
+                <Select value={status} onValueChange={(v: any) => setStatus(v)}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All status</SelectItem>
+                    <SelectItem value="success">Success</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Service */}
+                <Select value={service} onValueChange={(v: any) => setService(v)}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All services</SelectItem>
+                    {serviceOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+
+                {/* Date range */}
+                <DateRangePicker from={from} to={to} onChange={({ from, to }) => { setFrom(from); setTo(to); }} />
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="md:hidden">
+                      <Filter className="h-4 w-4 mr-2" />
+                      More
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Quick actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={load}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={exportCSV}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export CSV
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button variant="ghost" size="sm" onClick={resetFilters}>
+                  Reset
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* KPI strip */}
-      {kpis && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-4">
-          <Tile label="Events" value={kpis.events} delta={kpis.eventsDelta} />
-          <Tile label="Unique Actors" value={kpis.actors} delta={kpis.actorsDelta} />
-          <Tile label="Services" value={kpis.services} delta={kpis.servicesDelta} />
-          <Tile label="Failures" value={kpis.failures} delta={kpis.failuresDelta} />
+      {/* Content */}
+      <div className="mx-auto max-w-[1280px] px-4 py-6 space-y-6">
+        {/* KPI cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <KpiCard title="Events (page)" value={loading ? "—" : rows.length.toString()} hint="Current page count" />
+          <KpiCard title="Total (filtered)" value={loading ? "—" : total.toString()} hint="Across all pages" />
+          <KpiCard title="Critical (page)" value={loading ? "—" : rows.filter(r => r.severity === "critical").length.toString()} hint="High priority" />
+          <KpiCard title="Failed (page)" value={loading ? "—" : rows.filter(r => r.status === "failed").length.toString()} hint="Needs attention" />
         </div>
-      )}
 
-      {/* Grid: 1 / 8 / 12 */}
-      <div className="grid grid-cols-1 md:grid-cols-8 lg:grid-cols-12 gap-4 pb-6">
-        {/* Filters rail (hidden on mobile) */}
-        <aside className="hidden md:block md:col-span-3 lg:col-span-3">
-          <FiltersPanel />
-        </aside>
-
-        {/* Timeline */}
-        <main className="md:col-span-5 lg:col-span-6 space-y-4">
-          <Card className="border border-slate-200/80 shadow-sm">
-            <div className="flex items-center justify-between px-4 pt-4 pb-2 text-sm text-slate-600">
-              <div className="font-medium">Timeline</div>
-              <Button variant="ghost" size="sm" className="gap-1 text-slate-600"><Filter className="h-4 w-4"/>Refine</Button>
+        {/* Data area */}
+        <Card className="border-slate-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Event stream</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {/* Mobile cards */}
+            <div className="md:hidden">
+              <ScrollArea className="h-[70dvh] pr-3">
+                {loading ? (
+                  <MobileSkeleton />
+                ) : rows.length === 0 ? (
+                  <EmptyState />
+                ) : (
+                  <div className="space-y-3">
+                    {rows.map(r => <MobileAuditCard key={r.id} row={r} />)}
+                  </div>
+                )}
+              </ScrollArea>
             </div>
-            <Separator/>
-            <ScrollArea className="h-[60vh] md:h-[600px]">
-              <div className="p-4 space-y-3">
-                {events.map(ev => <EventCard key={ev.id} ev={ev} onOpen={()=>setDrawer(ev)} />)}
-                {loading && <div className="flex items-center justify-center py-8 text-slate-500 text-sm"><Loader2 className="h-4 w-4 mr-2 animate-spin"/>Loading…</div>}
+
+            {/* Desktop table */}
+            <div className="hidden md:block">
+              <div className="rounded-lg border">
+                <div className="relative">
+                  {loading && (
+                    <div className="absolute inset-0 z-10 grid place-items-center bg-white/60">
+                      <Loader2 className="h-6 w-6 animate-spin text-slate-600" />
+                    </div>
+                  )}
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[210px]">Timestamp</TableHead>
+                        <TableHead>Service</TableHead>
+                        <TableHead>Action</TableHead>
+                        <TableHead>Actor</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Severity</TableHead>
+                        <TableHead>Resource</TableHead>
+                        <TableHead>Details</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {!loading && rows.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8}>
+                            <EmptyState compact />
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        rows.map(r => (
+                          <TableRow key={r.id} className="hover:bg-slate-50">
+                            <TableCell className="whitespace-nowrap text-slate-700">
+                              {format(new Date(r.ts), "yyyy-MM-dd HH:mm:ss")}
+                            </TableCell>
+                            <TableCell className="font-medium">{r.service}</TableCell>
+                            <TableCell className="text-slate-700">{r.action}</TableCell>
+                            <TableCell className="text-slate-700">{r.actor}</TableCell>
+                            <TableCell>{statusBadge(r.status)}</TableCell>
+                            <TableCell>{severityBadge(r.severity)}</TableCell>
+                            <TableCell className="font-mono text-xs">{r.resource}</TableCell>
+                            <TableCell className="max-w-[320px]">
+                              <div className="truncate text-slate-600">{r.details}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
-            </ScrollArea>
-          </Card>
+            </div>
 
-          {/* Ledger placeholder (kept to match tabs parity) */}
-          <Card className="border border-slate-200/80 shadow-sm">
-            <div className="p-6 text-sm text-slate-500">Ledger grid placeholder. Wire your data table here.</div>
-          </Card>
-        </main>
+            {/* Pagination */}
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <div className="text-xs text-slate-500">
+                Page <span className="font-medium">{page}</span> of <span className="font-medium">{totalPages}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Prev
+                </Button>
+                <Button variant="outline" size="sm" disabled={page >= totalPages || loading} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Copilot rail */}
-        <aside className="md:col-span-8 lg:col-span-3">
-          <CopilotPanel />
-          <div className="h-4"/>
-          <CopilotPanel variant="secondary" />
-        </aside>
+        <div className="pb-8" />
       </div>
-
-      {/* Mobile Filters Sheet */}
-      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-        <SheetContent side="left" className="w-[85vw] p-0">
-          <SheetHeader className="px-4 pt-4 pb-2"><SheetTitle>Filters</SheetTitle></SheetHeader>
-          <Separator/>
-          <ScrollArea className="h-[calc(100vh-4.5rem)]">
-            <div className="p-4"><FiltersInner /></div>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
-
-      {/* Event Drawer */}
-      <Sheet open={!!drawer} onOpenChange={(v)=>!v && setDrawer(null)}>
-        <SheetContent side="right" className="w-[92vw] sm:w-[520px] p-0">
-          <SheetHeader className="px-6 pt-6 pb-2">
-            <SheetTitle>{drawer?.title}</SheetTitle>
-            <p className="text-slate-500 text-sm">{drawer && new Date(drawer.ts).toLocaleString()} • {drawer?.service} • {drawer?.env} • {drawer?.region}</p>
-          </SheetHeader>
-          <Separator/>
-          <ScrollArea className="h-[calc(100vh-5rem)]">
-            <div className="p-6 space-y-4">
-              <DetailRow label="Result" value={drawer?.result === 'Success' ? 'Success' : 'Fail'} icon={drawer?.result === 'Success' ? <CheckCircle2 className="h-4 w-4 text-emerald-600"/> : <TriangleAlert className="h-4 w-4 text-rose-600"/>} />
-              <DetailRow label="Latency" value={fmtMs(drawer?.latency_ms)} icon={<Clock className="h-4 w-4"/>} />
-              <DetailRow label="Integrity" value="signed" icon={<ShieldCheck className="h-4 w-4"/>} />
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Button variant="outline" className="gap-1"><ExternalLink className="h-4 w-4"/>Open in Service</Button>
-                <Button className="gap-1">Generate Evidence</Button>
-              </div>
-            </div>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }
 
-function Tile({label, value, delta}:{label:string; value:number; delta:number}){
-  const good = delta >= 0; const color = good?"text-emerald-600":"text-rose-600"; const arrow = good?"▲":"▼";
+// ---------- Subcomponents ----------
+function KpiCard(props: { title: string; value: string; hint?: string }) {
   return (
-    <Card className="border border-slate-200/80 shadow-sm">
-      <CardContent className="p-4">
-        <div className="text-xs text-slate-500 mb-1">{label}</div>
-        <div className="flex items-end justify-between">
-          <div className="text-2xl font-semibold tracking-tight">{value}</div>
-          <div className={`text-xs ${color}`}>{arrow} {Math.abs(delta)}%</div>
-        </div>
+    <Card className="border-slate-200">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-slate-600">{props.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="text-2xl font-semibold tracking-tight">{props.value}</div>
+        {props.hint && <div className="text-xs text-slate-500 mt-1">{props.hint}</div>}
       </CardContent>
     </Card>
   );
 }
 
-function FiltersPanel(){
+function EmptyState({ compact = false }: { compact?: boolean }) {
   return (
-    <Card className="border border-slate-200/80 shadow-sm">
-      <ScrollArea className="h-[60vh] md:h-[600px]">
-        <div className="p-4"><FiltersInner /></div>
-      </ScrollArea>
-    </Card>
-  );
-}
-
-function FiltersInner(){
-  return (
-    <div className="space-y-5">
-      <Group title="Saved View" links={["Default", "Prod Errors"]} />
-      <Group title="Environment" pills={["Dev","Stg","Prod"]} />
-      <Group title="Service" pills={["GitHub","Notion","Linear","Stripe","GCP"]} />
-      <Group title="Tool" pills={["CreateIssue","UpdateSecret","SyncPage","RunJob","Deploy"]} />
-      <Group title="Severity" pills={["Info","Warn","Error","Critical"]} />
-      <Group title="Result" pills={["Success","Fail"]} />
-      <Group title="Actor" pills={["user@base44.com","automation","system"]} />
-      <Group title="Source" pills={["UI","API","CLI","Automation"]} />
-      <Group title="Resource Type" pills={["doc","job","secret"]} />
-      <Group title="Region" pills={["us-east1","us-west2","eu-west1"]} />
-      <Group title="Tags" pills={["mcp","signed"]} />
-      <div className="pt-2">
-        <div className="text-xs text-slate-500 mb-2">Advanced</div>
-        <div className="flex items-center gap-2 text-sm"><input type="checkbox" id="signed" className="rounded"/><label htmlFor="signed">Signed only</label></div>
-        <div className="flex items-center gap-2 text-sm mt-1"><input type="checkbox" id="unsigned" className="rounded"/><label htmlFor="unsigned">Unsigned only</label></div>
+    <div className={cn("w-full grid place-items-center", compact ? "py-8" : "py-16")}>
+      <div className="text-center">
+        <div className="mx-auto h-10 w-10 rounded-full border grid place-items-center text-slate-400">
+          <Search className="h-5 w-5" />
+        </div>
+        <p className="mt-3 text-sm font-medium">No audit events</p>
+        <p className="text-xs text-slate-500">Try widening the date range or clearing filters.</p>
       </div>
     </div>
   );
 }
 
-function Group({title, pills, links}:{title:string; pills?:string[]; links?:string[]}){
-  const [open, setOpen] = useState(true);
+function MobileAuditCard({ row }: { row: AuditRow }) {
   return (
-    <div>
-      <button onClick={()=>setOpen(v=>!v)} className="w-full flex items-center justify-between text-sm text-slate-700">
-        <span>{title}</span>
-        {open ? <ChevronUp className="h-4 w-4 text-slate-500"/> : <ChevronDown className="h-4 w-4 text-slate-500"/>}
-      </button>
-      {open && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {pills?.map(p=> <span key={p} className="px-2.5 py-1 rounded-full border border-slate-200 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">{p}</span>)}
-          {links?.map(l=> <a key={l} className="px-2.5 py-1 rounded-full border border-slate-200 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">{l}</a>)}
-        </div>
-      )}
+    <div className="rounded-xl border p-3 bg-white">
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-slate-500">{format(new Date(row.ts), "yyyy-MM-dd HH:mm:ss")}</div>
+        {statusBadge(row.status)}
+      </div>
+      <Separator className="my-2" />
+      <div className="flex items-center justify-between">
+        <div className="font-medium">{row.service}</div>
+        {severityBadge(row.severity)}
+      </div>
+      <div className="mt-1 text-slate-700">{row.action}</div>
+      <div className="mt-1 text-xs text-slate-500">{row.actor}</div>
+      <div className="mt-2 font-mono text-[11px] text-slate-700">{row.resource}</div>
+      {row.details && <div className="mt-2 text-sm text-slate-600">{row.details}</div>}
     </div>
   );
 }
 
-function EventCard({ev, onOpen}:{ev:AuditEvent; onOpen:()=>void}){
+function MobileSkeleton() {
   return (
-    <div className="relative">
-      <Card className="border border-slate-200/80 shadow-sm">
-        <CardContent className="p-4 md:p-5">
-          <div className="flex items-start gap-3">
-            <div className="pt-1"><div className={`h-2 w-2 rounded-full ${sevDot[ev.severity]}`}/></div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[15px] md:text-base font-medium text-slate-900 truncate">{ev.title}</div>
-              <div className="mt-1 text-xs text-slate-600 flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="rounded-full">{ev.service}</Badge>
-                <Badge variant="outline" className="rounded-full">{ev.env}</Badge>
-                <Badge variant="outline" className="rounded-full">{ev.region}</Badge>
-                {ev.badges?.map(b => (
-                  <Badge key={b.label} variant={b.variant === 'destructive' ? 'destructive' : b.variant === 'warning' ? 'secondary' : 'outline'} className="rounded-full">{b.label}</Badge>
-                ))}
-              </div>
-              <div className="mt-3 flex items-center gap-3 text-sm text-slate-700">
-                <div className="flex items-center gap-1">{resIcon[ev.result]} {ev.result}</div>
-                <div className="flex items-center gap-1 text-slate-500"><Clock className="h-4 w-4"/>{fmtMs(ev.latency_ms)}</div>
-              </div>
-            </div>
-            <div className="pt-1">
-              <Button variant="ghost" size="sm" className="gap-1 text-slate-600" onClick={onOpen}>Details <ExternalLink className="h-4 w-4"/></Button>
-            </div>
+    <div className="space-y-3">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="rounded-xl border p-3 bg-white">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-5 w-16" />
           </div>
-        </CardContent>
-      </Card>
+          <Separator className="my-2" />
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-5 w-20" />
+          </div>
+          <div className="mt-2">
+            <Skeleton className="h-4 w-40" />
+          </div>
+          <div className="mt-2">
+            <Skeleton className="h-3 w-56" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-function DetailRow({label, value, icon}:{label:string; value?:string; icon?:React.ReactNode}){
-  return (
-    <div className="text-sm text-slate-700 flex items-center gap-2">
-      {icon}<span className="w-28 text-slate-500">{label}</span><span>{value}</span>
-    </div>
-  );
-}
+function DateRangePicker({
+  from, to, onChange,
+}: { from: Date | null; to: Date | null; onChange: (x: { from: Date | null; to: Date | null }) => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [range, setRange] = React.useState<{ from: Date | null; to: Date | null }>({ from, to });
 
-function CopilotPanel({variant}:{variant?:"secondary"}){
+  React.useEffect(() => {
+    setRange({ from, to });
+  }, [from, to]);
+
+  function apply() {
+    onChange(range);
+    setOpen(false);
+  }
+
+  function clear() {
+    setRange({ from: null, to: null });
+    onChange({ from: null, to: null });
+    setOpen(false);
+  }
+
   return (
-    <Card className={`border border-slate-200/80 shadow-sm ${variant?"bg-slate-50":""}`}>
-      <CardHeader className="pb-2"><CardTitle className="text-sm">AI Copilot</CardTitle></CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-start gap-2 text-sm">
-          <div className="mt-1 h-2 w-2 rounded-full bg-sky-500"/>
-          <div>
-            <div className="font-medium">2 anomalies detected</div>
-            <div className="text-slate-500">Search for high error rates</div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="w-[220px] justify-start">
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {range.from ? (
+            range.to ? (
+              <>
+                {format(range.from, "yyyy-MM-dd")} — {format(range.to, "yyyy-MM-dd")}
+              </>
+            ) : (
+              format(range.from, "yyyy-MM-dd")
+            )
+          ) : (
+            <span>Date range</span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-3" align="end">
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">From</div>
+          <Calendar
+            mode="single"
+            selected={range.from ?? undefined}
+            onSelect={(d) => setRange(prev => ({ ...prev, from: d ?? null }))}
+            initialFocus
+          />
+          <Separator />
+          <div className="text-sm font-medium pt-1">To</div>
+          <Calendar
+            mode="single"
+            selected={range.to ?? undefined}
+            onSelect={(d) => setRange(prev => ({ ...prev, to: d ?? null }))}
+          />
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button variant="ghost" size="sm" onClick={clear}>Clear</Button>
+            <Button size="sm" onClick={apply}>Apply</Button>
           </div>
         </div>
-        <div className="flex items-center justify-between text-sm">
-          <div>
-            <div className="font-medium">Generate evidence bundle</div>
-            <div className="text-slate-500">Secures signatures</div>
-          </div>
-          <Button size="sm" variant="outline">Run</Button>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <div className="font-medium">Verify Signatures</div>
-          <Button size="sm" variant="outline">Verify</Button>
-        </div>
-      </CardContent>
-    </Card>
+      </PopoverContent>
+    </Popover>
   );
 }

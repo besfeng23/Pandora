@@ -984,4 +984,4 @@ function IconOpenAI() { return (<svg viewBox="0 0 24 24" className="h-full w-ful
 function IconStripe() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="5" width="18" height="14" rx="4" fill="currentColor" opacity=".1"/><path fill="currentColor" d="M8 12c0-2 2-3 4-3s4 .9 4 3-2 3-4 3-4-1-4-3z"/></svg>); }
 function IconBox() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor" opacity=".08"/><path fill="currentColor" d="M6 9h12v2H6zm0 4h12v2H6z"/></svg>); }
 function IconJira() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="#1d4ed8" d="M12 2 4 10l8 12 8-12z" opacity=".25"/><path fill="#1d4ed8" d="M12 6 7 11l5 7 5-7z"/></svg>); }
-function IconDb() { return (<svg viewBox="0 <strong>...</strong>
+function IconDb() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><ellipse cx="12" cy="6" rx="7" ry="3" fill="currentColor" opacity=".12"/><path fill="currentColor" d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6c0 1.7-3.1 3-7 3S5 7.7 5 6z"/></svg>); }

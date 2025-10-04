@@ -66,3 +66,16 @@ export const copilotSuggestions = [
     { id: 'cs1', title: 'Onboarding progress', subtext: '3/5 steps complete', cta: 'Continue', status: 'info' as const },
     { id: 'cs2', title: 'Bridge token', subtext: 'Last test failed', cta: 'Fix', status: 'warning' as const },
 ];
+
+export const settingsAuditLog = [
+    { id: 'sa1', title: 'Admin token created', severity: 'info' as const, timestamp: '2023-10-26T10:00:00Z' },
+    { id: 'sa2', title: 'Bridge URL changed', severity: 'info' as const, timestamp: '2023-10-25T14:30:00Z' },
+    { id: 'sa3', title: 'Bridge token test failed', severity: 'warning' as const, timestamp: '2023-10-25T14:25:00Z' },
+];
+
+export const systemKpis = [
+    { title: 'Active Connections', value: '12', footer: '2 issues' },
+    { title: 'Secrets', value: '43', footer: '5 near expiry' },
+    { title: 'Users', value: '104', footer: '3 admins' },
+    { title: 'Tools', value: '256', footer: 'View registry' },
+];

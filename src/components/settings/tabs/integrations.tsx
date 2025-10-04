@@ -4,10 +4,10 @@
 import { useState } from "react";
 import { IntegrationsCard } from "@/components/settings/integrations-card";
 import { IntegrationDrawer } from "@/components/settings/integration-drawer";
-import type { Integration } from "@/lib/data";
+import type { Connection } from "@/lib/data-types";
 
 export default function SettingsIntegrationsTab() {
-    const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+    const [selectedIntegration, setSelectedIntegration] = useState<Connection | null>(null);
 
     return (
         <>

@@ -4,37 +4,24 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { integrations, type Integration } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { SiGithub, SiNotion, SiLinear, SiFirebase, SiGooglecloud, SiOpenai } from "@icons-pack/react-simple-icons";
-import { Database, FileJson, LineChart as LineChartIcon } from "lucide-react";
+import { IntegrationLogo } from "@/components/connections/integration-logo";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-
-const IntegrationLogo = ({ name }: { name: string }) => {
-    const logos: { [key: string]: React.ElementType } = {
-        GitHub: SiGithub,
-        OpenAI: SiOpenai,
-        Gcp: SiGooglecloud,
-        Linear: SiLinear,
-        Firebase: SiFirebase,
-        Neon: Database,
-        Notion: SiNotion,
-    };
-    const LogoComponent = logos[name];
-    if (!LogoComponent) return <FileJson className="h-8 w-8" />;
-    return <LogoComponent className="h-8 w-8" />;
-};
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import type { Connection } from "@/lib/data-types";
+import { Loader2 } from "lucide-react";
 
 const statusClasses: { [key: string]: string } = {
-  healthy: "text-primary",
   active: "text-primary",
-  degraded: "text-yellow-600",
-  disconnected: "text-red-600",
-  needs_attention: "text-yellow-600",
+  warning: "text-yellow-600",
+  error: "text-red-600",
+  pending: "text-muted-foreground",
+  paused: "text-muted-foreground",
 };
 
-const IntegrationTile = ({ integration, onSelect }: { integration: Integration, onSelect: () => void }) => {
-    const chartData = integration.sparkline.map((value, index) => ({ name: index, value }));
+const IntegrationTile = ({ integration, onSelect }: { integration: Connection, onSelect: () => void }) => {
+    const chartData = integration.usage7d.map((value, index) => ({ name: index, value }));
     return (
         <button
             className="border border-border rounded-2xl p-4 min-h-[104px] text-left cursor-pointer hover:bg-muted anim-lift w-full"
@@ -42,7 +29,7 @@ const IntegrationTile = ({ integration, onSelect }: { integration: Integration, 
         >
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                    <IntegrationLogo name={integration.name} />
+                    <IntegrationLogo name={integration.providerId} />
                     <div>
                         <p className="font-semibold">{integration.name}</p>
                         <p className={cn("text-xs font-medium capitalize", statusClasses[integration.status] || 'text-muted-foreground')}>
@@ -63,13 +50,17 @@ const IntegrationTile = ({ integration, onSelect }: { integration: Integration, 
 };
 
 
-export function IntegrationsCard({ onSelectIntegration }: { onSelectIntegration: (integration: Integration) => void }) {
+export function IntegrationsCard({ onSelectIntegration }: { onSelectIntegration: (integration: Connection) => void }) {
     const [filter, setFilter] = useState("All");
+    
+    const firestore = useFirestore();
+    const connectionsQuery = useMemoFirebase(() => collection(firestore, 'connections'), [firestore]);
+    const { data: integrations, isLoading } = useCollection<Connection>(connectionsQuery);
 
-    const filteredIntegrations = integrations.filter(integration => {
+    const filteredIntegrations = (integrations || []).filter(integration => {
         if (filter === 'All') return true;
-        if (filter === 'Connected') return integration.status === 'healthy' || integration.status === 'active';
-        if (filter === 'Needs attention') return integration.status === 'degraded' || integration.status === 'disconnected' || integration.status === 'needs_attention';
+        if (filter === 'Connected') return integration.status === 'active';
+        if (filter === 'Needs attention') return ['warning', 'error', 'paused'].includes(integration.status);
         return false;
     })
 
@@ -97,7 +88,11 @@ export function IntegrationsCard({ onSelectIntegration }: { onSelectIntegration:
                 </div>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredIntegrations.map((integration) => (
+                {isLoading ? (
+                    <div className="col-span-full flex justify-center items-center h-24">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                ) : filteredIntegrations.map((integration) => (
                     <IntegrationTile key={integration.id} integration={integration} onSelect={() => onSelectIntegration(integration)} />
                 ))}
             </CardContent>

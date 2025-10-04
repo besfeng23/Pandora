@@ -2,7 +2,14 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { systemKpis } from "@/lib/data";
+
+// Note: This data is now static. In a real app, you'd fetch this from various sources.
+const systemKpis = [
+    { title: 'Active Connections', value: '12', footer: '2 issues' },
+    { title: 'Secrets', value: '43', footer: '5 near expiry' },
+    { title: 'Users', value: '104', footer: '3 admins' },
+    { title: 'Tools', value: '256', footer: 'View registry' },
+];
 
 export function SystemKpis() {
     return (

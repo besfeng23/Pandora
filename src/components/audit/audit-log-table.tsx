@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -13,10 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
-import { auditLogs as initialLogs, type AuditEvent } from "@/lib/data";
+import { type AuditEvent } from "@/lib/data-types";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { queryLogs } from "@/lib/actions";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
 
 const severityClasses: Record<AuditEvent['severity'], string> = {
   info: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-700",
@@ -34,6 +37,10 @@ export default function AuditLogTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<AuditEvent[] | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const firestore = useFirestore();
+  const auditLogsQuery = useMemoFirebase(() => query(collection(firestore, 'auditLogs'), orderBy('ts', 'desc')), [firestore]);
+  const { data: initialLogs, isLoading } = useCollection<AuditEvent>(auditLogsQuery);
 
   const handleSearch = () => {
     if (!searchQuery) {
@@ -61,7 +68,7 @@ export default function AuditLogTable() {
     });
   };
   
-  const logsToDisplay = searchResults === null ? initialLogs : searchResults;
+  const logsToDisplay = searchResults === null ? (initialLogs || []) : searchResults;
 
   return (
     <div className="space-y-4">
@@ -76,8 +83,8 @@ export default function AuditLogTable() {
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
-        <Button onClick={handleSearch} disabled={isPending} className="rounded-xl">
-          {isPending ? (
+        <Button onClick={handleSearch} disabled={isPending || isLoading} className="rounded-xl">
+          {(isPending || isLoading) ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Search className="mr-2 h-4 w-4" />
@@ -100,11 +107,11 @@ export default function AuditLogTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isPending ? (
+            {isPending || isLoading ? (
                 <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
                         <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-                        <p className="mt-2 text-sm text-muted-foreground">Analyzing logs...</p>
+                        <p className="mt-2 text-sm text-muted-foreground">Loading logs...</p>
                     </TableCell>
                 </TableRow>
             ) : logsToDisplay.length > 0 ? (

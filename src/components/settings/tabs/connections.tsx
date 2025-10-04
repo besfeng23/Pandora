@@ -1,4 +1,6 @@
 
+"use client";
+
 import { AddConnectionCard } from "@/components/settings/add-connection-card";
 import { ConnectionsCard } from "@/components/settings/connections-card";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -12,15 +14,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Loader2 } from "lucide-react";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import type { Connection } from "@/lib/data-types";
 
-const existingConnections = [
-    { id: 'c1', source: 'Auth Service', target: 'User DB', type: 'API', latency: '45ms', status: 'Healthy' },
-    { id: 'c2', source: 'Billing API', target: 'Stripe', type: 'Webhook', latency: '120ms', status: 'Healthy' },
-    { id: 'c3', source: 'Content Processor', target: 'Cloud Storage', type: 'API', latency: '250ms', status: 'Degraded' },
-];
 
 export default function SettingsConnectionsTab() {
+  const firestore = useFirestore();
+  const connectionsQuery = useMemoFirebase(() => collection(firestore, 'connections'), [firestore]);
+  const { data: existingConnections, isLoading } = useCollection<Connection>(connectionsQuery);
+
   return (
     <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -36,23 +40,29 @@ export default function SettingsConnectionsTab() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Source</TableHead>
-                            <TableHead>Target</TableHead>
-                            <TableHead>Type</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Provider</TableHead>
+                            <TableHead>Environment</TableHead>
                             <TableHead>P95 Latency</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {existingConnections.map(conn => (
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center h-24">
+                                    <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                                </TableCell>
+                            </TableRow>
+                        ) : (existingConnections || []).map(conn => (
                             <TableRow key={conn.id}>
-                                <TableCell className="font-medium">{conn.source}</TableCell>
-                                <TableCell className="font-medium">{conn.target}</TableCell>
-                                <TableCell><Badge variant="outline" className="rounded-md">{conn.type}</Badge></TableCell>
-                                <TableCell>{conn.latency}</TableCell>
+                                <TableCell className="font-medium">{conn.name}</TableCell>
+                                <TableCell className="font-medium">{conn.providerId}</TableCell>
+                                <TableCell><Badge variant="outline" className="rounded-md capitalize">{conn.env}</Badge></TableCell>
+                                <TableCell>{conn.health.latencyP95}ms</TableCell>
                                 <TableCell>
-                                     <Badge variant={conn.status === 'Healthy' ? 'default' : 'destructive'} className={`capitalize rounded-md ${conn.status === 'Healthy' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                     <Badge variant={conn.status === 'active' ? 'default' : 'destructive'} className={`capitalize rounded-md ${conn.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                                         {conn.status}
                                     </Badge>
                                 </TableCell>

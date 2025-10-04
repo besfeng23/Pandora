@@ -19,7 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { services } from "@/lib/data";
+import { useCollection, useFirestore } from "@/firebase";
+import { collection } from "firebase/firestore";
+import type { Service } from "@/lib/data-types";
 
 type AddConnectionDialogProps = {
   open: boolean;
@@ -27,6 +29,9 @@ type AddConnectionDialogProps = {
 };
 
 export function AddConnectionDialog({ open, onOpenChange }: AddConnectionDialogProps) {
+  const firestore = useFirestore();
+  const { data: services } = useCollection<Service>(collection(firestore, 'services'));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] rounded-2xl">
@@ -46,7 +51,7 @@ export function AddConnectionDialog({ open, onOpenChange }: AddConnectionDialogP
                 <SelectValue placeholder="Select a source" />
               </SelectTrigger>
               <SelectContent>
-                {services.map((s) => (
+                {services?.map((s) => (
                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -61,7 +66,7 @@ export function AddConnectionDialog({ open, onOpenChange }: AddConnectionDialogP
                 <SelectValue placeholder="Select a target" />
               </SelectTrigger>
               <SelectContent>
-                {services.map((s) => (
+                {services?.map((s) => (
                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                 ))}
               </SelectContent>

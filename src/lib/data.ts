@@ -68,27 +68,117 @@ export const services: Service[] = [
 ];
 
 
-export type AuditLog = {
+export type AuditEvent = {
   id: string;
-  event: string;
-  user: string;
-  severity: "info" | "warning" | "error" | "critical";
-  timestamp: string;
-  details: string;
+  ts: string;
+  env: 'dev'|'stg'|'prod';
+  service: string;
+  tool: string;
+  action: string;
+  actor: { id: string; type: 'user'|'service'|'automation'; email?: string; name?: string };
+  source: 'UI'|'API'|'CLI'|'Automation';
+  resource?: { type: string; id: string; name?: string; path?: string };
+  session?: string;
+  severity: 'info'|'warn'|'error'|'critical';
+  result: 'success'|'fail';
+  latency_ms?: number;
+  cost_usd?: number;
+  policy?: { rbac?: 'allow'|'deny'; spend_cap?: 'ok'|'blocked'; maintenance?: 'window'|'none' };
+  network?: { ip?: string; ua?: string; region?: string };
+  tags?: string[];
+  diff?: { before?: unknown; after?: unknown };
+  integrity: { signed: boolean; signer?: string; sig?: string; hash: string; prev_hash?: string; merkle_root?: string };
+  raw: unknown;
 };
 
-export const auditLogs: AuditLog[] = [
-  { id: "log-1", event: "tool.run", user: "alex@pandora.dev", severity: "info", timestamp: "2023-10-27T10:00:00Z", details: "Executed 'Restart Pod' on service 'Auth Service'" },
-  { id: "log-2", event: "tool.fail", user: "system", severity: "error", timestamp: "2023-10-27T10:01:15Z", details: "Failed to run 'Scale Up' on 'Realtime Analytics': quota exceeded" },
-  { id: "log-3", event: "favorite.add", user: "sara@pandora.dev", severity: "info", timestamp: "2023-10-27T10:02:30Z", details: "Added 'Flush Cache' to favorites" },
-  { id: "log-4", event: "settings.bridge.test_clicked", user: "admin@pandora.dev", severity: "info", timestamp: "2023-10-27T10:05:00Z", details: "Bridge connection test initiated" },
-  { id: "log-5", event: "service.view", user: "brian@pandora.dev", severity: "info", timestamp: "2023-10-27T10:05:45Z", details: "Viewed details for 'Billing API'" },
-  { id: "log-6", event: "tool.run.dual_approval", user: "alex@pandora.dev", severity: "warning", timestamp: "2023-10-27T10:08:00Z", details: "Requested dual approval for 'Delete Production DB'" },
-  { id: "log-7", event: "tool.run.approved", user: "sara@pandora.dev", severity: "critical", timestamp: "2023-10-27T10:09:10Z", details: "Approved execution of 'Delete Production DB'" },
-  { id: "log-8", event: "settings.env_import.parse", user: "admin@pandora.dev", severity: "info", timestamp: "2023-10-27T10:11:00Z", details: "Parsed new .env file for staging environment" },
-  { id: "log-9", event: "user.login.fail", user: "unknown", severity: "warning", timestamp: "2023-10-27T10:12:00Z", details: "Failed login attempt from IP 123.45.67.89" },
-  { id: "log-10", event: "service.degraded", user: "system", severity: "warning", timestamp: "2023-10-27T10:15:00Z", details: "'User Profiles' service status changed to degraded" },
-  { id: "log-11", event: "service.down", user: "system", severity: "error", timestamp: "2023-10-27T10:16:30Z", details: "'Realtime Analytics' service status changed to down" },
+export const auditLogs: AuditEvent[] = [
+  {
+    id: "evt-1",
+    ts: "2023-10-27T10:00:00Z",
+    env: 'prod',
+    service: 'Auth Service',
+    tool: 'mcp-cli',
+    action: 'restart_pod',
+    actor: { id: 'user-alex', type: 'user', email: 'alex@pandora.dev', name: 'Alex' },
+    source: 'CLI',
+    resource: { type: 'pod', id: 'auth-service-7dbrg', name: 'auth-service-7dbrg' },
+    session: 'session-xyz',
+    severity: 'info',
+    result: 'success',
+    latency_ms: 120,
+    integrity: { signed: true, hash: 'abc1' }
+  },
+  {
+    id: "evt-2",
+    ts: "2023-10-27T10:01:15Z",
+    env: 'prod',
+    service: 'Realtime Analytics',
+    tool: 'mcp-autoscaler',
+    action: 'scale_up',
+    actor: { id: 'auto-scaler', type: 'automation', name: 'MCP Autoscaler' },
+    source: 'Automation',
+    resource: { type: 'deployment', id: 'realtime-analytics', name: 'realtime-analytics' },
+    severity: 'error',
+    result: 'fail',
+    integrity: { signed: true, hash: 'abc2' },
+    raw: { "reason": "quota exceeded" }
+  },
+  {
+    id: "evt-3",
+    ts: "2023-10-27T10:02:30Z",
+    env: 'dev',
+    service: 'pandora-ui',
+    tool: 'user-settings',
+    action: 'add_favorite',
+    actor: { id: 'user-sara', type: 'user', email: 'sara@pandora.dev', name: 'Sara' },
+    source: 'UI',
+    resource: { type: 'favorite', id: 'fav-flush-cache' },
+    severity: 'info',
+    result: 'success',
+    integrity: { signed: true, hash: 'abc3' }
+  },
+  {
+    id: "evt-4",
+    ts: "2023-10-27T10:05:00Z",
+    env: 'prod',
+    service: 'pandora-bridge',
+    tool: 'settings-ui',
+    action: 'test_connection',
+    actor: { id: 'user-admin', type: 'user', email: 'admin@pandora.dev', name: 'Admin' },
+    source: 'UI',
+    severity: 'info',
+    result: 'success',
+    latency_ms: 88,
+    integrity: { signed: true, hash: 'abc4' }
+  },
+  {
+    id: "evt-5",
+    ts: "2023-10-27T10:09:10Z",
+    env: 'prod',
+    service: 'Production DB',
+    tool: 'mcp-cli',
+    action: 'delete_database',
+    actor: { id: 'user-sara', type: 'user', email: 'sara@pandora.dev', name: 'Sara' },
+    source: 'CLI',
+    severity: 'critical',
+    result: 'success',
+    policy: { rbac: 'allow' },
+    integrity: { signed: true, hash: 'abc5' }
+  },
+  {
+    id: "evt-6",
+    ts: "2023-10-27T10:12:00Z",
+    env: 'prod',
+    service: 'auth-service',
+    tool: 'login-proxy',
+    action: 'user_login',
+    actor: { id: 'unknown', type: 'user' },
+    source: 'API',
+    severity: 'warn',
+    result: 'fail',
+    network: { ip: '123.45.67.89' },
+    integrity: { signed: false, hash: 'abc6' }
+  }
 ];
 
 
@@ -179,7 +269,7 @@ export const connectionData: Connection[] = [
         env: 'prod',
         status: 'active',
         health: {
-            lastSync: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+            lastSync: new Date(now.getTime() - 2 * 60 * 1000).toISOString(), // 2 mins ago
             latencyP95: 120,
             error24h: 2,
             quotaUsedPct: 15,
@@ -190,10 +280,10 @@ export const connectionData: Connection[] = [
         icon: 'Github',
     },
     {
-        id: 'conn-notion',
+        id: 'conn-notion-dev',
         providerId: 'notion',
-        name: 'Notion',
-        env: 'prod',
+        name: 'Notion (Dev)',
+        env: 'dev',
         status: 'pending',
         health: {
             lastSync: '',
@@ -215,4 +305,7 @@ export const quickConnectProviders = [
     { id: 'slack', name: 'Slack', icon: 'Slack'},
     { id: 'gcp', name: 'GCP', icon: 'Cloud'},
     { id: 'openai', name: 'OpenAI', icon: 'Bot' },
+    { id: 'stripe', name: 'Stripe', icon: 'CreditCard' },
+    { id: 'box', name: 'Box', icon: 'Box' },
 ]
+

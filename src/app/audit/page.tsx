@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 
 export default function AuditPage() {
   return (
-    <Card className="rounded-2xl shadow-lg">
+    <Card className="rounded-2xl shadow-lg w-full">
       <CardHeader>
         <CardTitle className="font-headline text-3xl font-semibold">Audit Log</CardTitle>
         <CardDescription>An immutable log of all system and user events.</CardDescription>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { integrations, type Integration } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { SiGithub, SiNotion, SiLinear, SiFirebase, SiGcp, SiOpenai } from "@icons-pack/react-simple-icons";
+import { SiGithub, SiNotion, SiLinear, SiFirebase, SiGooglecloud, SiOpenai } from "@icons-pack/react-simple-icons";
 import { Database, FileJson, LineChart as LineChartIcon } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 
@@ -14,7 +14,7 @@ const IntegrationLogo = ({ name }: { name: string }) => {
     const logos: { [key: string]: React.ElementType } = {
         GitHub: SiGithub,
         OpenAI: SiOpenai,
-        Gcp: SiGcp,
+        Gcp: SiGooglecloud,
         Linear: SiLinear,
         Firebase: SiFirebase,
         Neon: Database,

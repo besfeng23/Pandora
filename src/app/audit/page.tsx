@@ -1,3 +1,4 @@
+
 // app/audit/page.tsx  (Next.js App Router)
 // or src/pages/audit/index.tsx (CRA/Vite; adjust default export accordingly)
 
@@ -87,7 +88,7 @@ function toCSV(rows: AuditRow[]) {
     r.ts, r.service, r.action, r.actor, r.status, r.severity, r.resource, (r.details ?? "").replace(/\n/g, " "),
   ]);
   const csv = [header, ...body].map(line => line.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
-  return new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  return new Blob([csv], { type: "text/csv;charset=utf-t-8;" });
 }
 
 // ---------- Data fetching (mock fallback) ----------
@@ -240,37 +241,9 @@ export default function AuditPage() {
   const serviceOptions = ["Orchestrator","Compliance Logger","FX Rate","Partner Mgmt","Adapter","Health Check","Studio"];
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-white to-slate-50">
-      {/* Global toaster so your toasts actually render */}
-      <Toaster />
-
-      {/* Header */}
-      <div className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto max-w-[1280px] px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-slate-900 text-white grid place-items-center font-semibold">A</div>
-              <div>
-                <h1 className="text-lg font-semibold tracking-tight">Audit</h1>
-                <p className="text-xs text-slate-500">Immutable event trail across services</p>
-              </div>
-            </div>
-            <div className="hidden md:flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={load}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-              <Button size="sm" onClick={exportCSV}>
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Toolbar */}
-        <div className="border-t">
-          <div className="mx-auto max-w-[1280px] px-4 py-3">
+    <div className="space-y-6">
+      <div className="border rounded-xl">
+        <div className="p-4 border-b">
             <div className="flex flex-col md:flex-row md:items-center gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
@@ -324,40 +297,15 @@ export default function AuditPage() {
                 {/* Date range */}
                 <DateRangePicker from={from} to={to} onChange={({ from, to }) => { setFrom(from); setTo(to); }} />
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="md:hidden">
-                      <Filter className="h-4 w-4 mr-2" />
-                      More
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Quick actions</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={load}>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={exportCSV}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export CSV
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
                 <Button variant="ghost" size="sm" onClick={resetFilters}>
                   Reset
                 </Button>
               </div>
             </div>
-          </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-[1280px] px-4 py-6 space-y-6">
         {/* KPI cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-px bg-border">
           <KpiCard title="Events (page)" value={loading ? "—" : rows.length.toString()} hint="Current page count" />
           <KpiCard title="Total (filtered)" value={loading ? "—" : total.toString()} hint="Across all pages" />
           <KpiCard title="Critical (page)" value={loading ? "—" : rows.filter(r => r.severity === "critical").length.toString()} hint="High priority" />
@@ -365,11 +313,7 @@ export default function AuditPage() {
         </div>
 
         {/* Data area */}
-        <Card className="border-slate-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Event stream</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
+        <div>
             {/* Mobile cards */}
             <div className="md:hidden">
               <ScrollArea className="h-[70dvh] pr-3">
@@ -378,7 +322,7 @@ export default function AuditPage() {
                 ) : rows.length === 0 ? (
                   <EmptyState />
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-3 p-4">
                     {rows.map(r => <MobileAuditCard key={r.id} row={r} />)}
                   </div>
                 )}
@@ -387,10 +331,9 @@ export default function AuditPage() {
 
             {/* Desktop table */}
             <div className="hidden md:block">
-              <div className="rounded-lg border">
-                <div className="relative">
+              <div className="relative">
                   {loading && (
-                    <div className="absolute inset-0 z-10 grid place-items-center bg-white/60">
+                    <div className="absolute inset-0 z-10 grid place-items-center bg-background/60">
                       <Loader2 className="h-6 w-6 animate-spin text-slate-600" />
                     </div>
                   )}
@@ -416,18 +359,18 @@ export default function AuditPage() {
                         </TableRow>
                       ) : (
                         rows.map(r => (
-                          <TableRow key={r.id} className="hover:bg-slate-50">
-                            <TableCell className="whitespace-nowrap text-slate-700">
+                          <TableRow key={r.id} className="hover:bg-muted/50">
+                            <TableCell className="whitespace-nowrap text-muted-foreground">
                               {format(new Date(r.ts), "yyyy-MM-dd HH:mm:ss")}
                             </TableCell>
                             <TableCell className="font-medium">{r.service}</TableCell>
-                            <TableCell className="text-slate-700">{r.action}</TableCell>
-                            <TableCell className="text-slate-700">{r.actor}</TableCell>
+                            <TableCell className="text-muted-foreground">{r.action}</TableCell>
+                            <TableCell className="text-muted-foreground">{r.actor}</TableCell>
                             <TableCell>{statusBadge(r.status)}</TableCell>
                             <TableCell>{severityBadge(r.severity)}</TableCell>
                             <TableCell className="font-mono text-xs">{r.resource}</TableCell>
                             <TableCell className="max-w-[320px]">
-                              <div className="truncate text-slate-600">{r.details}</div>
+                              <div className="truncate text-muted-foreground">{r.details}</div>
                             </TableCell>
                           </TableRow>
                         ))
@@ -435,12 +378,11 @@ export default function AuditPage() {
                     </TableBody>
                   </Table>
                 </div>
-              </div>
             </div>
 
             {/* Pagination */}
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <div className="text-xs text-slate-500">
+            <div className="p-4 border-t flex items-center justify-between gap-3">
+              <div className="text-xs text-muted-foreground">
                 Page <span className="font-medium">{page}</span> of <span className="font-medium">{totalPages}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -454,27 +396,20 @@ export default function AuditPage() {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <div className="pb-8" />
+          </div>
+        </div>
       </div>
-    </div>
   );
 }
 
 // ---------- Subcomponents ----------
 function KpiCard(props: { title: string; value: string; hint?: string }) {
   return (
-    <Card className="border-slate-200">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-slate-600">{props.title}</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="text-2xl font-semibold tracking-tight">{props.value}</div>
-        {props.hint && <div className="text-xs text-slate-500 mt-1">{props.hint}</div>}
-      </CardContent>
-    </Card>
+    <div className="bg-card p-4">
+      <div className="text-sm text-muted-foreground">{props.title}</div>
+      <div className="text-2xl font-semibold tracking-tight">{props.value}</div>
+      {props.hint && <div className="text-xs text-muted-foreground mt-1">{props.hint}</div>}
+    </div>
   );
 }
 
@@ -486,7 +421,7 @@ function EmptyState({ compact = false }: { compact?: boolean }) {
           <Search className="h-5 w-5" />
         </div>
         <p className="mt-3 text-sm font-medium">No audit events</p>
-        <p className="text-xs text-slate-500">Try widening the date range or clearing filters.</p>
+        <p className="text-xs text-muted-foreground">Try widening the date range or clearing filters.</p>
       </div>
     </div>
   );
@@ -494,9 +429,9 @@ function EmptyState({ compact = false }: { compact?: boolean }) {
 
 function MobileAuditCard({ row }: { row: AuditRow }) {
   return (
-    <div className="rounded-xl border p-3 bg-white">
+    <div className="rounded-xl border p-3 bg-card">
       <div className="flex items-center justify-between">
-        <div className="text-xs text-slate-500">{format(new Date(row.ts), "yyyy-MM-dd HH:mm:ss")}</div>
+        <div className="text-xs text-muted-foreground">{format(new Date(row.ts), "yyyy-MM-dd HH:mm:ss")}</div>
         {statusBadge(row.status)}
       </div>
       <Separator className="my-2" />
@@ -504,10 +439,10 @@ function MobileAuditCard({ row }: { row: AuditRow }) {
         <div className="font-medium">{row.service}</div>
         {severityBadge(row.severity)}
       </div>
-      <div className="mt-1 text-slate-700">{row.action}</div>
-      <div className="mt-1 text-xs text-slate-500">{row.actor}</div>
-      <div className="mt-2 font-mono text-[11px] text-slate-700">{row.resource}</div>
-      {row.details && <div className="mt-2 text-sm text-slate-600">{row.details}</div>}
+      <div className="mt-1 text-muted-foreground">{row.action}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{row.actor}</div>
+      <div className="mt-2 font-mono text-[11px] text-muted-foreground">{row.resource}</div>
+      {row.details && <div className="mt-2 text-sm text-muted-foreground">{row.details}</div>}
     </div>
   );
 }
@@ -516,7 +451,7 @@ function MobileSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="rounded-xl border p-3 bg-white">
+        <div key={i} className="rounded-xl border p-3 bg-card">
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-28" />
             <Skeleton className="h-5 w-16" />
@@ -602,5 +537,3 @@ function DateRangePicker({
     </Popover>
   );
 }
-
-    

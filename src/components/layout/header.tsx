@@ -1,8 +1,9 @@
+
 "use client";
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy, ChevronDown } from 'lucide-react';
+import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy, ChevronDown, RefreshCw, Download } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,18 +19,41 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCommandPalette } from './command-palette';
 import { ThemeToggle } from './theme-toggle';
 
-function getTitleFromPathname(pathname: string) {
-    if (pathname === '/') return 'Dashboard';
-    if (pathname.startsWith('/services')) return 'Services';
-    const title = pathname.split('/').pop()?.replace(/-/g, ' ') ?? 'Dashboard';
-    return title.charAt(0).toUpperCase() + title.slice(1);
+const pageDetails: { [key: string]: { title: string; description: string; actions?: React.FC<{ onRefresh?: () => void; onExport?: () => void; }> } } = {
+  '/': { title: 'Dashboard', description: 'A high-level overview of your system.' },
+  '/services': { title: 'Services', description: 'Integrate providers across auth, data, storage, payments, and more.' },
+  '/audit': { 
+    title: 'Audit', 
+    description: 'Immutable event trail across services',
+    actions: ({ onRefresh, onExport }) => (
+      <div className="hidden md:flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={onRefresh}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
+        <Button size="sm" onClick={onExport}>
+          <Download className="h-4 w-4 mr-2" />
+          Export CSV
+        </Button>
+      </div>
+    )
+  },
+  '/search': { title: 'Search', description: 'Search across all services, logs, and events.' },
+  '/connections': { title: 'Connections', description: 'Manage and monitor your service integrations.' },
+  '/settings': { title: 'Settings', description: 'Manage your system configuration and integrations.' },
+};
+
+function getDetailsFromPathname(pathname: string) {
+    if (pathname.startsWith('/services/')) return { title: 'Service Detail', description: 'Detailed view of a specific service.' };
+    if (pathname.startsWith('/settings/')) return pageDetails['/settings'];
+    return pageDetails[pathname] || { title: 'Pandora', description: 'Your all-in-one system management and operations platform.'};
 }
 
-export default function Header() {
+export default function Header({ onRefresh, onExport }: { onRefresh?: () => void; onExport?: () => void; }) {
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
   const { setOpen } = useCommandPalette();
-  const title = getTitleFromPathname(pathname);
+  const details = getDetailsFromPathname(pathname);
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
   React.useEffect(() => {
@@ -44,45 +68,20 @@ export default function Header() {
   }, [setOpen])
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-6 backdrop-blur-sm">
-      <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleSidebar}>
+    <header className="sticky top-0 z-30 flex h-auto items-center gap-4 border-b bg-background/80 p-4 backdrop-blur-sm sm:px-6 sm:py-4">
+      <Button variant="ghost" size="icon" className="md:hidden -ml-2" onClick={toggleSidebar}>
         <PanelLeft className="h-5 w-5" />
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
 
       <div className="flex-1">
-        <h1 className="font-semibold text-xl hidden sm:block">{title}</h1>
+        <h1 className="font-semibold text-lg">{details.title}</h1>
+        <p className="text-xs text-muted-foreground">{details.description}</p>
       </div>
+      
+      {details.actions && details.actions({ onRefresh, onExport })}
 
-      <div className="flex flex-1 items-center justify-center gap-4">
-        <Button variant="outline" className="w-full max-w-[520px] justify-start text-muted-foreground rounded-lg" onClick={() => setOpen(true)}>
-          <Search className="h-5 w-5 mr-2" />
-          <span className="hidden lg:inline-flex">Search or run a command...</span>
-          <span className="inline-flex lg:hidden">Search...</span>
-          <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center gap-1 rounded border bg-surface-muted px-2 font-mono text-sm font-medium opacity-100 sm:flex">
-            <span className="text-base">⌘</span>/
-          </kbd>
-        </Button>
-      </div>
-
-      <div className="flex items-center justify-end gap-2 flex-1">
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 rounded-lg">
-                    <span>Env:</span>
-                    <span className="font-semibold">Dev</span>
-                    <ChevronDown className="h-4 w-4 text-text-subtle" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl">
-                <DropdownMenuItem>Development</DropdownMenuItem>
-                <DropdownMenuItem>Staging</DropdownMenuItem>
-                <DropdownMenuItem>Production</DropdownMenuItem>
-                <DropdownMenuSeparator/>
-                <DropdownMenuItem>Manage environments</DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-
+      <div className="flex items-center justify-end gap-2">
         <ThemeToggle />
 
         <DropdownMenu>

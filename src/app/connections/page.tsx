@@ -39,17 +39,21 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { cn, fmtRel } from "@/lib/utils";
 import { useDebounced, useLocalStorage } from "@/hooks/use-client-helpers";
-import { 
-  quickConnectProviders, 
-  seedConnections, 
-  connectionsApi, 
-  upsertConn,
-  type Connection,
-  type Env,
-  type Status,
-  type TestResult
-} from "@/lib/data";
+import { useCollection, useFirestore } from "@/firebase";
+import { collection } from "firebase/firestore";
+import type { Connection, Env, Status, TestResult } from "@/lib/data-types";
 
+// In-memory mock data for quick connect providers, will be replaced with Firestore data
+export const quickConnectProviders = [
+    { id: 'notion', name: 'Notion', icon: 'Notion'},
+    { id: 'linear', name: 'Linear', icon: 'Linear'},
+    { id: 'github', name: 'GitHub', icon: 'Github'},
+    { id: 'slack', name: 'Slack', icon: 'Slack'},
+    { id: 'gcp', name: 'GCP', icon: 'Gcp'},
+    { id: 'openai', name: 'OpenAI', icon: 'Bot' },
+    { id: 'stripe', name: 'Stripe', icon: 'Stripe' },
+    { id: 'box', name: 'Box', icon: 'Box' },
+]
 
 // ---------- Config ----------
 
@@ -65,10 +69,13 @@ const statusClasses: Record<Status, string> = {
 // ---------- Root Component ----------
 
 export default function ConnectionsPage() {
+  const firestore = useFirestore();
   const [env, setEnv] = useLocalStorage<Env>("pandora.env", "prod");
   const [q, setQ] = useState("");
   const qDebounced = useDebounced(q, 200);
-  const [connections, setConnections] = useState<Connection[]>(seedConnections);
+  
+  const { data: connections, isLoading } = useCollection<Connection>(collection(firestore, 'connections'));
+
   const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "lastSync" | "status">("name");
@@ -76,6 +83,7 @@ export default function ConnectionsPage() {
 
   // Derived view
   const list = useMemo(() => {
+    if (!connections) return [];
     const rows = connections.filter((c) => c.env === env);
     const filtered = rows.filter((c) => {
       if (!qDebounced) return true;
@@ -93,15 +101,8 @@ export default function ConnectionsPage() {
   }, [connections, env, qDebounced, sortBy]);
 
   const onConnect = async (providerId: string) => {
-    setBusy(providerId);
-    try {
-      const conn = await connectionsApi.startConnect(providerId, env);
-      setConnections((prev) => upsertConn(prev, conn));
-      const tested = await connectionsApi.runAutoTests(conn.id);
-      setConnections((prev) => upsertConn(prev, tested));
-    } finally {
-      setBusy(null);
-    }
+    // This would call a server action or cloud function in a real app
+    console.log(`Connecting ${providerId} in ${env}`);
   };
   
   const handleSelectConnection = (connection: Connection) => {
@@ -110,7 +111,8 @@ export default function ConnectionsPage() {
   }
 
   const updateConnection = (conn: Connection) => {
-    setConnections(prev => upsertConn(prev, conn));
+    // This would be an update call to firestore
+    console.log("Updating connection", conn);
     setSelectedConnection(conn);
   }
 
@@ -156,7 +158,7 @@ export default function ConnectionsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <QuickConnectCard onConnect={onConnect} busyProvider={busy}/>
-            {list.map((conn) => (
+            {isLoading ? Array.from({length: 6}).map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl" />) : list.map((conn) => (
               <ConnectionCard key={conn.id} connection={conn} onSelect={() => handleSelectConnection(conn)} />
             ))}
           </div>
@@ -299,23 +301,23 @@ function ConnectionDetailsDrawer({
   if (!connection) return null;
 
   const handleRotate = async () => {
-    const updated = await connectionsApi.rotateSecret(connection.id);
-    onConnectionUpdate(updated);
+    // const updated = await connectionsApi.rotateSecret(connection.id);
+    // onConnectionUpdate(updated);
   };
   
   const handleRunTests = async () => {
-    const updated = await connectionsApi.runAutoTests(connection.id);
-    onConnectionUpdate(updated);
+    // const updated = await connectionsApi.runAutoTests(connection.id);
+    // onConnectionUpdate(updated);
   };
 
   const handlePause = async () => {
-    const updated = await connectionsApi.pause(connection.id);
-    onConnectionUpdate(updated);
+    // const updated = await connectionsApi.pause(connection.id);
+    // onConnectionUpdate(updated);
   };
   
   const handleResume = async () => {
-    const updated = await connectionsApi.resume(connection.id);
-    onConnectionUpdate(updated);
+    // const updated = await connectionsApi.resume(connection.id);
+    // onConnectionUpdate(updated);
   };
 
   return (
@@ -458,3 +460,5 @@ function TestsTab({ connection, onRunTests }: { connection: Connection, onRunTes
         </div>
     )
 }
+
+    

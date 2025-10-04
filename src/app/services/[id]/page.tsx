@@ -1,7 +1,6 @@
 
 "use client";
 
-import { services, type Service } from "@/lib/data";
 import { notFound, useParams } from "next/navigation";
 import {
   Card,
@@ -16,6 +15,11 @@ import { ServiceIcon } from "@/components/services/service-icon";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
+import { useDoc, useFirestore } from "@/firebase";
+import { doc } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Service } from "@/lib/data-types";
+
 
 const statusClasses = {
   healthy: "bg-green-500",
@@ -33,8 +37,62 @@ const chartConfig = {
 
 export default function ServiceDetailPage() {
   const params = useParams();
+  const firestore = useFirestore();
   const serviceId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const service = services.find((s) => s.id === serviceId);
+  
+  const serviceRef = doc(firestore, "services", serviceId);
+  const { data: service, isLoading } = useDoc<Service>(serviceRef);
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-6 md:grid-cols-12">
+        <div className="col-span-12 flex items-center gap-4">
+          <Skeleton className="h-10 w-10 rounded-lg" />
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-24 mt-1" />
+          </div>
+        </div>
+        <Card className="col-span-12 rounded-2xl shadow-lg">
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-64" />
+          </CardContent>
+        </Card>
+        <div className="col-span-12 md:col-span-6">
+          <Card className="rounded-2xl shadow-lg h-full">
+            <CardHeader>
+              <Skeleton className="h-6 w-24" />
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-4 text-sm">
+              <Skeleton className="h-12" />
+              <Skeleton className="h-12" />
+              <Skeleton className="h-12" />
+            </CardContent>
+            <CardFooter>
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-6 w-16 rounded-lg" />
+                <Skeleton className="h-6 w-20 rounded-lg" />
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+        <div className="col-span-12 md:col-span-6">
+          <Card className="rounded-2xl shadow-lg h-full">
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-4 w-40" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (!service) {
     notFound();

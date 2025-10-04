@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth, useFirestore, useUser } from "@/firebase";
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { collection, serverTimestamp } from "firebase/firestore";
 
 /**
  * ACTIONS PAGE
@@ -47,34 +50,6 @@ type ExecuteResponse = {
 
 const pretty = (v: any) => JSON.stringify(v, null, 2);
 
-function useFirebaseIdToken() {
-  const [token, setToken] = useState<string | null>(null);
-  useEffect(() => {
-    let unsub: any;
-    // Optional import-at-runtime so this file doesn’t explode if Firebase isn’t loaded yet.
-    (async () => {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { getAuth, onAuthStateChanged, getIdToken } = await import("firebase/auth");
-        const auth = getAuth();
-        unsub = onAuthStateChanged(auth, async user => {
-          if (user) {
-            const t = await getIdToken(user, true);
-            setToken(t);
-          } else {
-            setToken(null);
-          }
-        });
-      } catch {
-        // Firebase not available yet; page will still work for public endpoints
-        setToken(null);
-      }
-    })();
-    return () => { try { unsub && unsub(); } catch {} };
-  }, []);
-  return token;
-}
-
 /** Build a default args object from a JSON Schema (object properties only, simple types) */
 function defaultArgsFromSchema(schema?: Record<string, any>) {
   if (!schema || schema.type !== "object" || !schema.properties) return {};
@@ -105,7 +80,8 @@ function validateArgs(schema: any, value: any): { ok: boolean; errors?: string[]
 }
 
 export default function ActionsPage() {
-  const idToken = useFirebaseIdToken();
+  const { user } = useUser();
+  const firestore = useFirestore();
   const [tools, setTools] = useState<McpTool[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string>("");
@@ -154,7 +130,7 @@ export default function ActionsPage() {
       }
     })();
     return () => { active = false; };
-  }, [idToken, selected]);
+  }, [selected]);
 
   useEffect(() => {
     // Keep argText in sync if args are programmatically replaced
@@ -237,6 +213,30 @@ export default function ActionsPage() {
     }
   }
 
+  const saveFavorite = () => {
+    if (!user) {
+      toast({ title: "Please sign in to save favorites.", variant: "destructive" });
+      return;
+    }
+    if (!selectedTool) {
+      toast({ title: "Please select a tool.", variant: "destructive" });
+      return;
+    }
+
+    const favoriteData = {
+      userId: user.uid,
+      tool: selectedTool.name,
+      args: args,
+      prompt: prompt,
+      timestamp: serverTimestamp(),
+    };
+
+    const favsCollection = collection(firestore, 'users', user.uid, 'favoriteActions');
+    addDocumentNonBlocking(favsCollection, favoriteData);
+    
+    toast({ title: "Saved as favorite!" });
+  };
+
   return (
     <div className="w-full space-y-6">
        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -256,7 +256,7 @@ export default function ActionsPage() {
             disabled={busy !== "idle" || !selected}
             className="rounded-lg"
           ><Play /> Execute</Button>
-          <Button variant="secondary" className="rounded-lg"><Save /> Save</Button>
+          <Button onClick={saveFavorite} variant="secondary" className="rounded-lg"><Save /> Save</Button>
         </div>
       </div>
 
@@ -411,4 +411,5 @@ export default function ActionsPage() {
     </div>
   );
 }
+
     

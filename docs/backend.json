@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "SystemHealth": {
@@ -71,7 +72,7 @@
           "type": "string",
           "description": "Unique identifier for the audit log entry."
         },
-        "timestamp": {
+        "ts": {
           "type": "string",
           "description": "Timestamp of the event.",
           "format": "date-time"
@@ -80,24 +81,48 @@
           "type": "string",
           "description": "Severity level of the event (e.g., INFO, WARNING, ERROR)."
         },
-        "message": {
+        "action": {
           "type": "string",
           "description": "Log message."
         },
         "actor": {
-          "type": "string",
-          "description": "User or system that initiated the event."
+          "type": "object",
+          "properties": {
+            "id": { "type": "string"},
+            "type": { "type": "string", "enum": ["user", "service", "automation"]},
+            "name": { "type": "string"},
+            "email": { "type": "string"}
+          }
         },
-        "serviceId": {
+        "service": {
           "type": "string",
           "description": "Reference to Service. (Relationship: Service 1:N AuditLog)"
+        },
+        "result": {
+          "type": "string",
+          "enum": ["success", "fail"]
+        },
+        "env": {
+          "type": "string",
+          "enum": ["dev", "stg", "prod"]
+        },
+        "tool": {
+          "type": "string"
+        },
+        "resource": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string"},
+            "id": { "type": "string"},
+            "name": { "type": "string"}
+          }
         }
       },
       "required": [
         "id",
-        "timestamp",
+        "ts",
         "severity",
-        "message",
+        "action",
         "actor"
       ]
     },
@@ -115,9 +140,17 @@
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N FavoriteAction)"
         },
-        "actionId": {
+        "tool": {
           "type": "string",
-          "description": "Identifier of the action being favorited."
+          "description": "The name of the tool."
+        },
+        "args": {
+          "type": "object",
+          "description": "The arguments for the tool."
+        },
+        "prompt": {
+            "type": "string",
+            "description": "The natural language prompt."
         },
         "timestamp": {
           "type": "string",
@@ -128,7 +161,7 @@
       "required": [
         "id",
         "userId",
-        "actionId",
+        "tool",
         "timestamp"
       ]
     },
@@ -218,28 +251,20 @@
       "type": "object",
       "description": "Represents a service within the system.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the service."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the service."
-        },
-        "status": {
-          "type": "string",
-          "description": "Current status of the service (e.g., UP, DOWN, DEGRADED)."
-        },
-        "connectionId": {
-          "type": "string",
-          "description": "Reference to Connection. (Relationship: Connection 1:N Service)"
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["healthy", "degraded", "down", "unknown"] },
+        "performance": { "type": "array", "items": { "type": "number" } },
+        "icon": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "lastSuccess": { "type": "string" },
+        "runCount": { "type": "number" },
+        "p95_ms": { "type": "number" },
+        "err_rate_pct": { "type": "number" },
+        "rps": { "type": "number" },
+        "commit": { "type": "string" }
       },
-      "required": [
-        "id",
-        "name",
-        "status"
-      ]
+      "required": ["id", "name", "status"]
     },
     "Connection": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -247,29 +272,56 @@
       "type": "object",
       "description": "Represents a connection to an external system or service.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the connection."
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "providerId": { "type": "string" },
+        "env": { "type": "string", "enum": ["dev", "staging", "prod"] },
+        "status": { "type": "string", "enum": ["active", "warning", "error", "pending", "paused"] },
+        "scopes": { "type": "array", "items": { "type": "string" } },
+        "secretRef": { "type": "string" },
+        "webhook": {
+          "type": "object",
+          "properties": {
+            "endpoint": { "type": "string" },
+            "secret": { "type": "string" },
+            "lastDeliveries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "status": { "type": "number" },
+                  "ms": { "type": "number" },
+                  "ts": { "type": "string" }
+                }
+              }
+            }
+          }
         },
-        "name": {
-          "type": "string",
-          "description": "Name of the connection."
+        "usage7d": { "type": "array", "items": { "type": "number" } },
+        "health": {
+          "type": "object",
+          "properties": {
+            "lastSyncISO": { "type": "string" },
+            "latencyP95": { "type": "number" },
+            "error24h": { "type": "number" },
+            "quotaUsedPct": { "type": "number" }
+          }
         },
-        "url": {
-          "type": "string",
-          "description": "URL of the connection endpoint.",
-          "format": "uri"
-        },
-        "token": {
-          "type": "string",
-          "description": "Token used for authentication with the external system."
+        "lastRotatedISO": { "type": "string" },
+        "lastTests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "pass": { "type": "boolean" },
+              "fixAction": { "type": "string" }
+            }
+          }
         }
       },
-      "required": [
-        "id",
-        "name",
-        "url"
-      ]
+      "required": ["id", "name", "providerId", "env", "status"]
     }
   },
   "auth": {
@@ -279,128 +331,39 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "systemHealth/{healthId}",
-        "definition": {
-          "entityName": "SystemHealth",
-          "schema": {
-            "$ref": "#/backend/entities/SystemHealth"
-          },
-          "description": "Stores system health records. Supports real-time updates for the health dashboard."
-        }
-      },
-      {
-        "path": "auditLogs/{logId}",
-        "definition": {
-          "entityName": "AuditLog",
-          "schema": {
-            "$ref": "#/backend/entities/AuditLog"
-          },
-          "description": "Stores audit log entries. Supports real-time updates for the audit log."
-        }
-      },
-      {
-        "path": "users/{userId}/favoriteActions/{actionId}",
-        "definition": {
-          "entityName": "FavoriteAction",
-          "schema": {
-            "$ref": "#/backend/entities/FavoriteAction"
-          },
-          "description": "Stores user's favorite actions. Path-based ownership ensures only the user can access their favorite actions.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The ID of the user."
-            },
-            {
-              "name": "actionId",
-              "description": "The ID of the favorite action."
-            }
-          ]
-        }
-      },
-      {
-        "path": "teams/{teamId}",
-        "definition": {
-          "entityName": "Team",
-          "schema": {
-            "$ref": "#/backend/entities/Team"
-          },
-          "description": "Stores team information.",
-          "params": [
-            {
-              "name": "teamId",
-              "description": "The ID of the team."
-            }
-          ]
-        }
-      },
-      {
-        "path": "users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user information.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The ID of the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "roles/{roleId}",
-        "definition": {
-          "entityName": "Role",
-          "schema": {
-            "$ref": "#/backend/entities/Role"
-          },
-          "description": "Stores role information (Admin, Developer, Viewer).",
-          "params": [
-            {
-              "name": "roleId",
-              "description": "The ID of the role."
-            }
-          ]
-        }
-      },
-      {
-        "path": "services/{serviceId}",
-        "definition": {
-          "entityName": "Service",
-          "schema": {
-            "$ref": "#/backend/entities/Service"
-          },
-          "description": "Stores service data. Supports dynamic updates for the Services Grid.",
-          "params": [
-            {
-              "name": "serviceId",
-              "description": "The ID of the service."
-            }
-          ]
-        }
-      },
-      {
-        "path": "connections/{connectionId}",
-        "definition": {
-          "entityName": "Connection",
-          "schema": {
-            "$ref": "#/backend/entities/Connection"
-          },
-          "description": "Stores connection data. Supports dynamic updates for Bridge Configuration.",
-          "params": [
-            {
-              "name": "connectionId",
-              "description": "The ID of the connection."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "This Firestore structure prioritizes authorization independence and supports the application's core features, including real-time updates, access control, and dynamic service data. The design denormalizes authorization context (e.g., team membership) to avoid `get()` calls in security rules, which enables atomic operations. It uses structural segregation to ensure collections have homogeneous security postures, making the rules simpler and more maintainable. The structure facilitates QAPs through explicit ownership (users/{userId}/favoriteActions) and membership maps (teams/{teamId}/members), allowing secure list operations. It also supports invariants such as ownership and timestamp integrity. Data clarity is enhanced by explicit state modeling, predictable schema, and radical consistency in naming conventions."
+    "/systemHealth/{healthId}": {
+        "schema": { "$ref": "#/entities/SystemHealth" },
+        "description": "Stores system health records. Supports real-time updates for the health dashboard."
+    },
+    "/auditLogs/{logId}": {
+        "schema": { "$ref": "#/entities/AuditLog" },
+        "description": "Stores audit log entries. Supports real-time updates for the audit log."
+    },
+    "/users/{userId}/favoriteActions/{actionId}": {
+        "schema": { "$ref": "#/entities/FavoriteAction" },
+        "description": "Stores user's favorite actions. Path-based ownership ensures only the user can access their favorite actions."
+    },
+    "/teams/{teamId}": {
+        "schema": { "$ref": "#/entities/Team" },
+        "description": "Stores team information."
+    },
+    "/users/{userId}": {
+        "schema": { "$ref": "#/entities/User" },
+        "description": "Stores user information."
+    },
+    "/roles/{roleId}": {
+        "schema": { "$ref": "#/entities/Role" },
+        "description": "Stores role information (Admin, Developer, Viewer)."
+    },
+    "/services/{serviceId}": {
+        "schema": { "$ref": "#/entities/Service" },
+        "description": "Stores service data. Supports dynamic updates for the Services Grid."
+    },
+    "/connections/{connectionId}": {
+        "schema": { "$ref": "#/entities/Connection" },
+        "description": "Stores connection data. Supports dynamic updates for Bridge Configuration."
+    }
   }
 }
+
+    

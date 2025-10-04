@@ -1,12 +1,17 @@
-import { services } from "@/lib/data";
+
 import ServiceCard from "@/components/services/service-card-dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { ArrowRight } from "lucide-react";
+import { useCollection, useFirestore } from "@/firebase";
+import { collection, limit, query } from "firebase/firestore";
+import type { Service } from "@/lib/data-types";
 
 export default function ServicesOverview() {
-  const overviewServices = services.slice(0, 6);
+  const firestore = useFirestore();
+  const servicesQuery = query(collection(firestore, 'services'), limit(6));
+  const { data: overviewServices } = useCollection<Service>(servicesQuery);
 
   return (
     <Card className="rounded-2xl shadow-lg">
@@ -23,7 +28,7 @@ export default function ServicesOverview() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {overviewServices.map((service) => (
+          {overviewServices?.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}
         </div>
@@ -31,3 +36,5 @@ export default function ServicesOverview() {
     </Card>
   );
 }
+
+    

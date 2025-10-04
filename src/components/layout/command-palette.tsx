@@ -26,9 +26,11 @@ import {
   CommandShortcut,
 } from "@/components/ui/command"
 import { DialogTitle } from "@/components/ui/dialog"
-import { services } from "@/lib/data"
 import { ServiceIcon } from "@/components/services/service-icon"
 import { create } from 'zustand'
+import { useCollection, useFirestore } from "@/firebase"
+import { collection } from "firebase/firestore"
+import type { Service } from "@/lib/data-types"
 
 type State = {
   open: boolean;
@@ -44,6 +46,9 @@ export function CommandPalette() {
   const router = useRouter()
   const { open, setOpen } = useCommandPalette();
   const prefersReduced = useReducedMotion();
+
+  const firestore = useFirestore();
+  const { data: services } = useCollection<Service>(collection(firestore, 'services'));
 
   const variants = prefersReduced
     ? { hidden: { opacity: 0 }, show: { opacity: 1 } }
@@ -104,7 +109,7 @@ export function CommandPalette() {
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Services">
-              {services.slice(0,5).map((service) => (
+              {services?.slice(0,5).map((service) => (
                 <CommandItem
                   key={service.id}
                   value={service.name}

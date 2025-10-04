@@ -2,32 +2,20 @@
 "use client";
 
 import * as React from "react";
-import { services as allServices, type Service } from "@/lib/data";
 import { ServiceIcon } from "@/components/services/service-icon";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-client-helpers";
 import Link from "next/link";
-
+import { useCollection, useFirestore } from "@/firebase";
+import { collection, query, where } from "firebase/firestore";
+import type { Service } from "@/lib/data-types";
 
 // ---------- Config ----------
 const PAGE_SIZE = 24;
 const CATEGORIES = ["core", "billing", "api", "user", "db", "media", "worker", "data", "realtime", "storage", "aws", "devops", "automation", "integration", "events", "cli", "tooling", "docs", "generator"] as const;
 
 const STATUS = ["healthy", "degraded", "down", "unknown"] as const;
-
-// ---------- Small utilities ----------
-function timeAgo(iso?: string) {
-  if (!iso) return "";
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
 
 // ---------- API calls (wired to mock data) ----------
 async function fetchServices(params: {
@@ -37,121 +25,46 @@ async function fetchServices(params: {
   page: number;
   pageSize: number;
 }): Promise<{ items: Service[]; hasMore: boolean }> {
-  let filtered = allServices;
-
-  if (params.q) {
-    const q = params.q.toLowerCase();
-    filtered = filtered.filter(
-      s =>
-        s.name.toLowerCase().includes(q) ||
-        s.tags?.some(t => t.toLowerCase().includes(q))
-    );
-  }
-  if (params.category) {
-    filtered = filtered.filter(s => s.tags.includes(params.category));
-  }
-  if (params.status) {
-    filtered = filtered.filter(s => s.status === params.status);
-  }
-
-  const start = (params.page - 1) * params.pageSize;
-  const items = filtered.slice(start, start + params.pageSize);
+  // This would be a firestore query in real life
   await new Promise(r => setTimeout(r, 300));
-  return { items, hasMore: start + params.pageSize < filtered.length };
+  return { items: [], hasMore: false };
 }
 
 
 // ---------- Page component ----------
 export default function ServicesPage() {
+  const firestore = useFirestore();
   // filters
   const [query, setQuery] = React.useState("");
   const debouncedQuery = useDebounced(query, 300);
   const [category, setCategory] = React.useState("");
   const [status, setStatus] = React.useState("");
 
-  // data
-  const [page, setPage] = React.useState(1);
-  const [items, setItems] = React.useState<Service[]>([]);
-  const [hasMore, setHasMore] = React.useState(true);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const servicesQuery = React.useMemo(() => {
+    const constraints = [];
+    if (category) {
+      constraints.push(where('tags', 'array-contains', category));
+    }
+    if (status) {
+      constraints.push(where('status', '==', status));
+    }
+    return query(collection(firestore, 'services'), ...constraints);
+  }, [firestore, category, status]);
 
-  // reset pagination when filters or search change
-  React.useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      setPage(1);
-      try {
-        const res = await fetchServices({
-          q: debouncedQuery,
-          category,
-          status,
-          page: 1,
-          pageSize: PAGE_SIZE
-        });
-        if (cancelled) return;
-        setItems(res.items);
-        setHasMore(res.hasMore);
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || "Failed to load services.");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedQuery, category, status]);
+  const { data: allServices, isLoading: loading, error } = useCollection<Service>(servicesQuery);
 
-  // load more on intersection
-  const loaderRef = React.useRef<HTMLDivElement | null>(null);
-  React.useEffect(() => {
-    if (!hasMore || loading) return;
-    const el = loaderRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      entries => {
-        const first = entries[0];
-        if (first.isIntersecting) {
-          setPage(p => p + 1);
-        }
-      },
-      { rootMargin: "600px 0px 0px 0px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [hasMore, loading]);
-
-  // fetch next pages
-  React.useEffect(() => {
-    if (page === 1) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetchServices({
-          q: debouncedQuery,
-          category,
-          status,
-          page,
-          pageSize: PAGE_SIZE
-        });
-        if (cancelled) return;
-        setItems(prev => prev.concat(res.items));
-        setHasMore(res.hasMore);
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || "Failed to load more services.");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [page, debouncedQuery, category, status]);
+  const items = React.useMemo(() => {
+    if (!allServices) return [];
+    if (debouncedQuery) {
+      const q = debouncedQuery.toLowerCase();
+      return allServices.filter(
+        s =>
+          s.name.toLowerCase().includes(q) ||
+          s.tags?.some(t => t.toLowerCase().includes(q))
+      );
+    }
+    return allServices;
+  }, [allServices, debouncedQuery]);
 
 
   return (
@@ -217,7 +130,7 @@ export default function ServicesPage() {
       {/* Content */}
       <main className="py-5">
         {error ? (
-          <ErrorState message={error} onRetry={() => { setItems([]); setHasMore(true); setPage(1); setLoading(true); }} />
+          <ErrorState message={error.message} onRetry={() => {}} />
         ) : (
           <>
             {loading && items.length === 0 ? (
@@ -244,12 +157,6 @@ export default function ServicesPage() {
                     </li>
                   ))}
                 </ul>
-                {/* loader sentinel */}
-                {hasMore && (
-                  <div ref={loaderRef} className="py-8 text-center text-sm text-muted-foreground">
-                    {loading ? "Loading more..." : ""}
-                  </div>
-                )}
               </>
             )}
           </>
@@ -413,3 +320,5 @@ function SkeletonGrid() {
     </ul>
   );
 }
+
+    

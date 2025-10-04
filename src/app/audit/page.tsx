@@ -4,6 +4,7 @@
 import * as React from "react";
 import { format, parseISO } from "date-fns";
 import { Calendar as CalendarIcon, Filter, Download, RefreshCw, Search, ChevronLeft, ChevronRight, Loader2, ShieldAlert, CheckCircle2, CircleHelp, X } from "lucide-react";
+import { collection, query, where, limit, orderBy } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,8 +22,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-client-helpers";
-import { auditLogs, type AuditEvent } from "@/lib/data";
 import { queryLogs } from "@/lib/actions";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import type { AuditEvent } from "@/lib/data";
 
 // ---------- Types ----------
 type Severity = AuditEvent['severity'];
@@ -82,65 +84,12 @@ function toCSV(rows: AuditEvent[]) {
   return new Blob([csv], { type: "text/csv;charset=utf-8;" });
 }
 
-// ---------- Data fetching ----------
-async function fetchAudits(
-  page: number,
-  pageSize: number,
-  q: string,
-  filters: { severity?: Severity | "all"; status?: Status | "all"; service?: string | "all"; from?: Date | null; to?: Date | null; },
-  isAiSearch?: boolean
-): Promise<{ rows: AuditEvent[]; total: number; }> {
-  // Simulate network delay
-  await new Promise(r => setTimeout(r, 400));
-  
-  let rows = [...auditLogs];
-
-  // AI Search
-  if (q && isAiSearch) {
-    const allLogsString = JSON.stringify(rows);
-    const result = await queryLogs({ query: q, logs: allLogsString });
-    try {
-      const parsedResult = JSON.parse(result.results);
-      if (Array.isArray(parsedResult)) {
-        rows = parsedResult;
-      } else if (parsedResult.results && Array.isArray(parsedResult.results)) {
-        rows = parsedResult.results;
-      }
-    } catch (e) {
-      console.error("Failed to parse AI search results:", e);
-      rows = [];
-    }
-  } else { // Standard Filter
-    if (q) {
-      const qq = q.toLowerCase();
-      rows = rows.filter(r =>
-        r.service.toLowerCase().includes(qq) ||
-        r.action.toLowerCase().includes(qq) ||
-        r.actor.id.toLowerCase().includes(qq) ||
-        (r.actor.name || '').toLowerCase().includes(qq) ||
-        (r.actor.email || '').toLowerCase().includes(qq) ||
-        (r.resource?.id || '').toLowerCase().includes(qq) ||
-        (r.resource?.name || '').toLowerCase().includes(qq)
-      );
-    }
-  }
-
-  if (filters.severity && filters.severity !== "all") rows = rows.filter(r => r.severity === filters.severity);
-  if (filters.status && filters.status !== "all") rows = rows.filter(r => r.result === filters.status);
-  if (filters.service && filters.service !== "all") rows = rows.filter(r => r.service === filters.service);
-  if (filters.from) rows = rows.filter(r => new Date(r.ts) >= filters.from!);
-  if (filters.to) rows = rows.filter(r => new Date(r.ts) <= filters.to!);
-
-  const total = rows.length;
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  return { rows: rows.slice(start, end), total };
-}
-
 // ---------- Page ----------
 export default function AuditPage() {
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [isAiSearch, setIsAiSearch] = React.useState(false);
+  const [aiResults, setAiResults] = React.useState<AuditEvent[] | null>(null);
 
   // query state
   const [q, setQ] = React.useState("");
@@ -151,40 +100,87 @@ export default function AuditPage() {
   const [from, setFrom] = React.useState<Date | null>(null);
   const [to, setTo] = React.useState<Date | null>(null);
 
-  // paging & data
   const [page, setPage] = React.useState(1);
-  const [total, setTotal] = React.useState(0);
-  const [rows, setRows] = React.useState<AuditEvent[]>([]);
-  const [loading, setLoading] = React.useState(true);
-
-  // derive
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const serviceOptions = React.useMemo(() => [...new Set(auditLogs.map(log => log.service))], []);
 
   const [isTransitioning, startTransition] = React.useTransition();
-  // fetch
-  const load = React.useCallback(() => {
+  
+  const auditLogQuery = useMemoFirebase(() => {
+    const constraints = [];
+    if (severity !== 'all') constraints.push(where('severity', '==', severity));
+    if (status !== 'all') constraints.push(where('result', '==', status));
+    if (service !== 'all') constraints.push(where('service', '==', service));
+    if (from) constraints.push(where('ts', '>=', from.toISOString()));
+    if (to) constraints.push(where('ts', '<=', to.toISOString()));
+    
+    constraints.push(orderBy('ts', 'desc'));
+    constraints.push(limit(PAGE_SIZE * page));
+
+    return query(collection(firestore, 'auditLogs'), ...constraints);
+  }, [firestore, severity, status, service, from, to, page]);
+
+  const { data: auditLogs, isLoading: loading } = useCollection<AuditEvent>(auditLogQuery);
+
+  const { data: serviceOptionsData } = useCollection<{name: string}>(collection(firestore, 'services'));
+  const serviceOptions = React.useMemo(() => [...new Set(serviceOptionsData?.map(s => s.name) || [])], [serviceOptionsData]);
+
+  const rows = React.useMemo(() => {
+    if (isAiSearch && aiResults) return aiResults;
+    if (!auditLogs) return [];
+    
+    let filteredLogs = auditLogs;
+    if (debouncedQ && !isAiSearch) {
+      const qq = debouncedQ.toLowerCase();
+      filteredLogs = auditLogs.filter(r =>
+        r.service.toLowerCase().includes(qq) ||
+        r.action.toLowerCase().includes(qq) ||
+        r.actor.id.toLowerCase().includes(qq) ||
+        (r.actor.name || '').toLowerCase().includes(qq) ||
+        (r.actor.email || '').toLowerCase().includes(qq) ||
+        (r.resource?.id || '').toLowerCase().includes(qq) ||
+        (r.resource?.name || '').toLowerCase().includes(qq)
+      );
+    }
+    return filteredLogs;
+  }, [auditLogs, isAiSearch, aiResults, debouncedQ]);
+
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const handleAiSearch = () => {
+    if (!debouncedQ) {
+      setAiResults(null);
+      setIsAiSearch(false);
+      return;
+    }
     startTransition(async () => {
-      setLoading(true);
+      setIsAiSearch(true);
+      const allLogsString = JSON.stringify(auditLogs);
+      const result = await queryLogs({ query: debouncedQ, logs: allLogsString });
       try {
-        const { rows, total } = await fetchAudits(page, PAGE_SIZE, debouncedQ, { severity, status, service, from, to }, isAiSearch);
-        setRows(rows);
-        setTotal(total);
-      } catch (e: any) {
-        toast({ title: "Failed to load audit", description: String(e?.message || e), variant: "destructive" });
-      } finally {
-        setLoading(false);
+        const parsedResult = JSON.parse(result.results);
+        if (Array.isArray(parsedResult)) {
+          setAiResults(parsedResult);
+        } else if (parsedResult.results && Array.isArray(parsedResult.results)) {
+          setAiResults(parsedResult.results);
+        }
+      } catch (e) {
+        console.error("Failed to parse AI search results:", e);
+        setAiResults([]);
       }
     });
-  }, [page, debouncedQ, severity, status, service, from, to, isAiSearch, toast]);
+  }
 
   React.useEffect(() => {
-    setPage(1); // reset page when filters/search change
+    setPage(1); 
+    setAiResults(null);
   }, [debouncedQ, severity, status, service, from, to, isAiSearch]);
 
   React.useEffect(() => {
-    load();
-  }, [load]);
+    if (isAiSearch) {
+      handleAiSearch();
+    }
+  }, [isAiSearch, debouncedQ]);
+
 
   function resetFilters() {
     setQ("");
@@ -194,6 +190,7 @@ export default function AuditPage() {
     setFrom(null);
     setTo(null);
     setIsAiSearch(false);
+    setAiResults(null);
   }
 
   function exportCSV() {
@@ -520,3 +517,5 @@ function DateRangePicker({
     </Popover>
   );
 }
+
+    

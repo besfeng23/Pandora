@@ -37,7 +37,8 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { cn, fmtRel, useDebounced, useLocalStorage } from "@/lib/utils";
+import { cn, fmtRel } from "@/lib/utils";
+import { useDebounced, useLocalStorage } from "@/hooks/use-client-helpers";
 import { 
   quickConnectProviders, 
   seedConnections, 
@@ -457,5 +458,3 @@ function TestsTab({ connection, onRunTests }: { connection: Connection, onRunTes
         </div>
     )
 }
-
-    

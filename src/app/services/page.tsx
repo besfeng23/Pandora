@@ -5,7 +5,8 @@ import * as React from "react";
 import { services as allServices, type Service } from "@/lib/data";
 import { ServiceIcon } from "@/components/services/service-icon";
 import { Badge } from "@/components/ui/badge";
-import { cn, useDebounced } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useDebounced } from "@/hooks/use-client-helpers";
 import Link from "next/link";
 
 

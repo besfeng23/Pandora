@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { useDebounced } from "@/hooks/use-client-helpers";
 import { auditLogs, type AuditEvent } from "@/lib/data";
 
 // ---------- Types ----------
@@ -123,7 +124,7 @@ export default function AuditPage() {
 
   // query state
   const [q, setQ] = React.useState("");
-  const [debouncedQ, setDebouncedQ] = React.useState("");
+  const debouncedQ = useDebounced(q, 250);
   const [severity, setSeverity] = React.useState<Severity | "all">("all");
   const [status, setStatus] = React.useState<Status | "all">("all");
   const [service, setService] = React.useState<string | "all">("all");
@@ -139,12 +140,6 @@ export default function AuditPage() {
   // derive
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const serviceOptions = React.useMemo(() => [...new Set(auditLogs.map(log => log.service))], []);
-
-  // debounce search
-  React.useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q), 250);
-    return () => clearTimeout(t);
-  }, [q]);
 
   // fetch
   const load = React.useCallback(async () => {
@@ -497,5 +492,3 @@ function DateRangePicker({
     </Popover>
   );
 }
-
-    

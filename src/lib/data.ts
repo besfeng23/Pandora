@@ -91,107 +91,196 @@ export type AuditEvent = {
   raw: unknown;
 };
 
-export const auditLogs: AuditEvent[] = [
+export const auditLogs: AuditEvent[] = Array.from({ length: 137 }, (_, i) => {
+    const services = ["Orchestrator", "Adapter", "Compliance Logger", "Health Check", "FX Rate", "Studio", "Partner Mgmt"];
+    const actions = ["CREATE", "POLL", "FLAG", "RUNBOOK", "SYNC", "APPROVE", "EXPORT", "REJECT"];
+    const actors = [{ id: "system", type: "automation", name: "system" }, { id: "eve@edenos", type: "user", email: "eve@edenos", name: "Eve" }, { id: "admin@redapplex", type: "user", email: "admin@redapplex", name: "Admin" }];
+    const statuses: AuditEvent['result'][] = ["success", "fail", "pending" as any]; // pending is not a real status
+    const severities: AuditEvent['severity'][] = ["info", "warn", "error", "critical"];
+
+    const date = new Date();
+    date.setHours(date.getHours() - i);
+    date.setMinutes(date.getMinutes() - (i * 7));
+    date.setSeconds(date.getSeconds() - (i * 13));
+
+    const result: AuditEvent['result'] = i % 2 === 0 ? 'success' : 'fail';
+
+    return {
+        id: `evt-${100000 + i}`,
+        ts: date.toISOString(),
+        env: 'prod',
+        service: services[i % services.length],
+        tool: 'mcp-cli',
+        action: actions[i % actions.length],
+        actor: actors[i % actors.length],
+        source: 'CLI',
+        resource: { type: 'transaction', id: `txn/${100000 + i}` },
+        severity: severities[i % severities.length],
+        result: result,
+        latency_ms: 50 + Math.floor(Math.random() * 200),
+        raw: { details: result === 'success' ? "Periodic health ping." : "Latency above SLO for FX quotes." },
+        integrity: { signed: true, hash: `hash-${i}`, prev_hash: `hash-${i-1}` },
+    };
+});
+
+
+// --- Connections Page Data ---
+
+export type Env = "dev" | "staging" | "prod";
+export type Status = "active" | "warning" | "error" | "pending" | "paused";
+export type Provider = {
+  id: string;
+  name: string;
+  category: "dev" | "cloud" | "billing" | "docs" | "chat" | "db";
+  recommendedScopes?: string[];
+};
+export type Health = {
+  lastSyncISO?: string;
+  latencyP95?: number;
+  error24h?: number;
+  quotaUsedPct?: number;
+};
+export type TestResult = { name: string; pass: boolean; fixAction?: FixId };
+export type FixId = | "reauth" | `add_scope:${string}` | "rotate_secret" | "replay_webhook" | "lower_rate" | "upgrade_plan";
+export type Connection = {
+  id: string; // unique per provider+env
+  name: string;
+  providerId: string;
+  env: Env;
+  status: Status;
+  scopes: string[];
+  secretRef?: string;
+  webhook?: {
+    endpoint?: string;
+    secret?: string;
+    lastDeliveries?: Array<{ id: string; status: number; ms: number; ts: string }>;
+  };
+  usage7d: number[]; // for sparkline
+  health: Health;
+  lastRotatedISO?: string;
+  lastTests?: TestResult[];
+};
+
+export const seedConnections: Connection[] = [
   {
-    id: "evt-1",
-    ts: "2023-10-27T10:00:00Z",
-    env: 'prod',
-    service: 'Auth Service',
-    tool: 'mcp-cli',
-    action: 'restart_pod',
-    actor: { id: 'user-alex', type: 'user', email: 'alex@pandora.dev', name: 'Alex' },
-    source: 'CLI',
-    resource: { type: 'pod', id: 'auth-service-7dbrg', name: 'auth-service-7dbrg' },
-    session: 'session-xyz',
-    severity: 'info',
-    result: 'success',
-    latency_ms: 120,
-    integrity: { signed: true, hash: 'abc1', prev_hash: 'abc0' },
-    raw: { "details": "Pod restarted successfully" }
+    id: "github:prod",
+    providerId: "github",
+    name: "GitHub",
+    env: "prod",
+    status: "active",
+    scopes: ["repo", "read:user"],
+    usage7d: [4, 5, 3, 6, 5, 8, 10],
+    health: { lastSyncISO: new Date(Date.now() - 7 * 60 * 1000).toISOString(), latencyP95: 220, error24h: 0, quotaUsedPct: 18 },
+    webhook: {
+      endpoint: "https://pandora.app/webhooks/github",
+      secret: "vault://secrets/github",
+      lastDeliveries: [
+        { id: "evt_1", status: 200, ms: 134, ts: new Date().toISOString() },
+      ],
+    },
+    lastRotatedISO: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
-    id: "evt-2",
-    ts: "2023-10-27T10:01:15Z",
-    env: 'prod',
-    service: 'Realtime Analytics',
-    tool: 'mcp-autoscaler',
-    action: 'scale_up',
-    actor: { id: 'auto-scaler', type: 'automation', name: 'MCP Autoscaler' },
-    source: 'Automation',
-    resource: { type: 'deployment', id: 'realtime-analytics', name: 'realtime-analytics' },
-    session: 'session-xyz',
-    severity: 'error',
-    result: 'fail',
-    integrity: { signed: true, hash: 'abc2', prev_hash: 'abc1' },
-    raw: { "reason": "quota exceeded" }
+    id: "notion:prod",
+    providerId: "notion",
+    name: "Notion",
+    env: "prod",
+    status: "warning",
+    scopes: ["pages.read"],
+    usage7d: [0, 0, 1, 1, 0, 2, 1],
+    health: { lastSyncISO: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(), latencyP95: 410, error24h: 0, quotaUsedPct: 64 },
+    lastRotatedISO: new Date(Date.now() - 47 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
-    id: "evt-3",
-    ts: "2023-10-27T10:02:30Z",
-    env: 'dev',
-    service: 'pandora-ui',
-    tool: 'user-settings',
-    action: 'add_favorite',
-    actor: { id: 'user-sara', type: 'user', email: 'sara@pandora.dev', name: 'Sara' },
-    source: 'UI',
-    resource: { type: 'favorite', id: 'fav-flush-cache' },
-    session: 'session-abc',
-    severity: 'info',
-    result: 'success',
-    integrity: { signed: true, hash: 'abc3', prev_hash: 'abc2' },
-    raw: {}
+    id: "slack:prod",
+    providerId: "slack",
+    name: "Slack",
+    env: "prod",
+    status: "error",
+    scopes: ["channels:read"],
+    usage7d: [3, 3, 3, 0, 0, 0, 0],
+    health: { lastSyncISO: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), latencyP95: 999, error24h: 12, quotaUsedPct: 10 },
+    lastRotatedISO: new Date(Date.now() - 80 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
-    id: "evt-4",
-    ts: "2023-10-27T10:05:00Z",
-    env: 'prod',
-    service: 'pandora-bridge',
-    tool: 'settings-ui',
-    action: 'test_connection',
-    actor: { id: 'user-admin', type: 'user', email: 'admin@pandora.dev', name: 'Admin' },
-    source: 'UI',
-    resource: { type: 'integration', id: 'github' },
-    session: 'session-def',
-    severity: 'info',
-    result: 'success',
-    latency_ms: 88,
-    integrity: { signed: true, hash: 'abc4', prev_hash: 'abc3' },
-    raw: {}
+    id: "linear:staging",
+    providerId: "linear",
+    name: "Linear",
+    env: "staging",
+    status: "pending",
+    scopes: ["read:issues"],
+    usage7d: [0, 0, 0, 0, 0, 0, 0],
+    health: { quotaUsedPct: 0 },
   },
-  {
-    id: "evt-5",
-    ts: "2023-10-27T10:09:10Z",
-    env: 'prod',
-    service: 'Production DB',
-    tool: 'mcp-cli',
-    action: 'delete_database',
-    actor: { id: 'user-sara', type: 'user', email: 'sara@pandora.dev', name: 'Sara' },
-    source: 'CLI',
-    resource: { type: 'database', id: 'db-user-profiles-prod' },
-    session: 'session-ghi',
-    severity: 'critical',
-    result: 'success',
-    policy: { rbac: 'allow', spend_cap: 'ok' },
-    integrity: { signed: true, hash: 'abc5', prev_hash: 'abc4' },
-    raw: {}
-  },
-  {
-    id: "evt-6",
-    ts: "2023-10-27T10:12:00Z",
-    env: 'prod',
-    service: 'auth-service',
-    tool: 'login-proxy',
-    action: 'user_login',
-    actor: { id: 'unknown', type: 'user' },
-    source: 'API',
-    session: 'session-jkl',
-    severity: 'warn',
-    result: 'fail',
-    network: { ip: '123.45.67.89', region: 'us-west-1' },
-    integrity: { signed: false, hash: 'abc6', prev_hash: 'abc5' },
-    raw: { "error": "Invalid credentials provided for user 'hacker@evil.com'" }
-  }
 ];
+
+// In-memory helpers for fake API
+const _mem: Record<string, Connection> = Object.fromEntries(seedConnections.map((c) => [c.id, c]));
+function getConn(id: string) { return _mem[id]; }
+function setConn(c: Connection) { _mem[c.id] = c; return c; }
+function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
+export function upsertConn(arr: Connection[], c: Connection) {
+  const i = arr.findIndex((x) => x.id === c.id);
+  if (i === -1) return [...arr, c];
+  const next = [...arr];
+  next[i] = c;
+  return next;
+}
+
+export const connectionsApi = {
+  async startConnect(providerId: string, env: Env): Promise<Connection> {
+    await sleep(400);
+    const p = quickConnectProviders.find(p => p.id === providerId)!;
+    const base: Connection = {
+      id: `${providerId}:${env}`,
+      providerId,
+      name: p.name,
+      env,
+      status: "pending",
+      scopes: [],
+      usage7d: Array.from({ length: 7 }, () => Math.floor(Math.random() * 8)),
+      health: { quotaUsedPct: Math.floor(Math.random() * 30) },
+      webhook: { endpoint: `https://pandora.app/webhooks/${providerId}`, secret: "vault://…", lastDeliveries: [] },
+      secretRef: `vault://secrets/${providerId}-${env}`,
+      lastRotatedISO: new Date().toISOString(),
+    };
+    return setConn(base);
+  },
+  async runAutoTests(id: string): Promise<Connection> {
+    await sleep(500);
+    const conn = getConn(id);
+    const now = new Date().toISOString();
+    const results: TestResult[] = [
+      { name: "auth.check", pass: true },
+      { name: "whoami", pass: Math.random() > 0.03 },
+      { name: "rate.limit", pass: true },
+      { name: "webhook.ping", pass: Math.random() > 0.1, fixAction: "replay_webhook" },
+      { name: "sample.read(1)", pass: true },
+    ];
+    const passed = results.every((r) => r.pass);
+    const status: Status = passed ? "active" : "warning";
+    return setConn({
+      ...conn,
+      status,
+      lastTests: results,
+      health: { ...conn.health, lastSyncISO: now, error24h: passed ? 0 : 1, latencyP95: Math.floor(150 + Math.random() * 200) },
+    });
+  },
+  async rotateSecret(id: string): Promise<Connection> {
+    await sleep(300);
+    const conn = getConn(id);
+    return setConn({ ...conn, secretRef: `vault://secrets/${conn.providerId}-${env}?rotated=${Date.now()}`, lastRotatedISO: new Date().toISOString() });
+  },
+  async pause(id: string): Promise<Connection> {
+    await sleep(200);
+    const conn = getConn(id);
+    return setConn({ ...conn, status: 'paused' });
+  },
+  async resume(id: string): Promise<Connection> {
+    await sleep(400);
+    return this.runAutoTests(id);
+  }
+};
 
 
 // --- Settings Page Data ---
@@ -268,3 +357,5 @@ export const systemKpis = [
     { title: "Failing Pings", value: "2", footer: "GCP, OpenAI" },
     { title: "Spend Est.", value: "$1,234", footer: "+5% vs last month" },
 ]
+
+    

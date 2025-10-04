@@ -1,0 +1,406 @@
+{
+  "entities": {
+    "SystemHealth": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SystemHealth",
+      "type": "object",
+      "description": "Represents the health status of the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the system health record."
+        },
+        "uptime": {
+          "type": "number",
+          "description": "System uptime in seconds."
+        },
+        "healthy": {
+          "type": "boolean",
+          "description": "Indicates whether the system is in a healthy state."
+        },
+        "degraded": {
+          "type": "boolean",
+          "description": "Indicates whether the system is in a degraded state."
+        },
+        "down": {
+          "type": "boolean",
+          "description": "Indicates whether the system is down."
+        },
+        "unknown": {
+          "type": "boolean",
+          "description": "Indicates whether the system status is unknown."
+        },
+        "activeOperations": {
+          "type": "number",
+          "description": "Number of active operations."
+        },
+        "failures": {
+          "type": "number",
+          "description": "Number of failures."
+        },
+        "connectedServices": {
+          "type": "number",
+          "description": "Number of connected services."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the health record.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "uptime",
+        "healthy",
+        "degraded",
+        "down",
+        "unknown",
+        "activeOperations",
+        "failures",
+        "connectedServices",
+        "timestamp"
+      ]
+    },
+    "AuditLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AuditLog",
+      "type": "object",
+      "description": "Represents an audit log entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the audit log entry."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the event.",
+          "format": "date-time"
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity level of the event (e.g., INFO, WARNING, ERROR)."
+        },
+        "message": {
+          "type": "string",
+          "description": "Log message."
+        },
+        "actor": {
+          "type": "string",
+          "description": "User or system that initiated the event."
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "Reference to Service. (Relationship: Service 1:N AuditLog)"
+        }
+      },
+      "required": [
+        "id",
+        "timestamp",
+        "severity",
+        "message",
+        "actor"
+      ]
+    },
+    "FavoriteAction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FavoriteAction",
+      "type": "object",
+      "description": "Represents a user's saved favorite action.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the favorite action."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N FavoriteAction)"
+        },
+        "actionId": {
+          "type": "string",
+          "description": "Identifier of the action being favorited."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when the action was saved as a favorite.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "actionId",
+        "timestamp"
+      ]
+    },
+    "Team": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Team",
+      "type": "object",
+      "description": "Represents a team within the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the team."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the team."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the team's purpose."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "teamId": {
+          "type": "string",
+          "description": "Reference to Team. (Relationship: Team 1:N User). Team the user belongs to."
+        },
+        "roleId": {
+          "type": "string",
+          "description": "Reference to Role. (Relationship: Role 1:N User). User's role within the team."
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    },
+    "Role": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Role",
+      "type": "object",
+      "description": "Represents a role within the application (e.g., Admin, Developer, Viewer).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the role."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the role."
+        },
+        "permissions": {
+          "type": "array",
+          "description": "List of permissions associated with this role.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Service": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Service",
+      "type": "object",
+      "description": "Represents a service within the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the service."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the service."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the service (e.g., UP, DOWN, DEGRADED)."
+        },
+        "connectionId": {
+          "type": "string",
+          "description": "Reference to Connection. (Relationship: Connection 1:N Service)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "status"
+      ]
+    },
+    "Connection": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Connection",
+      "type": "object",
+      "description": "Represents a connection to an external system or service.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the connection."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the connection."
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the connection endpoint.",
+          "format": "uri"
+        },
+        "token": {
+          "type": "string",
+          "description": "Token used for authentication with the external system."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "url"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "systemHealth/{healthId}",
+        "definition": {
+          "entityName": "SystemHealth",
+          "schema": {
+            "$ref": "#/backend/entities/SystemHealth"
+          },
+          "description": "Stores system health records. Supports real-time updates for the health dashboard."
+        }
+      },
+      {
+        "path": "auditLogs/{logId}",
+        "definition": {
+          "entityName": "AuditLog",
+          "schema": {
+            "$ref": "#/backend/entities/AuditLog"
+          },
+          "description": "Stores audit log entries. Supports real-time updates for the audit log."
+        }
+      },
+      {
+        "path": "users/{userId}/favoriteActions/{actionId}",
+        "definition": {
+          "entityName": "FavoriteAction",
+          "schema": {
+            "$ref": "#/backend/entities/FavoriteAction"
+          },
+          "description": "Stores user's favorite actions. Path-based ownership ensures only the user can access their favorite actions.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user."
+            },
+            {
+              "name": "actionId",
+              "description": "The ID of the favorite action."
+            }
+          ]
+        }
+      },
+      {
+        "path": "teams/{teamId}",
+        "definition": {
+          "entityName": "Team",
+          "schema": {
+            "$ref": "#/backend/entities/Team"
+          },
+          "description": "Stores team information.",
+          "params": [
+            {
+              "name": "teamId",
+              "description": "The ID of the team."
+            }
+          ]
+        }
+      },
+      {
+        "path": "users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user information.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "roles/{roleId}",
+        "definition": {
+          "entityName": "Role",
+          "schema": {
+            "$ref": "#/backend/entities/Role"
+          },
+          "description": "Stores role information (Admin, Developer, Viewer).",
+          "params": [
+            {
+              "name": "roleId",
+              "description": "The ID of the role."
+            }
+          ]
+        }
+      },
+      {
+        "path": "services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": {
+            "$ref": "#/backend/entities/Service"
+          },
+          "description": "Stores service data. Supports dynamic updates for the Services Grid.",
+          "params": [
+            {
+              "name": "serviceId",
+              "description": "The ID of the service."
+            }
+          ]
+        }
+      },
+      {
+        "path": "connections/{connectionId}",
+        "definition": {
+          "entityName": "Connection",
+          "schema": {
+            "$ref": "#/backend/entities/Connection"
+          },
+          "description": "Stores connection data. Supports dynamic updates for Bridge Configuration.",
+          "params": [
+            {
+              "name": "connectionId",
+              "description": "The ID of the connection."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure prioritizes authorization independence and supports the application's core features, including real-time updates, access control, and dynamic service data. The design denormalizes authorization context (e.g., team membership) to avoid `get()` calls in security rules, which enables atomic operations. It uses structural segregation to ensure collections have homogeneous security postures, making the rules simpler and more maintainable. The structure facilitates QAPs through explicit ownership (users/{userId}/favoriteActions) and membership maps (teams/{teamId}/members), allowing secure list operations. It also supports invariants such as ownership and timestamp integrity. Data clarity is enhanced by explicit state modeling, predictable schema, and radical consistency in naming conventions."
+  }
+}

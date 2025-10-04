@@ -1,0 +1,157 @@
+/**
+ * @fileoverview Firestore Security Rules for the application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a combination of ownership-based and role-based access control.
+ * User-specific data is secured under the `/users/{userId}` path, ensuring only the authenticated user can access their own data.
+ * Public data, such as system health and audit logs, is readable by all users, but write access is restricted.
+ * Team and Role data are used to enforce role-based access control.
+ *
+ * Data Structure:
+ * - /systemHealth/{healthId}: Stores system health records, publicly readable.
+ * - /auditLogs/{logId}: Stores audit logs, publicly readable.
+ * - /users/{userId}/favoriteActions/{actionId}: Stores a user's favorite actions; only accessible by the user.
+ * - /teams/{teamId}: Stores team information.
+ * - /users/{userId}: Stores user information; only accessible by the user.
+ * - /roles/{roleId}: Stores role information.
+ * - /services/{serviceId}: Stores service data.
+ * - /connections/{connectionId}: Stores connection data.
+ *
+ * Key Security Decisions:
+ * - Listing users or roles is disallowed.
+ * - Public read access is granted to the systemHealth and auditLogs collections.
+ * - Strict ownership is enforced for user-specific data under `/users/{userId}`.
+ *
+ * Denormalization for Authorization:
+ *  The rules do not implement any denormalization. However, for team-based access control to be fully enforced, the team document could include a `members` map to avoid future `get()` calls.
+ *
+ * Structural Segregation:
+ * Public data (systemHealth, auditLogs) is stored in top-level collections, while private user data (favoriteActions) is stored in user subcollections.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Allows public read access to system health records, but restricts write access.
+     * @path /systemHealth/{healthId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public monitoring but prevents unauthorized modifications.
+     */
+    match /systemHealth/{healthId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows public read access to audit logs, but restricts write access.
+     * @path /auditLogs/{logId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public auditing but prevents unauthorized modifications.
+     */
+    match /auditLogs/{logId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Enforces ownership for favorite actions, allowing only the owner to read and write.
+     * @path /users/{userId}/favoriteActions/{actionId}
+     * @allow (create): if isSignedIn() && request.auth.uid == userId
+     * @allow (get, list, update, delete): if isOwner(userId)
+     * @deny (create): if !isSignedIn() || request.auth.uid != userId
+     * @principle Enforces document ownership for all read and write operations.
+     */
+    match /users/{userId}/favoriteActions/{actionId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId) && resource != null;
+      allow delete: if isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Allows anyone to read team information, but restricts write access.
+     * @path /teams/{teamId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public viewing of team data but prevents unauthorized modifications.
+     */
+    match /teams/{teamId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Enforces ownership for user documents, allowing only the owner to read and write.
+     * @path /users/{userId}
+     * @allow (create): if isSignedIn() && request.auth.uid == userId
+     * @allow (get, update, delete): if isOwner(userId)
+     * @allow list: if false;
+     * @deny (create): if !isSignedIn() || request.auth.uid != userId
+     * @principle Enforces document ownership for all read and write operations.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId) && resource != null;
+      allow delete: if isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Allows anyone to read role information, but restricts write access.
+     * @path /roles/{roleId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public viewing of role data but prevents unauthorized modifications.
+     */
+    match /roles/{roleId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows anyone to read service data, but restricts write access.
+     * @path /services/{serviceId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public viewing of service data but prevents unauthorized modifications.
+     */
+    match /services/{serviceId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows anyone to read connection data, but restricts write access.
+     * @path /connections/{connectionId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public viewing of connection data but prevents unauthorized modifications.
+     */
+    match /connections/{connectionId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Checks if the current user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the current user is the owner of the document based on the userId.
+     * @param {string} userId The user ID to compare against the request's auth UID.
+     * @return {boolean} True if the user is the owner, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+  }
+}

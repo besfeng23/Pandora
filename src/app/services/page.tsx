@@ -104,6 +104,7 @@ async function fetchServices(params: {
 
   const start = (params.page - 1) * params.pageSize;
   const items = filtered.slice(start, start + params.pageSize);
+  await new Promise(r => setTimeout(r, 300));
   return { items, hasMore: start + params.pageSize < filtered.length };
 }
 
@@ -213,7 +214,7 @@ export default function ServicesPage() {
     return () => {
       cancelled = true;
     };
-  }, [page]);
+  }, [page, debouncedQuery, category, status]);
 
   // handlers
   const onConnect = async (id: string) => {
@@ -257,7 +258,7 @@ export default function ServicesPage() {
           </div>
           <div className="flex items-center gap-2">
             <a
-              href="/services/catalog"
+              href="/services"
               className="inline-flex h-9 items-center justify-center rounded-lg border border-neutral-200 bg-white px-3 text-sm hover:bg-neutral-50"
             >
               Browse catalog
@@ -326,7 +327,7 @@ export default function ServicesPage() {
         {/* Content */}
         <main className="py-5">
           {error ? (
-            <ErrorState message={error} onRetry={() => setPage(1)} />
+            <ErrorState message={error} onRetry={() => { setPage(1); setItems([]); setHasMore(true); }} />
           ) : (
             <>
               {loading && items.length === 0 ? (
@@ -359,7 +360,7 @@ export default function ServicesPage() {
                   {/* loader sentinel */}
                   {hasMore && (
                     <div ref={loaderRef} className="py-8 text-center text-sm text-neutral-500">
-                      Loading more…
+                      {loading ? "Loading more..." : ""}
                     </div>
                   )}
                 </>
@@ -482,7 +483,7 @@ function ServiceCard({
               ) : (
                 <>
                   <a
-                    href={`/services/${service.id}`}
+                    href={`/services/${service.slug}`}
                     className="inline-flex h-8 items-center justify-center rounded-lg border border-neutral-200 px-2.5 text-xs hover:bg-neutral-50"
                   >
                     Manage
@@ -604,7 +605,7 @@ function SkeletonGrid() {
 // ---------- Demo data (delete when wired) ----------
 const DEMO_DATA: Service[] = [
   {
-    id: "1",
+    id: "svc-auth0",
     name: "Auth0",
     slug: "auth0",
     description: "Enterprise authentication and SSO.",
@@ -614,7 +615,7 @@ const DEMO_DATA: Service[] = [
     updatedAt: new Date(Date.now() - 3600_000).toISOString()
   },
   {
-    id: "2",
+    id: "svc-firestore",
     name: "Firestore",
     slug: "firestore",
     description: "Serverless NoSQL with realtime streams.",
@@ -624,7 +625,7 @@ const DEMO_DATA: Service[] = [
     updatedAt: new Date(Date.now() - 6 * 3600_000).toISOString()
   },
   {
-    id: "3",
+    id: "svc-stripe",
     name: "Stripe",
     slug: "stripe",
     description: "Payments, invoicing, and checkout.",
@@ -635,5 +636,3 @@ const DEMO_DATA: Service[] = [
   },
   // add as many as you like to test scrolling
 ];
-
-    

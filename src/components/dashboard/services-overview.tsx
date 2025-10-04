@@ -1,5 +1,5 @@
 import { services } from "@/lib/data";
-import ServiceCard from "@/components/services/service-card";
+import ServiceCard from "@/components/services/service-card-dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import Link from "next/link";
 import { Button } from "../ui/button";

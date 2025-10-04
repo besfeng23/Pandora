@@ -26,7 +26,7 @@ const statusClasses = {
 };
 
 const chartConfig = {
-  value: {
+  performance: {
     label: "ms",
     color: "hsl(var(--primary))",
   },
@@ -40,7 +40,7 @@ export default function ServiceDetailPage() {
     notFound();
   }
   
-  const chartData = service.performance.map((value, index) => ({ name: `T-${service.performance.length - index}`, value }));
+  const chartData = service.performance.map((value, index) => ({ name: `T-${service.performance.length - index}`, performance: value }));
 
   return (
     <div className="grid gap-6 md:grid-cols-12">
@@ -69,7 +69,7 @@ export default function ServiceDetailPage() {
                             <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                             <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                             <Tooltip content={<ChartTooltipContent indicator="dot" />} cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: '' }}/>
-                            <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="performance" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                         </LineChart>
                     </ResponsiveContainer>
                 </ChartContainer>

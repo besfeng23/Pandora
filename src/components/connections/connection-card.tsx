@@ -66,7 +66,7 @@ export function ConnectionCard({ connection, onSelect }: ConnectionCardProps) {
       <div className="mt-4 h-8 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
-            <Line type="monotone" dataKey="value" stroke="hsl(var(--brand))" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

@@ -27,7 +27,7 @@ function StatTile({ label, footerText, footerStatus = 'neutral' }: { label: stri
             <p className="text-sm text-muted-foreground">{label}</p>
             <button 
                 onClick={footerText === 'Test connection' ? handleTestConnection : undefined}
-                className={`text-sm font-medium text-left ${footerStatus === 'success' ? 'text-green-600' : 'text-muted-foreground'} hover:underline`}
+                className={`text-sm font-medium text-left ${footerStatus === 'success' ? 'text-primary' : 'text-muted-foreground'} hover:underline`}
             >
                 {footerText}
             </button>

@@ -18,7 +18,7 @@ export function SettingsAuditLog() {
                     <div key={log.id} className="flex items-center h-11">
                         <div className="mr-3">
                             {log.severity === 'info' ? (
-                                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                <CheckCircle2 className="h-5 w-5 text-primary" />
                             ) : (
                                 <AlertTriangle className="h-5 w-5 text-yellow-500" />
                             )}

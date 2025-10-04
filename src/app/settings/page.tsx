@@ -1,44 +1,43 @@
 
 "use client";
 
-import { useState } from 'react';
-import { BridgeConfigCard } from '@/components/settings/bridge-config-card';
-import { AiCopilotCard } from '@/components/settings/ai-copilot-card';
-import { IntegrationsCard } from '@/components/settings/integrations-card';
-import { ConnectionsCard } from '@/components/settings/connections-card';
-import { SettingsAuditLog } from '@/components/settings/settings-audit-log';
-import { EnvImportCard } from '@/components/settings/env-import-card';
-import { AddConnectionCard } from '@/components/settings/add-connection-card';
-import { IntegrationDrawer } from '@/components/settings/integration-drawer';
-import type { Integration } from '@/lib/data';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SettingsOverviewTab from "@/components/settings/tabs/overview";
+import SettingsBridgeTab from "@/components/settings/tabs/bridge";
+import SettingsIntegrationsTab from "@/components/settings/tabs/integrations";
+import SettingsSecretsTab from "@/components/settings/tabs/secrets";
+import SettingsConnectionsTab from "@/components/settings/tabs/connections";
+import SettingsAccessTab from "@/components/settings/tabs/access";
 
 export default function SettingsPage() {
-  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
-
   return (
-    <>
-      <div className="mx-auto w-full max-w-[1200px] grid grid-cols-12 gap-6">
-        <div className="col-span-12 xl:col-span-8 flex flex-col gap-6">
-          <BridgeConfigCard />
-          <IntegrationsCard onSelectIntegration={setSelectedIntegration} />
-          <AddConnectionCard />
-        </div>
-        <div className="col-span-12 xl:col-span-4 flex flex-col gap-6">
-          <AiCopilotCard />
-          <ConnectionsCard />
-          <SettingsAuditLog />
-          <EnvImportCard />
-        </div>
-      </div>
-      <IntegrationDrawer
-        integration={selectedIntegration}
-        open={!!selectedIntegration}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSelectedIntegration(null);
-          }
-        }}
-      />
-    </>
+    <Tabs defaultValue="overview">
+      <TabsList className="grid w-full grid-cols-6">
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="bridge">Bridge</TabsTrigger>
+        <TabsTrigger value="integrations">Integrations</TabsTrigger>
+        <TabsTrigger value="secrets">Secrets</TabsTrigger>
+        <TabsTrigger value="connections">Connections</TabsTrigger>
+        <TabsTrigger value="access">Access</TabsTrigger>
+      </TabsList>
+      <TabsContent value="overview">
+        <SettingsOverviewTab />
+      </TabsContent>
+      <TabsContent value="bridge">
+        <SettingsBridgeTab />
+      </TabsContent>
+      <TabsContent value="integrations">
+        <SettingsIntegrationsTab />
+      </TabsContent>
+      <TabsContent value="secrets">
+        <SettingsSecretsTab />
+      </TabsContent>
+      <TabsContent value="connections">
+        <SettingsConnectionsTab />
+      </TabsContent>
+      <TabsContent value="access">
+        <SettingsAccessTab />
+      </TabsContent>
+    </Tabs>
   );
 }

@@ -29,11 +29,11 @@ function OverviewTab({ connection }: { connection: Connection }) {
                 <h4 className="font-medium mb-2">Health Checks</h4>
                 <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">
-                        <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" /> Token Valid</span>
+                        <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Token Valid</span>
                         <span className="text-muted-foreground">OK</span>
                     </div>
                      <div className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">
-                        <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" /> API Reachable</span>
+                        <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> API Reachable</span>
                          <span className="text-muted-foreground">OK</span>
                     </div>
                      <div className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">
@@ -70,11 +70,11 @@ function TestsTab() {
             <Button className="w-full rounded-lg">Run all tests <ChevronRight className="ml-auto h-4 w-4" /></Button>
             <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">
-                    <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" /> Auth Check</span>
+                    <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Auth Check</span>
                     <span className="text-muted-foreground">Passed</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">
-                    <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" /> Rate Limit Check</span>
+                    <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Rate Limit Check</span>
                     <span className="text-muted-foreground">Passed</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">

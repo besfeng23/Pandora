@@ -6,19 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { integrations, type Integration } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Github, FileJson, Cloud, Bot, Blocks, Database, FileText, Component } from "lucide-react";
-import { ChartContainer } from "@/components/ui/chart";
+import { SiGithub, SiNotion, SiLinear, SiFirebase, SiGcp, SiOpenai } from "@icons-pack/react-simple-icons";
+import { Database, FileJson, LineChart as LineChartIcon } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 
 const IntegrationLogo = ({ name }: { name: string }) => {
     const logos: { [key: string]: React.ElementType } = {
-        GitHub: Github,
-        OpenAI: Bot,
-        Gcp: Cloud,
-        Linear: Blocks,
-        Firebase: Component,
+        GitHub: SiGithub,
+        OpenAI: SiOpenai,
+        Gcp: SiGcp,
+        Linear: SiLinear,
+        Firebase: SiFirebase,
         Neon: Database,
-        Notion: FileText,
+        Notion: SiNotion,
     };
     const LogoComponent = logos[name];
     if (!LogoComponent) return <FileJson className="h-8 w-8" />;
@@ -26,8 +26,8 @@ const IntegrationLogo = ({ name }: { name: string }) => {
 };
 
 const statusClasses: { [key: string]: string } = {
-  healthy: "text-green-600",
-  active: "text-green-600",
+  healthy: "text-primary",
+  active: "text-primary",
   degraded: "text-yellow-600",
   disconnected: "text-red-600",
   needs_attention: "text-yellow-600",

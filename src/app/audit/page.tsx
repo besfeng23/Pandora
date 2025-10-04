@@ -1,7 +1,4 @@
 
-// app/audit/page.tsx  (Next.js App Router)
-// or src/pages/audit/index.tsx (CRA/Vite; adjust default export accordingly)
-
 "use client";
 
 import * as React from "react";
@@ -87,7 +84,7 @@ function toCSV(rows: AuditRow[]) {
     r.ts, r.service, r.action, r.actor, r.status, r.severity, r.resource, (r.details ?? "").replace(/\n/g, " "),
   ]);
   const csv = [header, ...body].map(line => line.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
-  return new Blob([csv], { type: "text/csv;charset=utf-t-8;" });
+  return new Blob([csv], { type: "text/csv;charset=utf-8;" });
 }
 
 // ---------- Data fetching (mock fallback) ----------
@@ -241,7 +238,7 @@ export default function AuditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="border rounded-xl p-4">
+      <div className="rounded-xl p-4 border bg-card">
         <div className="flex flex-col md:flex-row md:items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
@@ -254,7 +251,7 @@ export default function AuditPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
             {/* Severity */}
             <Select value={severity} onValueChange={(v: any) => setSeverity(v)}>
               <SelectTrigger className="w-full sm:w-[140px]">

@@ -109,11 +109,11 @@ const fmtRel = (iso?: string) => {
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
 
 const statusClasses: Record<Status, string> = {
-  active: "bg-success text-success-foreground",
-  warning: "bg-warning text-warning-foreground",
-  error: "bg-destructive text-destructive-foreground",
-  pending: "bg-muted text-muted-foreground",
-  paused: "bg-muted text-muted-foreground",
+  active: "bg-green-100 text-green-800",
+  warning: "bg-yellow-100 text-yellow-800",
+  error: "bg-red-100 text-red-800",
+  pending: "bg-gray-100 text-gray-800",
+  paused: "bg-gray-100 text-gray-800",
 };
 
 
@@ -326,14 +326,14 @@ export default function ConnectionsPage() {
           <CardDescription>Manage and monitor your service integrations.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
             <div className="relative flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search connections..."
-                className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-4 text-sm"
+                className="h-10 w-full rounded-lg pl-10 pr-4 text-sm"
               />
             </div>
             <DropdownMenu>
@@ -565,15 +565,18 @@ function ConnectionDetailsDrawer({
             </Tabs>
         </div>
         
-        <SheetFooter className="p-6 border-t mt-auto bg-background z-10">
-            {connection.status === 'paused' ? (
-                <Button onClick={() => onResume(connection.id)} className="rounded-lg w-full sm:w-auto"><Play className="mr-2 h-4 w-4"/> Resume</Button>
-            ) : (
-                <Button variant="outline" onClick={() => onPause(connection.id)} className="rounded-lg w-full sm:w-auto"><Pause className="mr-2 h-4 w-4"/> Pause</Button>
-            )}
-           <div className="flex-grow" />
-           <Button variant="destructive" className="rounded-lg">Remove</Button>
-           <Button className="rounded-lg" onClick={() => onOpenChange(false)}>Done</Button>
+        <SheetFooter className="p-6 border-t mt-auto bg-background z-10 flex-row justify-between sm:justify-between w-full">
+            <div className="flex gap-2">
+                {connection.status === 'paused' ? (
+                    <Button onClick={() => onResume(connection.id)} className="rounded-lg"><Play className="mr-2 h-4 w-4"/> Resume</Button>
+                ) : (
+                    <Button variant="outline" onClick={() => onPause(connection.id)} className="rounded-lg"><Pause className="mr-2 h-4 w-4"/> Pause</Button>
+                )}
+            </div>
+           <div className="flex gap-2">
+               <Button variant="destructive" className="rounded-lg">Remove</Button>
+               <Button className="rounded-lg" onClick={() => onOpenChange(false)}>Done</Button>
+           </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>
@@ -654,5 +657,3 @@ function TestsTab({ connection, onRunTests }: { connection: Connection, onRunTes
         </div>
     )
 }
-
-    

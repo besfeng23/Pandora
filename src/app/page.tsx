@@ -21,11 +21,11 @@ export default function DashboardPage() {
         <AiCopilot />
       </div>
       
-      <div className="col-span-12 lg:col-span-6">
+      <div className="col-span-12 md:col-span-6">
         <PredictiveAlertCard />
       </div>
 
-      <div className="col-span-12 lg:col-span-6">
+      <div className="col-span-12 md:col-span-6">
         <RootCauseAnalysisCard />
       </div>
       

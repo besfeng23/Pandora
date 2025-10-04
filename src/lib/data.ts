@@ -169,6 +169,8 @@ export type Connection = {
   icon: string;
 };
 
+const now = new Date();
+
 export const connectionData: Connection[] = [
     {
         id: 'conn-github',
@@ -177,7 +179,7 @@ export const connectionData: Connection[] = [
         env: 'prod',
         status: 'active',
         health: {
-            lastSync: '2023-10-27T10:00:00Z',
+            lastSync: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
             latencyP95: 120,
             error24h: 2,
             quotaUsedPct: 15,
@@ -199,7 +201,7 @@ export const connectionData: Connection[] = [
             error24h: 0,
             quotaUsedPct: 0,
         },
-        scopes: [],
+        scopes: ['pages:read', 'users:read'],
         secretRef: '',
         usage7d: [0, 0, 0, 0, 0, 0, 0],
         icon: 'Notion',
@@ -210,6 +212,7 @@ export const quickConnectProviders = [
     { id: 'notion', name: 'Notion', icon: 'Notion'},
     { id: 'linear', name: 'Linear', icon: 'Blocks'},
     { id: 'github', name: 'GitHub', icon: 'Github'},
-    { id: 'slack', name: 'Slack', icon: 'Slack'}, // Assuming a 'Slack' icon exists
+    { id: 'slack', name: 'Slack', icon: 'Slack'},
     { id: 'gcp', name: 'GCP', icon: 'Cloud'},
+    { id: 'openai', name: 'OpenAI', icon: 'Bot' },
 ]

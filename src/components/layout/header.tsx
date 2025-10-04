@@ -3,6 +3,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy, ChevronDown, RefreshCw, Download } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ const pageDetails: { [key: string]: { title: string; description: string; action
   '/search': { title: 'Search', description: 'Search across all services, logs, and events.' },
   '/connections': { title: 'Connections', description: 'Manage and monitor your service integrations.' },
   '/settings': { title: 'Settings', description: 'Manage your system configuration and integrations.' },
+  '/profile': { title: 'User Profile', description: 'View and manage your profile details.'}
 };
 
 function getDetailsFromPathname(pathname: string) {
@@ -109,13 +111,17 @@ export default function Header({ onRefresh, onExport }: { onRefresh?: () => void
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+            <DropdownMenuItem asChild>
+              <Link href="/profile">
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
+            <DropdownMenuItem asChild>
+              <Link href="/settings">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <LifeBuoy className="mr-2 h-4 w-4" />

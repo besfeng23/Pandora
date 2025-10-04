@@ -11,6 +11,7 @@ import {
   LifeBuoy,
   Lock,
   Settings,
+  User,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/settings", label: "Overview", icon: Settings },
+  { href: "/settings/profile", label: "Profile", icon: User },
   { href: "/settings/bridge", label: "Bridge", icon: GitBranch },
   { href: "/settings/integrations", label: "Integrations", icon: Globe },
   { href: "/settings/secrets", label: "Secrets", icon: Lock },

@@ -4,7 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy, ChevronDown, RefreshCw, Download } from 'lucide-react';
+import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy, ChevronDown, RefreshCw, Download, Circle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +19,21 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCommandPalette } from './command-palette';
 import { ThemeToggle } from './theme-toggle';
+import { Badge } from '../ui/badge';
+import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
+
+const notifications = [
+    { title: "New critical alert on 'Auth Service'", timestamp: new Date(Date.now() - 5 * 60 * 1000), read: false, status: 'destructive' as const },
+    { title: "Key rotation successful for 'GitHub'", timestamp: new Date(Date.now() - 30 * 60 * 1000), read: false, status: 'success' as const },
+    { title: "Maintenance window starting in 1 hour", timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), read: true, status: 'warning' as const },
+    { title: "Deployment of 'Billing API' complete", timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), read: true, status: 'neutral' as const },
+];
 
 const pageDetails: { [key: string]: { title: string; description: string; actions?: React.FC<{ onRefresh?: () => void; onExport?: () => void; }> } } = {
   '/': { title: 'Dashboard', description: 'A high-level overview of your system.' },
-  '/services': { title: 'Services', description: 'Integrate providers across auth, data, storage, payments, and more.' },
+  '/services': { title: 'Services', description: 'Manage and monitor your service integrations.' },
+  '/incidents': { title: 'Incidents', description: 'Track and manage incidents across your services.' },
   '/audit': { 
     title: 'Audit', 
     description: 'Immutable event trail across services',
@@ -43,7 +54,9 @@ const pageDetails: { [key: string]: { title: string; description: string; action
   '/connections': { title: 'Connections', description: 'Manage and monitor your service integrations.' },
   '/settings': { title: 'Settings', description: 'Manage your system configuration and integrations.' },
   '/profile': { title: 'User Profile', description: 'View and manage your profile details.'},
-  '/support': { title: 'Support', description: 'Get help and find answers.'}
+  '/support': { title: 'Support', description: 'Get help and find answers.'},
+  '/billing': { title: 'Billing & Usage', description: 'Track your cloud spend and resource usage.' },
+  '/runbooks': { title: 'Runbooks', description: 'Create and execute step-by-step operational procedures.' },
 };
 
 function getDetailsFromPathname(pathname: string) {
@@ -86,6 +99,30 @@ export default function Header({ onRefresh, onExport }: { onRefresh?: () => void
 
       <div className="flex items-center justify-end gap-2">
         <ThemeToggle />
+        
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5"/>
+                    {notifications.some(n => !n.read) && (
+                        <span className="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+                    )}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 rounded-xl">
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {notifications.map((n, i) => (
+                     <DropdownMenuItem key={i} className="flex items-start gap-3">
+                        {!n.read && <Circle className="h-2 w-2 fill-primary text-primary mt-1.5" />}
+                        <div className={cn("flex-grow", n.read && "ml-5")}>
+                            <p className="text-sm">{n.title}</p>
+                            <p className="text-xs text-muted-foreground">{formatDistanceToNow(n.timestamp, { addSuffix: true })}</p>
+                        </div>
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

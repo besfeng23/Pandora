@@ -13,6 +13,7 @@ import {
   Settings,
   User,
   Users,
+  BookOpen
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

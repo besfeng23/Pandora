@@ -13,7 +13,9 @@ import {
   LayoutGrid,
   HeartPulse,
   Code,
-  DollarSign
+  DollarSign,
+  FileWarning,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,12 +29,14 @@ import {
 const mainNavItems = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/services", label: "Services", icon: LayoutGrid },
+  { href: "/incidents", label: "Incidents", icon: FileWarning },
   { href: "/audit", label: "Audit Log", icon: FileText },
   { href: "/search", label: "Search", icon: Search },
   { href: "/connections", label: "Connections", icon: Network },
 ];
 
 const bottomNavItems = [
+    { href: "/runbooks", label: "Runbooks", icon: BookOpen },
     { href: "/maintenance", label: "Maintenance", icon: HeartPulse },
     { href: "/code-review", label: "Code Review", icon: Code },
     { href: "/cost-optimization", label: "Cost", icon: DollarSign },

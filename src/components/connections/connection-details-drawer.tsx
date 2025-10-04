@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Connection } from "@/lib/data";
+import type { Connection } from "@/app/connections/page";
 import { CheckCircle, XCircle, ChevronRight, Download, RotateCcw } from "lucide-react";
 
 type ConnectionDetailsDrawerProps = {

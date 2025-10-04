@@ -251,72 +251,20 @@ export const settingsAuditLog: SettingsAuditItem[] = [
 ];
 
 
-// --- Connections Page v3 Data ---
-
-export type Connection = {
-  id: string;
-  providerId: string;
-  name: string;
-  env: 'dev' | 'staging' | 'prod';
-  status: 'active' | 'warning' | 'error' | 'pending' | 'paused';
-  health: {
-    lastSync: string;
-    latencyP95: number;
-    error24h: number;
-    quotaUsedPct: number;
-  };
-  scopes: string[];
-  secretRef: string;
-  usage7d: number[];
-  icon: string;
-};
-
-const now = new Date();
-
-export const connectionData: Connection[] = [
-    {
-        id: 'conn-github',
-        providerId: 'github',
-        name: 'GitHub',
-        env: 'prod',
-        status: 'active',
-        health: {
-            lastSync: new Date(now.getTime() - 2 * 60 * 1000).toISOString(), // 2 mins ago
-            latencyP95: 120,
-            error24h: 2,
-            quotaUsedPct: 15,
-        },
-        scopes: ['repo', 'user', 'admin:org'],
-        secretRef: 'vault:github-prod-key',
-        usage7d: [100, 120, 110, 130, 150, 140, 160],
-        icon: 'Github',
-    },
-    {
-        id: 'conn-notion-dev',
-        providerId: 'notion',
-        name: 'Notion (Dev)',
-        env: 'dev',
-        status: 'pending',
-        health: {
-            lastSync: '',
-            latencyP95: 0,
-            error24h: 0,
-            quotaUsedPct: 0,
-        },
-        scopes: ['pages:read', 'users:read'],
-        secretRef: '',
-        usage7d: [0, 0, 0, 0, 0, 0, 0],
-        icon: 'Notion',
-    }
-];
-
 export const quickConnectProviders = [
     { id: 'notion', name: 'Notion', icon: 'Notion'},
-    { id: 'linear', name: 'Linear', icon: 'Blocks'},
+    { id: 'linear', name: 'Linear', icon: 'Linear'},
     { id: 'github', name: 'GitHub', icon: 'Github'},
     { id: 'slack', name: 'Slack', icon: 'Slack'},
-    { id: 'gcp', name: 'GCP', icon: 'Cloud'},
+    { id: 'gcp', name: 'GCP', icon: 'Gcp'},
     { id: 'openai', name: 'OpenAI', icon: 'Bot' },
-    { id: 'stripe', name: 'Stripe', icon: 'CreditCard' },
+    { id: 'stripe', name: 'Stripe', icon: 'Stripe' },
     { id: 'box', name: 'Box', icon: 'Box' },
+]
+
+export const systemKpis = [
+    { title: "Uptime", value: "99.99%", footer: "last 24h" },
+    { title: "Integrations", value: "7 Active", footer: "2 need attention" },
+    { title: "Failing Pings", value: "2", footer: "GCP, OpenAI" },
+    { title: "Spend Est.", value: "$1,234", footer: "+5% vs last month" },
 ]

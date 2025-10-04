@@ -2,7 +2,7 @@
 "use client";
 
 import { ConnectionCard } from "./connection-card";
-import type { Connection } from "@/lib/data";
+import type { Connection } from "@/app/connections/page";
 
 type ServicesGridProps = {
     connections: Connection[];

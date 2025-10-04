@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
@@ -157,6 +156,43 @@ function useDebounced<T>(value: T, ms = 250) {
   return v;
 }
 
+// ---------- Icons (inline SVG, minimal) ----------
+
+function IconSearch() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+    </svg>
+  );
+}
+function IconShield() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M12 3l7 4v5c0 5-3.1 7.8-7 9-3.9-1.2-7-4-7-9V7l7-4z"/>
+    </svg>
+  );
+}
+function IconShieldCheck() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M12 3l7 4v5c0 5-3.1 7.8-7 9-3.9-1.2-7-4-7-9V7l7-4z"/><path d="m9 12 2 2 4-4"/>
+    </svg>
+  );
+}
+function IconX() { return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M18 6 6 18M6 6l12 12"/></svg>); }
+
+function IconGitHub() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="currentColor" d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.9.58.1.8-.25.8-.56v-2.1c-3.2.7-3.88-1.35-3.88-1.35-.53-1.35-1.3-1.7-1.3-1.7-1.06-.75.08-.74.08-.74 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.1-.76.41-1.27.75-1.56-2.55-.29-5.23-1.28-5.23-5.72 0-1.26.45-2.28 1.2-3.08-.12-.29-.52-1.47.12-3.06 0 0 .98-.31 3.2 1.18a10.9 10.9 0 0 1 5.82 0c2.2-1.5 3.18-1.18 3.18-1.18.64 1.59.24 2.77.12 3.06.75.8 1.2 1.82 1.2 3.08 0 4.45-2.7 5.42-5.26 5.7.42.37.8 1.1.8 2.22v3.29c0 .31.22.67.82.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>); }
+function IconNotion() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor" opacity=".08"/><path fill="currentColor" d="M8 7h2.2l5.8 8.7V7h2v10h-2.2L10 8.3V17H8z"/></svg>); }
+function IconLinear() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#5b7cfa"/><stop offset="1" stopColor="#9f8bff"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#lg)" opacity=".25"/><path d="M6 12a6 6 0 0 1 6-6v6z" fill="currentColor"/></svg>); }
+function IconSlack() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="currentColor" d="M8 2a2 2 0 1 1 0 4H6a2 2 0 1 1 0-4h2zm8 0a2 2 0 1 1 0 4h-2a2 2 0 1 1 0-4h2zM8 18a2 2 0 1 1 0 4H6a2 2 0 1 1 0-4h2zm8 0a2 2 0 1 1 0 4h-2a2 2 0 1 1 0-4h2zM2 8a2 2 0 1 1 4 0v2a2 2 0 1 1-4 0V8zm16 0a2 2 0 1 1 4 0v2a2 2 0 1 1-4 0V8zM2 14a2 2 0 1 1 4 0v2a2 2 0 1 1-4 0v-2zm16 0a2 2 0 1 1 4 0v2a2 2 0 1 1-4 0v-2z"/></svg>); }
+function IconGcp() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="#60a5fa" d="M12 2 3 7l9 5 9-5z" opacity=".6"/><path fill="#93c5fd" d="m3 7 9 5v9L3 16z"/><path fill="#3b82f6" d="m12 12 9-5v9l-9 5z"/></svg>); }
+function IconOpenAI() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".1"/><path fill="currentColor" d="M12 6a6 6 0 1 1-6 6h2a4 4 0 1 0 4-4z"/></svg>); }
+function IconStripe() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="5" width="18" height="14" rx="4" fill="currentColor" opacity=".1"/><path fill="currentColor" d="M8 12c0-2 2-3 4-3s4 .9 4 3-2 3-4 3-4-1-4-3z"/></svg>); }
+function IconBox() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor" opacity=".08"/><path fill="currentColor" d="M6 9h12v2H6zm0 4h12v2H6z"/></svg>); }
+function IconJira() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="#1d4ed8" d="M12 2 4 10l8 12 8-12z" opacity=".25"/><path fill="#1d4ed8" d="M12 6 7 11l5 7 5-7z"/></svg>); }
+function IconDb() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><ellipse cx="12" cy="6" rx="7" ry="3" fill="currentColor" opacity=".12"/><path fill="currentColor" d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6c0 1.7-3.1 3-7 3S5 7.7 5 6z"/></svg>); }
+
+
 // ---------- Dummy catalog (replace with your provider registry) ----------
 
 const Catalog: Provider[] = [
@@ -222,6 +258,68 @@ const seedConnections: Connection[] = [
     health: { quotaUsedPct: 0 },
   },
 ];
+
+// ---------- Fake API layer (improved determinism) ----------
+
+const api = {
+  async startConnect(providerId: string, env: Env): Promise<Connection> {
+    await sleep(400);
+    const p = providerById(providerId)!;
+    const base: Connection = {
+      id: `${providerId}:${env}`,
+      providerId,
+      env,
+      status: "pending",
+      scopes: p.recommendedScopes || [],
+      usage7d: Array.from({ length: 7 }, () => Math.floor(Math.random() * 8)),
+      health: { quotaUsedPct: Math.floor(Math.random() * 30) },
+      webhook: { endpoint: `https://pandora.app/webhooks/${providerId}`, secret: "vault://…", lastDeliveries: [] },
+      secretRef: `vault://secrets/${providerId}-${env}`,
+      lastRotatedISO: new Date().toISOString(),
+    };
+    _mem[base.id] = base;
+    return base;
+  },
+  async runAutoTests(id: string): Promise<Connection> {
+    await sleep(500);
+    const conn = getConn(id);
+    const now = new Date().toISOString();
+    const results: TestResult[] = [
+      { name: "auth.check", pass: true },
+      { name: "whoami", pass: Math.random() > 0.03 },
+      { name: "rate.limit", pass: true },
+      { name: "webhook.ping", pass: Math.random() > 0.1, fixAction: "replay_webhook" },
+      { name: "sample.read(1)", pass: true },
+    ];
+    const passed = results.every((r) => r.pass);
+    const status: Status = passed ? "active" : results.some((r) => !r.pass) ? "warning" : "active";
+    return setConn({
+      ...conn,
+      status,
+      lastTests: results,
+      health: { ...conn.health, lastSyncISO: now, error24h: passed ? 0 : 1, latencyP95: Math.floor(150 + Math.random() * 200) },
+    });
+  },
+  async rotateSecret(id: string): Promise<Connection> {
+    await sleep(300);
+    const conn = getConn(id);
+    return setConn({ ...conn, secretRef: `vault://secrets/${conn.providerId}-${conn.env}?rotated=${Date.now()}`, lastRotatedISO: new Date().toISOString() });
+  },
+};
+
+// In-memory helpers for fake API
+const _mem: Record<string, Connection> = Object.fromEntries(seedConnections.map((c) => [c.id, c]));
+function getConn(id: string) { return _mem[id]; }
+function setConn(c: Connection) { _mem[c.id] = c; return c; }
+function upsertConn(arr: Connection[], c: Connection) {
+  const i = arr.findIndex((x) => x.id === c.id);
+  if (i === -1) return [...arr, c];
+  const next = [...arr];
+  next[i] = c;
+  return next;
+}
+function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
+
 
 // ---------- Root Component (layout unchanged) ----------
 
@@ -870,66 +968,6 @@ function statusLabel(status: Status, c: Connection): string {
   return "Active";
 }
 
-// ---------- Fake API layer (improved determinism) ----------
-
-const api = {
-  async startConnect(providerId: string, env: Env): Promise<Connection> {
-    await sleep(400);
-    const p = providerById(providerId)!;
-    const base: Connection = {
-      id: `${providerId}:${env}`,
-      providerId,
-      env,
-      status: "pending",
-      scopes: p.recommendedScopes || [],
-      usage7d: Array.from({ length: 7 }, () => Math.floor(Math.random() * 8)),
-      health: { quotaUsedPct: Math.floor(Math.random() * 30) },
-      webhook: { endpoint: `https://pandora.app/webhooks/${providerId}`, secret: "vault://…", lastDeliveries: [] },
-      secretRef: `vault://secrets/${providerId}-${env}`,
-      lastRotatedISO: new Date().toISOString(),
-    };
-    _mem[base.id] = base;
-    return base;
-  },
-  async runAutoTests(id: string): Promise<Connection> {
-    await sleep(500);
-    const conn = getConn(id);
-    const now = new Date().toISOString();
-    const results: TestResult[] = [
-      { name: "auth.check", pass: true },
-      { name: "whoami", pass: Math.random() > 0.03 },
-      { name: "rate.limit", pass: true },
-      { name: "webhook.ping", pass: Math.random() > 0.1, fixAction: "replay_webhook" },
-      { name: "sample.read(1)", pass: true },
-    ];
-    const passed = results.every((r) => r.pass);
-    const status: Status = passed ? "active" : results.some((r) => !r.pass) ? "warning" : "active";
-    return setConn({
-      ...conn,
-      status,
-      lastTests: results,
-      health: { ...conn.health, lastSyncISO: now, error24h: passed ? 0 : 1, latencyP95: Math.floor(150 + Math.random() * 200) },
-    });
-  },
-  async rotateSecret(id: string): Promise<Connection> {
-    await sleep(300);
-    const conn = getConn(id);
-    return setConn({ ...conn, secretRef: `vault://secrets/${conn.providerId}-${conn.env}?rotated=${Date.now()}`, lastRotatedISO: new Date().toISOString() });
-  },
-};
-
-// In-memory helpers for fake API
-const _mem: Record<string, Connection> = Object.fromEntries(seedConnections.map((c) => [c.id, c]));
-function getConn(id: string) { return _mem[id]; }
-function setConn(c: Connection) { _mem[c.id] = c; return c; }
-function upsertConn(arr: Connection[], c: Connection) {
-  const i = arr.findIndex((x) => x.id === c.id);
-  if (i === -1) return [...arr, c];
-  const next = [...arr];
-  next[i] = c;
-  return next;
-}
-function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
 
 // ---------- Audit Log hook ----------
 
@@ -949,39 +987,3 @@ function useAuditLog() {
 function providerById(id: string | undefined) {
   return Catalog.find((p) => p.id === id);
 }
-
-// ---------- Icons (inline SVG, minimal) ----------
-
-function IconSearch() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
-    </svg>
-  );
-}
-function IconShield() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M12 3l7 4v5c0 5-3.1 7.8-7 9-3.9-1.2-7-4-7-9V7l7-4z"/>
-    </svg>
-  );
-}
-function IconShieldCheck() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M12 3l7 4v5c0 5-3.1 7.8-7 9-3.9-1.2-7-4-7-9V7l7-4z"/><path d="m9 12 2 2 4-4"/>
-    </svg>
-  );
-}
-function IconX() { return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M18 6 6 18M6 6l12 12"/></svg>); }
-
-function IconGitHub() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="currentColor" d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.9.58.1.8-.25.8-.56v-2.1c-3.2.7-3.88-1.35-3.88-1.35-.53-1.35-1.3-1.7-1.3-1.7-1.06-.75.08-.74.08-.74 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.1-.76.41-1.27.75-1.56-2.55-.29-5.23-1.28-5.23-5.72 0-1.26.45-2.28 1.2-3.08-.12-.29-.52-1.47.12-3.06 0 0 .98-.31 3.2 1.18a10.9 10.9 0 0 1 5.82 0c2.2-1.5 3.18-1.18 3.18-1.18.64 1.59.24 2.77.12 3.06.75.8 1.2 1.82 1.2 3.08 0 4.45-2.7 5.42-5.26 5.7.42.37.8 1.1.8 2.22v3.29c0 .31.22.67.82.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>); }
-function IconNotion() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor" opacity=".08"/><path fill="currentColor" d="M8 7h2.2l5.8 8.7V7h2v10h-2.2L10 8.3V17H8z"/></svg>); }
-function IconLinear() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#5b7cfa"/><stop offset="1" stopColor="#9f8bff"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#lg)" opacity=".25"/><path d="M6 12a6 6 0 0 1 6-6v6z" fill="currentColor"/></svg>); }
-function IconSlack() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="currentColor" d="M8 2a2 2 0 1 1 0 4H6a2 2 0 1 1 0-4h2zm8 0a2 2 0 1 1 0 4h-2a2 2 0 1 1 0-4h2zM8 18a2 2 0 1 1 0 4H6a2 2 0 1 1 0-4h2zm8 0a2 2 0 1 1 0 4h-2a2 2 0 1 1 0-4h2zM2 8a2 2 0 1 1 4 0v2a2 2 0 1 1-4 0V8zm16 0a2 2 0 1 1 4 0v2a2 2 0 1 1-4 0V8zM2 14a2 2 0 1 1 4 0v2a2 2 0 1 1-4 0v-2zm16 0a2 2 0 1 1 4 0v2a2 2 0 1 1-4 0v-2z"/></svg>); }
-function IconGcp() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="#60a5fa" d="M12 2 3 7l9 5 9-5z" opacity=".6"/><path fill="#93c5fd" d="m3 7 9 5v9L3 16z"/><path fill="#3b82f6" d="m12 12 9-5v9l-9 5z"/></svg>); }
-function IconOpenAI() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".1"/><path fill="currentColor" d="M12 6a6 6 0 1 1-6 6h2a4 4 0 1 0 4-4z"/></svg>); }
-function IconStripe() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="5" width="18" height="14" rx="4" fill="currentColor" opacity=".1"/><path fill="currentColor" d="M8 12c0-2 2-3 4-3s4 .9 4 3-2 3-4 3-4-1-4-3z"/></svg>); }
-function IconBox() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor" opacity=".08"/><path fill="currentColor" d="M6 9h12v2H6zm0 4h12v2H6z"/></svg>); }
-function IconJira() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><path fill="#1d4ed8" d="M12 2 4 10l8 12 8-12z" opacity=".25"/><path fill="#1d4ed8" d="M12 6 7 11l5 7 5-7z"/></svg>); }
-function IconDb() { return (<svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden><ellipse cx="12" cy="6" rx="7" ry="3" fill="currentColor" opacity=".12"/><path fill="currentColor" d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6c0 1.7-3.1 3-7 3S5 7.7 5 6z"/></svg>); }

@@ -12,7 +12,7 @@ import {
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Connection } from "@/lib/data";
+import type { Connection } from "@/app/connections/page";
 import { MoreVertical } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { IntegrationLogo } from "./integration-logo";
@@ -38,7 +38,7 @@ export function ConnectionCard({ connection, onSelect }: ConnectionCardProps) {
     <Card className="shadow-sm anim-lift flex flex-col p-4 rounded-2xl">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <IntegrationLogo name={connection.icon} className="h-6 w-6" />
+          <IntegrationLogo name={connection.providerId} className="h-6 w-6" />
           <span className="font-semibold">{connection.name}</span>
         </div>
         <Badge className={cn("capitalize text-xs rounded-md", statusClasses[connection.status])}>
@@ -50,7 +50,7 @@ export function ConnectionCard({ connection, onSelect }: ConnectionCardProps) {
         <div>
           <div className="text-muted-foreground">Last sync</div>
           <div className="font-medium">
-            {connection.health.lastSync ? formatDistanceToNow(new Date(connection.health.lastSync), { addSuffix: true }) : 'N/A'}
+            {connection.health.lastSyncISO ? formatDistanceToNow(new Date(connection.health.lastSyncISO), { addSuffix: true }) : 'N/A'}
           </div>
         </div>
         <div>

@@ -16,7 +16,6 @@ import { ServiceIcon } from "@/components/services/service-icon";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
 
 const statusClasses = {
   healthy: "bg-green-500",

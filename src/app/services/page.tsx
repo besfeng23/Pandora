@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-client-helpers";
 import Link from "next/link";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import type { Service } from "@/lib/data-types";
 
@@ -40,7 +40,8 @@ export default function ServicesPage() {
   const [category, setCategory] = React.useState("");
   const [status, setStatus] = React.useState("");
 
-  const servicesQuery = React.useMemo(() => {
+  const servicesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
     const constraints = [];
     if (category) {
       constraints.push(where('tags', 'array-contains', category));
@@ -320,3 +321,5 @@ function SkeletonGrid() {
     </ul>
   );
 }
+
+    

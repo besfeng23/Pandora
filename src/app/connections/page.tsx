@@ -39,9 +39,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { cn, fmtRel } from "@/lib/utils";
 import { useDebounced, useLocalStorage } from "@/hooks/use-client-helpers";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import type { Connection, Env, Status, TestResult } from "@/lib/data-types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // In-memory mock data for quick connect providers, will be replaced with Firestore data
 export const quickConnectProviders = [
@@ -73,8 +74,13 @@ export default function ConnectionsPage() {
   const [env, setEnv] = useLocalStorage<Env>("pandora.env", "prod");
   const [q, setQ] = useState("");
   const qDebounced = useDebounced(q, 200);
+
+  const connectionsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'connections');
+  }, [firestore]);
   
-  const { data: connections, isLoading } = useCollection<Connection>(collection(firestore, 'connections'));
+  const { data: connections, isLoading } = useCollection<Connection>(connectionsQuery);
 
   const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

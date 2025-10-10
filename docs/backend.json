@@ -327,11 +327,7 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous",
-      "google.com",
-      "github.com",
-      "notion.com",
-      "linear.app"
+      "anonymous"
     ]
   },
   "firestore": {

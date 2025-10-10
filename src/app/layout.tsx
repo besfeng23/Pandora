@@ -10,6 +10,7 @@ import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { FirebaseClientProvider } from "@/firebase";
+import { AuthGuard } from "./auth/guard";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -39,17 +40,19 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <FirebaseClientProvider>
-            <SidebarProvider>
-              <SidebarNav />
-              <SidebarInset>
-                <Header />
-                <main className="flex flex-1 flex-col gap-6 p-6">
-                  {children}
-                </main>
-              </SidebarInset>
-            </SidebarProvider>
-            <Toaster />
-            <CommandPalette />
+            <AuthGuard>
+              <SidebarProvider>
+                <SidebarNav />
+                <SidebarInset>
+                  <Header />
+                  <main className="flex flex-1 flex-col gap-6 p-6">
+                    {children}
+                  </main>
+                </SidebarInset>
+              </SidebarProvider>
+              <Toaster />
+              <CommandPalette />
+            </AuthGuard>
           </FirebaseClientProvider>
         </ThemeProvider>
       </body>

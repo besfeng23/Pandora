@@ -1,7 +1,7 @@
 
 "use client";
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy, ChevronDown, RefreshCw, Download, Circle } from 'lucide-react';
@@ -22,6 +22,7 @@ import { ThemeToggle } from './theme-toggle';
 import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { useAuth, useUser } from '@/firebase';
 
 const notifications = [
     { title: "New critical alert on 'Auth Service'", timestamp: new Date(Date.now() - 5 * 60 * 1000), read: false, status: 'destructive' as const },
@@ -57,6 +58,7 @@ const pageDetails: { [key: string]: { title: string; description: string; action
   '/support': { title: 'Support', description: 'Get help and find answers.'},
   '/billing': { title: 'Billing & Usage', description: 'Track your cloud spend and resource usage.' },
   '/runbooks': { title: 'Runbooks', description: 'Create and execute step-by-step operational procedures.' },
+  '/login': { title: 'Login', description: 'Sign in to your account.' },
 };
 
 function getDetailsFromPathname(pathname: string) {
@@ -86,6 +88,9 @@ export default function Header() {
   const { setOpen } = useCommandPalette();
   const details = getDetailsFromPathname(pathname);
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
+  const { user } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -97,6 +102,15 @@ export default function Header() {
     document.addEventListener("keydown", down)
     return () => document.removeEventListener("keydown", down)
   }, [setOpen])
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    router.push('/login');
+  };
+
+  if (pathname === '/login') {
+    return null; // Don't render header on login page
+  }
 
   return (
     <header className="sticky top-0 z-30 flex h-auto items-center gap-4 border-b bg-background/80 p-4 backdrop-blur-sm sm:px-6 sm:py-4">
@@ -139,56 +153,69 @@ export default function Header() {
             </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <Avatar className="h-10 w-10">
-                {userAvatar && (
-                  <AvatarImage 
-                    src={userAvatar.imageUrl} 
-                    alt="User Avatar"
-                    width={100}
-                    height={100}
-                    data-ai-hint={userAvatar.imageHint} 
-                  />
-                )}
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
+        {user ? (
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10">
+                    {user.photoURL ? (
+                    <AvatarImage 
+                        src={user.photoURL} 
+                        alt="User Avatar"
+                        width={100}
+                        height={100}
+                    />
+                    ) : userAvatar ? (
+                    <AvatarImage 
+                        src={userAvatar.imageUrl} 
+                        alt="User Avatar"
+                        width={100}
+                        height={100}
+                        data-ai-hint={userAvatar.imageHint} 
+                    />
+                    ) : null}
+                    <AvatarFallback>{user.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
+                </Avatar>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.displayName || 'Pandora User'}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                <Link href="/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                <Link href="/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                <Link href="/support">
+                    <LifeBuoy className="mr-2 h-4 w-4" />
+                    <span>Support</span>
+                </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+            </DropdownMenu>
+        ) : (
+            <Button asChild>
+                <Link href="/login">Login</Link>
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl">
-            <DropdownMenuLabel>
-                <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">Pandora User</p>
-                    <p className="text-xs leading-none text-muted-foreground">user@pandora.dev</p>
-                </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/profile">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/support">
-                <LifeBuoy className="mr-2 h-4 w-4" />
-                <span>Support</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        )}
       </div>
     </header>
   );

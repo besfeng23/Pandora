@@ -10,26 +10,12 @@ import Link from "next/link";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import type { Service } from "@/lib/data-types";
+import ServiceCard from "@/components/services/service-card";
+import { Input } from "@/components/ui/input";
 
 // ---------- Config ----------
-const PAGE_SIZE = 24;
 const CATEGORIES = ["core", "billing", "api", "user", "db", "media", "worker", "data", "realtime", "storage", "aws", "devops", "automation", "integration", "events", "cli", "tooling", "docs", "generator"] as const;
-
 const STATUS = ["healthy", "degraded", "down", "unknown"] as const;
-
-// ---------- API calls (wired to mock data) ----------
-async function fetchServices(params: {
-  q: string;
-  category: string;
-  status: string;
-  page: number;
-  pageSize: number;
-}): Promise<{ items: Service[]; hasMore: boolean }> {
-  // This would be a firestore query in real life
-  await new Promise(r => setTimeout(r, 300));
-  return { items: [], hasMore: false };
-}
-
 
 // ---------- Page component ----------
 export default function ServicesPage() {
@@ -72,11 +58,11 @@ export default function ServicesPage() {
     <>
       {/* Toolbar */}
       <div className="sticky top-[68px] z-20 -mx-6 border-b border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             {/* search */}
             <div className="relative flex-1">
-              <input
+              <Input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search services, tags…"
@@ -167,77 +153,7 @@ export default function ServicesPage() {
   );
 }
 
-// ---------- Card ----------
-function ServiceCard({
-  service,
-}: {
-  service: Service;
-}) {
-  return (
-    <article className="group h-full rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-ring flex flex-col">
-      <div className="flex items-start gap-3">
-        <div className="relative h-10 w-10 shrink-0 flex items-center justify-center rounded-lg bg-muted ring-1 ring-inset ring-border">
-          <ServiceIcon name={service.icon} className="h-6 w-6 text-muted-foreground" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="truncate text-sm font-semibold">
-              <span className="align-middle">{service.name}</span>
-            </h3>
-            <StatusBadge status={service.status} />
-          </div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            {service.tags.join(', ')}
-          </div>
-        </div>
-      </div>
-      
-      <div className="mt-3 grid grid-cols-3 gap-3 text-xs text-slate-600 dark:text-slate-300">
-          <div><div className="text-slate-400 dark:text-slate-500">p95</div><div className="font-medium">{service.p95_ms} ms</div></div>
-          <div><div className="text-slate-400 dark:text-slate-500">errors</div><div className="font-medium">{service.err_rate_pct}%</div></div>
-          <div><div className="text-slate-400 dark:text-slate-500">req/s</div><div className="font-medium">{service.rps}</div></div>
-      </div>
-      
-      <div className="mt-4 pt-4 border-t flex items-center justify-between">
-         <div className="text-[11px] text-muted-foreground">Commit <code className="font-mono">{service.commit.slice(0,7)}</code></div>
-          <Link
-            href={`/services/${service.id}`}
-            className="inline-flex h-8 items-center justify-center rounded-lg border border-input px-2.5 text-xs hover:bg-accent"
-          >
-            Manage
-          </Link>
-      </div>
-    </article>
-  );
-}
-
-
-// ---------- Status badge ----------
-function StatusBadge({ status }: { status: Service["status"] }) {
-  const styles =
-    status === "healthy"
-      ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-500/30"
-      : status === "degraded"
-      ? "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-500/30"
-      : status === "down"
-      ? "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-500/30"
-      : "bg-gray-100 text-gray-800 border-gray-200 dark:bg-neutral-800/50 dark:text-neutral-300 dark:border-neutral-700";
-  
-  return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "capitalize text-xs rounded-md",
-        styles
-      )}
-      aria-label={`Status: ${status}`}
-    >
-      {status}
-    </Badge>
-  );
-}
-
-// ---------- Empty / Error / Skeleton ----------
+// ---------- Error States ----------
 function EmptyState({ onClear }: { onClear: () => void }) {
   return (
     <div className="grid place-items-center rounded-xl border border-dashed border-border bg-card py-16">
@@ -321,5 +237,3 @@ function SkeletonGrid() {
     </ul>
   );
 }
-
-    

@@ -23,7 +23,7 @@ const navItems = [
   { href: "/settings", label: "Overview", icon: Settings },
   { href: "/settings/profile", label: "Profile", icon: User },
   { href: "/settings/bridge", label: "Bridge", icon: GitBranch },
-  { href: "/settings/integrations", label: "Integrations", icon: Globe },
+  { href: "/connections", label: "Integrations", icon: Globe },
   { href: "/settings/secrets", label: "Secrets", icon: Lock },
   { href: "/settings/connections", label: "Connections", icon: Database },
   { href: "/settings/access", label: "Access", icon: Users },

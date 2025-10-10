@@ -1,9 +1,25 @@
 "use client";
 
-import { Bar, BarChart, Line, LineChart, ReferenceDot, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { Line, LineChart, ReferenceDot, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
-import { operationsTimelineData } from "@/lib/data";
+
+const operationsTimelineData = [
+  { time: 'T-60', success: 186, failure: 2 },
+  { time: 'T-55', success: 220, failure: 3 },
+  { time: 'T-50', success: 200, failure: 1 },
+  { time: 'T-45', success: 190, failure: 4 },
+  { time: 'T-40', success: 210, failure: 2 },
+  { time: 'T-35', success: 250, failure: 15 }, // failure point
+  { time: 'T-30', success: 230, failure: 1 },
+  { time: 'T-25', success: 240, failure: 3 },
+  { time: 'T-20', success: 220, failure: 0 },
+  { time: 'T-15', success: 260, failure: 1 },
+  { time: 'T-10', success: 270, failure: 12 }, // failure point
+  { time: 'T-5', success: 280, failure: 2 },
+  { time: 'Now', success: 304, failure: 1 },
+];
+
 
 const chartConfig = {
   success: {

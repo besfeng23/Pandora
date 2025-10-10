@@ -65,7 +65,22 @@ function getDetailsFromPathname(pathname: string) {
     return pageDetails[pathname] || { title: 'Pandora', description: 'Your all-in-one system management and operations platform.'};
 }
 
-export default function Header({ onRefresh, onExport }: { onRefresh?: () => void; onExport?: () => void; }) {
+// A simple event emitter
+class EventEmitter {
+    private listeners: { [event: string]: Function[] } = {};
+    on(event: string, listener: Function) {
+        if (!this.listeners[event]) this.listeners[event] = [];
+        this.listeners[event].push(listener);
+    }
+    emit(event: string) {
+        if (!this.listeners[event]) return;
+        this.listeners[event].forEach(listener => listener());
+    }
+}
+export const headerActions = new EventEmitter();
+
+
+export default function Header() {
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
   const { setOpen } = useCommandPalette();
@@ -95,7 +110,7 @@ export default function Header({ onRefresh, onExport }: { onRefresh?: () => void
         <p className="text-xs text-muted-foreground">{details.description}</p>
       </div>
       
-      {details.actions && details.actions({ onRefresh, onExport })}
+      {details.actions && details.actions({ onRefresh: () => headerActions.emit('refresh'), onExport: () => headerActions.emit('export') })}
 
       <div className="flex items-center justify-end gap-2">
         <ThemeToggle />

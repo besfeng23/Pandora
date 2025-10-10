@@ -13,6 +13,7 @@ import {
   XCircle,
   ChevronRight,
   Download,
+  Loader2
 } from "lucide-react";
 import { IntegrationLogo } from "@/components/connections/integration-logo";
 import {
@@ -40,9 +41,10 @@ import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { cn, fmtRel } from "@/lib/utils";
 import { useDebounced, useLocalStorage } from "@/hooks/use-client-helpers";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import type { Connection, Env, Status, TestResult } from "@/lib/data-types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
 
 // In-memory mock data for quick connect providers, will be replaced with Firestore data
 export const quickConnectProviders = [
@@ -71,6 +73,7 @@ const statusClasses: Record<Status, string> = {
 
 export default function ConnectionsPage() {
   const firestore = useFirestore();
+  const { toast } = useToast();
   const [env, setEnv] = useLocalStorage<Env>("pandora.env", "prod");
   const [q, setQ] = useState("");
   const qDebounced = useDebounced(q, 200);
@@ -99,16 +102,50 @@ export default function ConnectionsPage() {
     const sorted = [...filtered].sort((a, b) => {
       if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
       if (sortBy === "status") return a.status.localeCompare(b.status);
-      const ta = new Date(a.health.lastSyncISO || 0).getTime();
-      const tb = new Date(b.health.lastSyncISO || 0).getTime();
+      const ta = new Date(a.health?.lastSyncISO || 0).getTime();
+      const tb = new Date(b.health?.lastSyncISO || 0).getTime();
       return tb - ta;
     });
     return sorted;
   }, [connections, env, qDebounced, sortBy]);
 
   const onConnect = async (providerId: string) => {
-    // This would call a server action or cloud function in a real app
-    console.log(`Connecting ${providerId} in ${env}`);
+    if (!firestore) return;
+    setBusy(providerId);
+
+    const newConnection: Omit<Connection, 'id'> = {
+      name: `${providerId.charAt(0).toUpperCase() + providerId.slice(1)} Integration`,
+      providerId: providerId,
+      env: env,
+      status: 'pending',
+      scopes: ['read', 'write'],
+      usage7d: Array(7).fill(0).map(() => Math.floor(Math.random() * 100)),
+      health: {
+        lastSyncISO: new Date().toISOString(),
+        latencyP95: 0,
+        error24h: 0,
+        quotaUsedPct: 0
+      },
+      lastRotatedISO: new Date().toISOString(),
+      lastTests: [],
+    };
+    
+    try {
+      await addDoc(collection(firestore, 'connections'), newConnection);
+      toast({
+        title: "Connection Added",
+        description: `Started connecting to ${providerId}.`,
+      });
+    } catch(e) {
+      console.error(e);
+      toast({
+        title: "Connection Failed",
+        description: `Could not connect to ${providerId}.`,
+        variant: "destructive"
+      });
+    } finally {
+      setBusy(null);
+    }
   };
   
   const handleSelectConnection = (connection: Connection) => {
@@ -226,12 +263,12 @@ function ConnectionCard({
         <div>
           <div className="text-muted-foreground">Last sync</div>
           <div className="font-medium">
-            {connection.health.lastSyncISO ? fmtRel(connection.health.lastSyncISO) : 'N/A'}
+            {connection.health?.lastSyncISO ? fmtRel(connection.health.lastSyncISO) : 'N/A'}
           </div>
         </div>
         <div>
           <div className="text-muted-foreground">API Usage</div>
-          <div className="font-medium">{connection.health.quotaUsedPct}%</div>
+          <div className="font-medium">{connection.health?.quotaUsedPct}%</div>
         </div>
         <div>
           <div className="text-muted-foreground">Scopes</div>
@@ -283,11 +320,10 @@ function QuickConnectCard({ onConnect, busyProvider }: { onConnect: (providerId:
                     variant="secondary"
                     className="h-20 w-full flex-col gap-2 rounded-xl border bg-background"
                     onClick={() => onConnect(provider.id)}
-                    disabled={busyProvider === provider.id}
+                    disabled={!!busyProvider}
                 >
-                    <IntegrationLogo name={provider.id} className="h-7 w-7" />
+                    {busyProvider === provider.id ? <Loader2 className="h-7 w-7 animate-spin" /> : <IntegrationLogo name={provider.id} className="h-7 w-7" />}
                     <span className="text-xs">{provider.name}</span>
-                    {busyProvider === provider.id && <div className="absolute inset-0 bg-background/50 flex items-center justify-center"><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div></div>}
                 </Button>
             ))}
         </div>
@@ -466,5 +502,3 @@ function TestsTab({ connection, onRunTests }: { connection: Connection, onRunTes
         </div>
     )
 }
-
-    

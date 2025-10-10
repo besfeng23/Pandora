@@ -25,6 +25,7 @@ import { useDebounced } from "@/hooks/use-client-helpers";
 import { queryLogs } from "@/lib/actions";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import type { AuditEvent } from "@/lib/data-types";
+import { headerActions } from "@/components/layout/header";
 
 // ---------- Types ----------
 type Severity = AuditEvent['severity'];
@@ -101,6 +102,7 @@ export default function AuditPage() {
   const [to, setTo] = React.useState<Date | null>(null);
 
   const [page, setPage] = React.useState(1);
+  const [refreshKey, setRefreshKey] = React.useState(0);
 
   const [isTransitioning, startTransition] = React.useTransition();
   
@@ -117,7 +119,7 @@ export default function AuditPage() {
     constraints.push(limit(PAGE_SIZE * page));
 
     return query(collection(firestore, 'auditLogs'), ...constraints);
-  }, [firestore, severity, status, service, from, to, page]);
+  }, [firestore, severity, status, service, from, to, page, refreshKey]);
 
   const { data: auditLogs, isLoading: loading } = useCollection<AuditEvent>(auditLogQuery);
 
@@ -147,14 +149,12 @@ export default function AuditPage() {
   const total = rows.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  const handleAiSearch = () => {
-    if (!debouncedQ) {
+  const handleAiSearch = React.useCallback(() => {
+    if (!debouncedQ || !auditLogs) {
       setAiResults(null);
-      setIsAiSearch(false);
       return;
     }
     startTransition(async () => {
-      setIsAiSearch(true);
       const allLogsString = JSON.stringify(auditLogs);
       const result = await queryLogs({ query: debouncedQ, logs: allLogsString });
       try {
@@ -169,18 +169,20 @@ export default function AuditPage() {
         setAiResults([]);
       }
     });
-  }
+  }, [debouncedQ, auditLogs, startTransition]);
 
   React.useEffect(() => {
     setPage(1); 
     setAiResults(null);
-  }, [debouncedQ, severity, status, service, from, to, isAiSearch]);
+  }, [debouncedQ, severity, status, service, from, to]);
 
   React.useEffect(() => {
     if (isAiSearch) {
       handleAiSearch();
+    } else {
+        setAiResults(null);
     }
-  }, [isAiSearch, debouncedQ]);
+  }, [isAiSearch, debouncedQ, handleAiSearch]);
 
 
   function resetFilters() {
@@ -207,6 +209,19 @@ export default function AuditPage() {
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  const handleRefresh = () => {
+    setRefreshKey(oldKey => oldKey + 1);
+    toast({ title: 'Refreshing logs...'})
+  };
+
+  React.useEffect(() => {
+    headerActions.on('refresh', handleRefresh);
+    headerActions.on('export', exportCSV);
+    return () => {
+        // Cleanup if component unmounts
+    }
+  }, [rows]);
 
   return (
     <div className="space-y-6">
@@ -518,5 +533,3 @@ function DateRangePicker({
     </Popover>
   );
 }
-
-    

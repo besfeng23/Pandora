@@ -33,7 +33,9 @@ export default function ServicesOverview() {
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {overviewServices?.map((service) => (
-            <ServiceCard key={service.id} service={service} />
+            <Link href={`/services/${service.id}`} key={service.id}>
+              <ServiceCard service={service} />
+            </Link>
           ))}
         </div>
       </CardContent>

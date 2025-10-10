@@ -2,16 +2,14 @@
 "use client";
 
 import * as React from "react";
-import { ServiceIcon } from "@/components/services/service-icon";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-client-helpers";
-import Link from "next/link";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import type { Service } from "@/lib/data-types";
 import ServiceCard from "@/components/services/service-card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search } from "lucide-react";
 
 // ---------- Config ----------
 const CATEGORIES = ["core", "billing", "api", "user", "db", "media", "worker", "data", "realtime", "storage", "aws", "devops", "automation", "integration", "events", "cli", "tooling", "docs", "generator"] as const;
@@ -23,16 +21,16 @@ export default function ServicesPage() {
   // filters
   const [searchQuery, setSearchQuery] = React.useState("");
   const debouncedQuery = useDebounced(searchQuery, 300);
-  const [category, setCategory] = React.useState("");
-  const [status, setStatus] = React.useState("");
+  const [category, setCategory] = React.useState<string>("all");
+  const [status, setStatus] = React.useState<string>("all");
 
   const servicesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     const constraints = [];
-    if (category) {
+    if (category !== "all") {
       constraints.push(where('tags', 'array-contains', category));
     }
-    if (status) {
+    if (status !== "all") {
       constraints.push(where('status', '==', status));
     }
     return query(collection(firestore, 'services'), ...constraints);
@@ -62,54 +60,35 @@ export default function ServicesPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             {/* search */}
             <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search services, tags…"
                 aria-label="Search services"
-                className="w-full h-10 rounded-lg border border-input bg-background px-3 pr-9 text-sm outline-none ring-0 placeholder:text-muted-foreground focus:border-ring"
+                className="w-full h-10 rounded-lg bg-background pl-10 text-sm"
               />
-              <svg
-                aria-hidden
-                viewBox="0 0 24 24"
-                className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-              >
-                <path
-                  fill="currentColor"
-                  d="M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm8.707 12.293-3.388-3.388A7.963 7.963 0 0 0 18 10a8 8 0 1 0-8 8 7.963 7.963 0 0 0 2.905-.681l3.388 3.388a1 1 0 1 0 1.414-1.414Z"
-                />
-              </svg>
             </div>
 
-            {/* category */}
-            <select
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-              aria-label="Filter by category"
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm capitalize"
-            >
-              <option value="">All categories</option>
-              {CATEGORIES.map(c => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="h-10 rounded-lg border-input bg-background text-sm capitalize w-full sm:w-auto">
+                <SelectValue placeholder="All categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {CATEGORIES.map(c => <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
 
-            {/* status */}
-            <select
-              value={status}
-              onChange={e => setStatus(e.target.value)}
-              aria-label="Filter by status"
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm capitalize"
-            >
-              <option value="">All status</option>
-              {STATUS.map(s => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="h-10 rounded-lg border-input bg-background text-sm capitalize w-full sm:w-auto">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                {STATUS.map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -126,8 +105,8 @@ export default function ServicesPage() {
               <EmptyState
                 onClear={() => {
                   setSearchQuery("");
-                  setCategory("");
-                  setStatus("");
+                  setCategory("all");
+                  setStatus("all");
                 }}
               />
             ) : (
@@ -158,7 +137,7 @@ function EmptyState({ onClear }: { onClear: () => void }) {
   return (
     <div className="grid place-items-center rounded-xl border border-dashed border-border bg-card py-16">
       <div className="text-center">
-        <div className="mx-auto mb-3 h-10 w-10 rounded-full border border-border bg-muted" />
+        <div className="mx-auto mb-3 h-10 w-10 rounded-full border border-border bg-muted grid place-items-center"><Search className="h-5 w-5 text-muted-foreground" /></div>
         <h2 className="text-sm font-medium">No services found</h2>
         <p className="mx-auto mt-1 max-w-sm px-6 text-xs text-muted-foreground">
           Try another search term or clear filters.

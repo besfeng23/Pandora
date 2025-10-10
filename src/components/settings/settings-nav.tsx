@@ -22,13 +22,11 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/settings", label: "Overview", icon: Settings },
   { href: "/settings/profile", label: "Profile", icon: User },
-  { href: "/settings/bridge", label: "Bridge", icon: GitBranch },
-  { href: "/connections", label: "Integrations", icon: Globe },
-  { href: "/settings/secrets", label: "Secrets", icon: Lock },
-  { href: "/settings/connections", label: "Connections", icon: Database },
   { href: "/settings/access", label: "Access", icon: Users },
   { href: "/settings/billing", label: "Billing", icon: CreditCard },
   { href: "/settings/notifications", label: "Notifications", icon: Bell },
+  { href: "/settings/bridge", label: "Bridge", icon: GitBranch },
+  { href: "/settings/secrets", label: "Secrets", icon: Lock },
   { href: "/settings/api", label: "API", icon: Code },
   { href: "/settings/support", label: "Support", icon: LifeBuoy },
 ];

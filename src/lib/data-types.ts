@@ -1,4 +1,5 @@
 
+
 export type Service = {
   id: string;
   name: string;
@@ -35,6 +36,21 @@ export type AuditEvent = {
   diff?: { before?: unknown; after?: unknown };
   integrity: { signed: boolean; signer?: string; sig?: string; hash: string; prev_hash?: string; merkle_root?: string };
   raw: unknown;
+};
+
+export type UserProfile = {
+  id: string;
+  name?: string;
+  email: string;
+  roleId?: string;
+  avatar?: string;
+  lastActive?: string;
+};
+
+export type Role = {
+  id: string;
+  name: string;
+  permissions: string[];
 };
 
 export type Env = "dev" | "staging" | "prod";

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, a.k.a. "react";
+import React from "react";
 import { AlertCircle, BrainCircuit, CheckCircle, ChevronDown, Play, Save, Wand2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -349,5 +349,3 @@ export default function ActionsPage() {
     </div>
   );
 }
-
-    

@@ -16,33 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreditCard, DollarSign, Download, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query } from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type BillingSummary = {
-  id: string;
-  mtdCost: number;
-  forecastedCost: number;
-  budget: number;
-};
-
-type CostByService = {
-  id: string;
-  name: string;
-  cost: number;
-};
-
-type RecentCharge = {
-  id: string;
-  description: string;
-  amount: number;
-  date: string;
-};
+import type { BillingSummary, CostByService, RecentCharge } from "@/lib/data-types";
 
 export default function BillingPage() {
   const firestore = useFirestore();
@@ -181,3 +161,5 @@ function BillingPageSkeleton() {
     </div>
   )
 }
+
+    

@@ -20,8 +20,6 @@ export const useUser = (): UserHookResult => {
   });
 
   React.useEffect(() => {
-    setUserState({ user: auth.currentUser, isUserLoading: true, userError: null });
-
     const unsubscribe = onAuthStateChanged(
       auth,
       (firebaseUser) => {
@@ -38,3 +36,5 @@ export const useUser = (): UserHookResult => {
 
   return userState;
 };
+
+    

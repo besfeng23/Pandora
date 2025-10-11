@@ -16,6 +16,9 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import type { LucideIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Runbook = {
     id: string;
@@ -56,7 +59,26 @@ export default function RunbooksPage() {
                     <p className="text-muted-foreground">Standardized operational procedures for your team.</p>
                 </div>
             </div>
-            <Button className="rounded-xl"><PlusCircle /> Create Runbook</Button>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button className="rounded-xl"><PlusCircle /> Create Runbook</Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Create New Runbook</DialogTitle>
+                        <DialogDescription>Define a new operational procedure.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="title" className="text-right">Title</Label>
+                            <Input id="title" placeholder="e.g. Database Failover" className="col-span-3" />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button type="submit">Create</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
 
         {isLoading ? (
@@ -101,3 +123,5 @@ export default function RunbooksPage() {
     </div>
   );
 }
+
+    

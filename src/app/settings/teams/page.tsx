@@ -17,11 +17,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { Loader2, Users } from 'lucide-react';
 import type { Team, UserProfile } from '@/lib/data-types';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 
 export default function SettingsTeamsPage() {
@@ -38,6 +40,7 @@ export default function SettingsTeamsPage() {
     [firestore]
   );
   const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersQuery);
+  const placeholderAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
 
   const isLoading = teamsLoading || usersLoading;
 
@@ -74,12 +77,14 @@ export default function SettingsTeamsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {teamMembers.map(member => (
+                                    {teamMembers.map(member => {
+                                        const userAvatar = member.avatar || placeholderAvatar?.imageUrl;
+                                        return (
                                         <TableRow key={member.id}>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="h-8 w-8">
-                                                        {member.avatar && <AvatarImage src={member.avatar} />}
+                                                        {userAvatar && <Image src={userAvatar} alt="Member avatar" width={32} height={32} />}
                                                         <AvatarFallback>{member.email.charAt(0).toUpperCase()}</AvatarFallback>
                                                     </Avatar>
                                                     <div>
@@ -93,7 +98,7 @@ export default function SettingsTeamsPage() {
                                                 <Button variant="ghost" size="sm">Remove</Button>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    )})}
                                 </TableBody>
                             </Table>
                          </div>
@@ -105,3 +110,5 @@ export default function SettingsTeamsPage() {
     </Card>
   );
 }
+
+    

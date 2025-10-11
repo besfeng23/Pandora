@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -9,7 +9,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { Key, Loader2, LogIn, Mail, UserPlus } from 'lucide-react';
+import { Key, Loader2, LogIn, Mail } from 'lucide-react';
 import { SiGithub, SiGoogle } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,13 +67,11 @@ export default function LoginPage() {
     setLoading('email');
     setError(null);
     try {
-      // This is now non-blocking
       initiateEmailSignIn(auth, email, password);
     } catch (e: any) {
       console.error(e);
       setError('Invalid email or password. Please try again.');
     } finally {
-      // Loading state might be handled differently, e.g., optimistic UI
       setLoading(null);
     }
   };
@@ -175,3 +173,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

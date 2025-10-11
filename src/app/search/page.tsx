@@ -1,14 +1,15 @@
 
 "use client";
 
-import { useState, useTransition } from 'react';
+import React, { useState, useTransition } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from '@/components/ui/button';
 import { Search as SearchIcon, FileText, LayoutGrid, BookOpen, Loader2 } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where, limit } from "firebase/firestore";
+import { collection, query, where, limit, orderBy } from "firebase/firestore";
 import type { Service, AuditEvent, Runbook } from "@/lib/data-types";
+import Link from 'next/link';
 
 type SearchResult = {
   title: string;
@@ -24,42 +25,50 @@ type SearchResults = {
 
 export default function SearchPage() {
   const [queryVal, setQueryVal] = useState('');
+  const [lastQuery, setLastQuery] = useState('');
   const [isPending, startTransition] = useTransition();
   const [results, setResults] = useState<SearchResults | null>(null);
 
   const firestore = useFirestore();
   
   const servicesQuery = useMemoFirebase(() => {
-    if (!firestore || !queryVal) return null;
-    return query(collection(firestore, 'services'), where('name', '>=', queryVal), where('name', '<=', queryVal + '\uf8ff'), limit(3));
-  }, [firestore, queryVal]);
+    if (!firestore || !lastQuery) return null;
+    return query(collection(firestore, 'services'), where('name', '>=', lastQuery), where('name', '<=', lastQuery + '\uf8ff'), limit(3));
+  }, [firestore, lastQuery]);
   const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
 
   const auditLogsQuery = useMemoFirebase(() => {
-    if (!firestore || !queryVal) return null;
-    return query(collection(firestore, 'auditLogs'), where('action', '>=', queryVal), where('action', '<=', queryVal + '\uf8ff'), limit(3));
-  }, [firestore, queryVal]);
+    if (!firestore || !lastQuery) return null;
+    return query(collection(firestore, 'auditLogs'), where('action', '>=', lastQuery), where('action', '<=', lastQuery + '\uf8ff'), orderBy('action'), limit(3));
+  }, [firestore, lastQuery]);
   const { data: auditLogs, isLoading: auditLoading } = useCollection<AuditEvent>(auditLogsQuery);
 
   const runbooksQuery = useMemoFirebase(() => {
-    if (!firestore || !queryVal) return null;
-    return query(collection(firestore, 'runbooks'), where('title', '>=', queryVal), where('title', '<=', queryVal + '\uf8ff'), limit(3));
-  }, [firestore, queryVal]);
+    if (!firestore || !lastQuery) return null;
+    return query(collection(firestore, 'runbooks'), where('title', '>=', lastQuery), where('title', '<=', lastQuery + '\uf8ff'), limit(3));
+  }, [firestore, lastQuery]);
   const { data: runbooks, isLoading: runbooksLoading } = useCollection<Runbook>(runbooksQuery);
 
   const handleSearch = () => {
     if (!queryVal) {
       setResults(null);
+      setLastQuery('');
       return;
     }
     startTransition(() => {
+      setLastQuery(queryVal);
+    });
+  }
+
+  React.useEffect(() => {
+    if (lastQuery && !servicesLoading && !auditLoading && !runbooksLoading) {
       setResults({
         services: (services || []).map(s => ({ title: s.name, description: `Service - ${s.status}`, href: `/services/${s.id}` })),
         audit: (auditLogs || []).map(a => ({ title: a.action, description: `Audit Event - ${a.id.slice(0,8)}`, href: `/audit` })),
         runbooks: (runbooks || []).map(r => ({ title: r.title, description: `Runbook - ${r.category}`, href: `/runbooks` })),
       });
-    });
-  }
+    }
+  }, [services, auditLogs, runbooks, servicesLoading, auditLoading, runbooksLoading, lastQuery]);
   
   const isLoading = servicesLoading || auditLoading || runbooksLoading || isPending;
 
@@ -76,10 +85,10 @@ export default function SearchPage() {
           <ul className="space-y-3">
             {items.map((item, i) => (
               <li key={i}>
-                <a href={item.href} className="block p-3 rounded-lg hover:bg-muted">
+                <Link href={item.href} className="block p-3 rounded-lg hover:bg-muted">
                   <p className="font-medium">{item.title}</p>
                   <p className="text-sm text-muted-foreground">{item.description}</p>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -127,3 +136,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    

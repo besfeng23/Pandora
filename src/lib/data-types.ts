@@ -1,4 +1,6 @@
 
+import type { Timestamp } from "firebase/firestore";
+
 export type Service = {
   id: string;
   name: string;
@@ -39,12 +41,28 @@ export type AuditEvent = {
 
 export type UserProfile = {
   id: string;
-  name?: string;
+  name: string;
   email: string;
+  teamId?: string;
   roleId?: string;
   avatar?: string;
   lastActive?: string;
 };
+
+export type FavoriteAction = {
+    id: string;
+    userId: string;
+    tool: string;
+    args: any;
+    prompt: string;
+    timestamp: Timestamp | Date;
+}
+
+export type Team = {
+    id: string;
+    name: string;
+    description: string;
+}
 
 export type Role = {
   id: string;
@@ -61,10 +79,10 @@ export type Provider = {
   recommendedScopes?: string[];
 };
 export type Health = {
-  lastSyncISO?: string;
-  latencyP95?: number;
-  error24h?: number;
-  quotaUsedPct?: number;
+  lastSyncISO: string;
+  latencyP95: number;
+  error24h: number;
+  quotaUsedPct: number;
 };
 export type TestResult = { name: string; pass: boolean; fixAction?: FixId };
 export type FixId = | "reauth" | `add_scope:${string}` | "rotate_secret" | "replay_webhook" | "lower_rate" | "upgrade_plan";
@@ -83,8 +101,8 @@ export type Connection = {
   };
   usage7d: number[]; // for sparkline
   health: Health;
-  lastRotatedISO?: string;
-  lastTests?: TestResult[];
+  lastRotatedISO: string;
+  lastTests: TestResult[];
 };
 
 export type SystemHealth = {
@@ -99,3 +117,42 @@ export type SystemHealth = {
     connectedServices: number;
     timestamp: string;
 };
+
+export type Incident = {
+    id: string;
+    title: string;
+    status: "investigating" | "identified" | "monitoring" | "resolved";
+    priority: "P1" | "P2" | "P3" | "P4";
+    services: string[];
+    time: string;
+}
+
+export type BillingSummary = {
+    id: string;
+    mtdCost: number;
+    forecastedCost: number;
+    budget: number;
+};
+  
+export type CostByService = {
+    id: string;
+    name: string;
+    cost: number;
+};
+
+export type RecentCharge = {
+    id: string;
+    description: string;
+    amount: number;
+    date: string;
+};
+
+export type Runbook = {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    icon: string;
+}
+
+    

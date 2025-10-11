@@ -1,8 +1,6 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Code, KeyRound } from "lucide-react";
 
 export default function SettingsApiPage() {
@@ -43,3 +41,5 @@ export default function SettingsApiPage() {
     </div>
   );
 }
+
+    

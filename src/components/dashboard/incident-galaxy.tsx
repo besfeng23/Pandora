@@ -66,7 +66,7 @@ export default function IncidentGalaxy() {
                 <g key={inc.id} transform={`translate(${inc.x}, ${inc.y})`} className="cursor-pointer group">
                     <circle cx="0" cy="0" r={inc.size} fill={priorityColors[inc.priority as keyof typeof priorityColors]} className="opacity-70 group-hover:opacity-100 transition-opacity" />
                     <circle cx="0" cy="0" r={inc.size + 2} fill={priorityColors[inc.priority as keyof typeof priorityColors]} className="opacity-20 animate-pulse" />
-                    <title>{inc.id} - {inc.priority}</title>
+                    <title>{`${inc.id} - ${inc.priority}`}</title>
                 </g>
             ))}
         </svg>
@@ -74,5 +74,3 @@ export default function IncidentGalaxy() {
     </Card>
   );
 }
-
-    

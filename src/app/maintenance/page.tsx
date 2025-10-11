@@ -69,7 +69,7 @@ export default function MaintenancePage() {
             </p>
         </CardContent>
         <CardFooter>
-          <Button onClick={runAnalysis} disabled={isPending}>
+          <Button onClick={runAnalysis} disabled={isPending} className="rounded-xl">
             {isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -81,7 +81,7 @@ export default function MaintenancePage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg rounded-2xl">
           <DialogHeader>
             <DialogTitle>Predictive Maintenance Analysis</DialogTitle>
             <DialogDescription>

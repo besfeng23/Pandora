@@ -63,7 +63,7 @@ export default function RunbooksPage() {
                 <DialogTrigger asChild>
                     <Button className="rounded-xl"><PlusCircle /> Create Runbook</Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="rounded-2xl">
                     <DialogHeader>
                         <DialogTitle>Create New Runbook</DialogTitle>
                         <DialogDescription>Define a new operational procedure.</DialogDescription>
@@ -71,11 +71,11 @@ export default function RunbooksPage() {
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="title" className="text-right">Title</Label>
-                            <Input id="title" placeholder="e.g. Database Failover" className="col-span-3" />
+                            <Input id="title" placeholder="e.g. Database Failover" className="col-span-3 rounded-xl" />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="submit">Create</Button>
+                        <Button type="submit" className="rounded-xl">Create</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -47,6 +47,7 @@ export default function CostOptimizationPage() {
               <DollarSign />
             </div>
             <div>
+              
               <CardDescription>Use AI to detect cloud wastage and get optimization recommendations.</CardDescription>
             </div>
           </div>
@@ -70,7 +71,7 @@ export default function CostOptimizationPage() {
              </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={runAnalysis} disabled={isPending}>
+          <Button onClick={runAnalysis} disabled={isPending} className="rounded-xl">
             {isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

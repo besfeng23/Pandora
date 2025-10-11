@@ -179,7 +179,7 @@ function NewIncidentDialog() {
             <DialogTrigger asChild>
                 <Button className="rounded-xl"><PlusCircle className="mr-2"/> New Incident</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] rounded-2xl">
             <DialogHeader>
                 <DialogTitle>Create New Incident</DialogTitle>
                 <DialogDescription>
@@ -189,12 +189,12 @@ function NewIncidentDialog() {
             <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="title" className="text-right">Title</Label>
-                    <Input id="title" placeholder="e.g. API Gateway 5xx errors" className="col-span-3" />
+                    <Input id="title" placeholder="e.g. API Gateway 5xx errors" className="col-span-3 rounded-xl" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="priority" className="text-right">Priority</Label>
                     <Select>
-                        <SelectTrigger className="col-span-3">
+                        <SelectTrigger className="col-span-3 rounded-xl">
                             <SelectValue placeholder="Select priority" />
                         </SelectTrigger>
                         <SelectContent>
@@ -207,7 +207,7 @@ function NewIncidentDialog() {
                 </div>
             </div>
             <DialogFooter>
-                <Button type="submit">Declare Incident</Button>
+                <Button type="submit" className="rounded-xl">Declare Incident</Button>
             </DialogFooter>
             </DialogContent>
       </Dialog>

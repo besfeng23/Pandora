@@ -51,7 +51,7 @@ export default function BillingPage() {
             <div className="flex items-center gap-3">
                 <div className="p-3 bg-primary/10 rounded-lg text-primary"><CreditCard /></div>
                 <div>
-                    <h1 className="text-3xl font-bold font-headline">Billing & Usage</h1>
+                    
                     <p className="text-muted-foreground">Track your cloud spend and resource usage.</p>
                 </div>
             </div>
@@ -143,7 +143,7 @@ function BillingPageSkeleton() {
             <div className="flex items-center gap-3">
                 <div className="p-3 bg-primary/10 rounded-lg text-primary"><CreditCard /></div>
                 <div>
-                    <h1 className="text-3xl font-bold font-headline">Billing & Usage</h1>
+                    
                     <p className="text-muted-foreground">Track your cloud spend and resource usage.</p>
                 </div>
             </div>
@@ -161,5 +161,3 @@ function BillingPageSkeleton() {
     </div>
   )
 }
-
-    

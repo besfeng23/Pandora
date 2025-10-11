@@ -75,7 +75,7 @@ export default function CodeReviewPage() {
               <Code />
             </div>
             <div>
-              <CardTitle className="font-headline">Automated Code Review</CardTitle>
+              
               <CardDescription>Use AI to find security and performance issues in your code.</CardDescription>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function CodeReviewPage() {
           />
         </CardContent>
         <CardFooter>
-          <Button onClick={runAnalysis} disabled={isPending} type="button">
+          <Button onClick={runAnalysis} disabled={isPending} type="button" className="rounded-xl">
             {isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

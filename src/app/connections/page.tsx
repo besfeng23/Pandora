@@ -39,8 +39,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { cn, fmtRel } from "@/lib/utils";
-import { useDebounced, useLocalStorage } from "@/hooks/use-client-helpers";
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
+import { useDebounced } from "@/hooks/use-client-helpers";
+import { useLocalStorage } from "@/hooks/use-client-helpers";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { collection } from "firebase/firestore";
 import type { Connection, Env, Status, TestResult } from "@/lib/data-types";
 import { useToast } from "@/components/ui/use-toast";
@@ -160,7 +162,7 @@ export default function ConnectionsPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
@@ -185,7 +187,7 @@ export default function ConnectionsPage() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-10">
+                <Button variant="outline" className="h-10 rounded-xl">
                   <ChevronsUpDown className="mr-2 h-4 w-4" />
                   Sort by: {sortBy}
                 </Button>

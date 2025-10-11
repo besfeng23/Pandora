@@ -1,6 +1,19 @@
 
 {
   "entities": {
+    "Runbook": {
+      "title": "Runbook",
+      "type": "object",
+      "description": "Represents a standardized operational procedure.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "icon": { "type": "string" }
+      },
+      "required": ["id", "title", "description", "category", "icon"]
+    },
     "SystemHealth": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "SystemHealth",
@@ -394,6 +407,10 @@
     ]
   },
   "firestore": {
+    "/runbooks/{runbookId}": {
+        "schema": { "$ref": "#/entities/Runbook" },
+        "description": "Stores runbook definitions."
+    },
     "/systemHealth/{healthId}": {
         "schema": { "$ref": "#/entities/SystemHealth" },
         "description": "Stores system health records. Supports real-time updates for the health dashboard."

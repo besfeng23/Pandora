@@ -9,7 +9,7 @@ import {
   signInWithPopup,
 } from 'firebase/auth';
 import { Mail, Key, LogIn, Loader2 } from 'lucide-react';
-import { SiGithub, SiGoogle, SiNotion, SiLinear } from '@icons-pack/react-simple-icons';
+import { SiGithub, SiGoogle } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -23,20 +23,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useAuth, useUser } from '@/firebase';
-import { useToast } from '@/components/ui/use-toast';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState<
-    'google' | 'github' | 'email' | 'notion' | 'linear' | null
-  >(null);
+  const [loading, setLoading] = useState<'google' | 'github' | 'email' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-  const { toast } = useToast();
 
   if (isUserLoading) {
     return (
@@ -80,29 +76,24 @@ export default function LoginPage() {
       setLoading(null);
     }
   };
-  
-  const handlePlaceholderSignIn = (providerName: string) => {
-    toast({
-      title: "Integration Not Implemented",
-      description: `${providerName} sign-in is not yet available.`,
-    });
-  };
 
   const ProviderButton = ({
     provider,
     icon: Icon,
     label,
-    onClick,
   }: {
-    provider: 'google' | 'github' | 'notion' | 'linear';
+    provider: 'google' | 'github';
     icon: React.ElementType;
     label: string;
-    onClick: () => void;
   }) => (
     <Button
       variant="outline"
       className="w-full"
-      onClick={onClick}
+      onClick={() =>
+        handleProviderSignIn(
+          provider === 'google' ? new GoogleAuthProvider() : new GithubAuthProvider()
+        )
+      }
       disabled={!!loading}
     >
       {loading === provider ? (
@@ -166,30 +157,8 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-             <ProviderButton
-              provider="google"
-              icon={SiGoogle}
-              label="Google"
-              onClick={() => handleProviderSignIn(new GoogleAuthProvider())}
-            />
-            <ProviderButton
-              provider="github"
-              icon={SiGithub}
-              label="GitHub"
-              onClick={() => handleProviderSignIn(new GithubAuthProvider())}
-            />
-            <ProviderButton
-              provider="notion"
-              icon={SiNotion}
-              label="Notion"
-              onClick={() => handlePlaceholderSignIn('Notion')}
-            />
-             <ProviderButton
-              provider="linear"
-              icon={SiLinear}
-              label="Linear"
-              onClick={() => handlePlaceholderSignIn('Linear')}
-            />
+            <ProviderButton provider="google" icon={SiGoogle} label="Google" />
+            <ProviderButton provider="github" icon={SiGithub} label="GitHub" />
           </div>
         </CardContent>
         <CardFooter className="justify-center">

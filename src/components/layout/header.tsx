@@ -2,9 +2,8 @@
 "use client";
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Search, Bell, PanelLeft, LogOut, User, Settings, LifeBuoy, ChevronDown, RefreshCw, Download, Circle } from 'lucide-react';
+import { Bell, ChevronDown, Circle, Download, LifeBuoy, LogOut, PanelLeft, RefreshCw, Search, Settings, User } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +15,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from '@/components/ui/sidebar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCommandPalette } from './command-palette';
 import { ThemeToggle } from './theme-toggle';
-import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth, useUser } from '@/firebase';
@@ -31,26 +28,18 @@ const notifications = [
     { title: "Deployment of 'Billing API' complete", timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), read: true, status: 'neutral' as const },
 ];
 
-const pageDetails: { [key: string]: { title: string; description: string; actions?: React.FC<{ onRefresh?: () => void; onExport?: () => void; }> } } = {
+const AuditActions: React.FC<{ onRefresh?: () => void; onExport?: () => void; }> = ({ onRefresh, onExport }) => (
+    <div className="hidden md:flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={onRefresh}><RefreshCw /> Refresh</Button>
+        <Button size="sm" onClick={onExport}><Download /> Export CSV</Button>
+    </div>
+);
+
+const pageDetails: { [key: string]: { title: string; description: string; actions?: React.FC<any> } } = {
   '/': { title: 'Dashboard', description: 'A high-level overview of your system.' },
   '/services': { title: 'Services', description: 'Manage and monitor your service integrations.' },
   '/incidents': { title: 'Incidents', description: 'Track and manage incidents across your services.' },
-  '/audit': { 
-    title: 'Audit', 
-    description: 'Immutable event trail across services',
-    actions: ({ onRefresh, onExport }) => (
-      <div className="hidden md:flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={onRefresh}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
-        <Button size="sm" onClick={onExport}>
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
-      </div>
-    )
-  },
+  '/audit': { title: 'Audit', description: 'Immutable event trail across services', actions: AuditActions },
   '/search': { title: 'Search', description: 'Search across all services, logs, and events.' },
   '/connections': { title: 'Connections', description: 'Manage and monitor your service integrations.' },
   '/settings': { title: 'Settings', description: 'Manage your system configuration and integrations.' },
@@ -74,9 +63,9 @@ class EventEmitter {
         if (!this.listeners[event]) this.listeners[event] = [];
         this.listeners[event].push(listener);
     }
-    emit(event: string) {
+    emit(event: string, ...args: any[]) {
         if (!this.listeners[event]) return;
-        this.listeners[event].forEach(listener => listener());
+        this.listeners[event].forEach(listener => listener(...args));
     }
 }
 export const headerActions = new EventEmitter();
@@ -87,10 +76,19 @@ export default function Header() {
   const { toggleSidebar } = useSidebar();
   const { setOpen } = useCommandPalette();
   const details = getDetailsFromPathname(pathname);
-  const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
   const { user } = useUser();
   const auth = useAuth();
   const router = useRouter();
+
+  const [refreshFunc, setRefreshFunc] = React.useState<(() => void) | undefined>(() => undefined);
+  const [exportFunc, setExportFunc] = React.useState<(() => void) | undefined>(() => undefined);
+
+  React.useEffect(() => {
+    const onRefresh = (handler: () => void) => setRefreshFunc(() => handler);
+    const onExport = (handler: () => void) => setExportFunc(() => handler);
+    headerActions.on('refresh', onRefresh);
+    headerActions.on('export', onExport);
+  }, []);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -112,6 +110,8 @@ export default function Header() {
     return null; // Don't render header on login page
   }
 
+  const PageActions = details.actions;
+
   return (
     <header className="sticky top-0 z-30 flex h-auto items-center gap-4 border-b bg-background/80 p-4 backdrop-blur-sm sm:px-6 sm:py-4">
       <Button variant="ghost" size="icon" className="md:hidden -ml-2" onClick={toggleSidebar}>
@@ -124,7 +124,7 @@ export default function Header() {
         <p className="text-xs text-muted-foreground">{details.description}</p>
       </div>
       
-      {details.actions && details.actions({ onRefresh: () => headerActions.emit('refresh'), onExport: () => headerActions.emit('export') })}
+      {PageActions && <PageActions onRefresh={refreshFunc} onExport={exportFunc} />}
 
       <div className="flex items-center justify-end gap-2">
         <ThemeToggle />
@@ -159,22 +159,10 @@ export default function Header() {
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10">
                     {user.photoURL ? (
-                    <AvatarImage 
-                        src={user.photoURL} 
-                        alt="User Avatar"
-                        width={100}
-                        height={100}
-                    />
-                    ) : userAvatar ? (
-                    <AvatarImage 
-                        src={userAvatar.imageUrl} 
-                        alt="User Avatar"
-                        width={100}
-                        height={100}
-                        data-ai-hint={userAvatar.imageHint} 
-                    />
-                    ) : null}
-                    <AvatarFallback>{user.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
+                        <AvatarImage src={user.photoURL} alt="User Avatar" />
+                    ) : (
+                        <AvatarFallback>{user.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
+                    )}
                 </Avatar>
                 </Button>
             </DropdownMenuTrigger>
@@ -188,25 +176,25 @@ export default function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                 <Link href="/profile">
-                    <User className="mr-2 h-4 w-4" />
+                    <User />
                     <span>Profile</span>
                 </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                 <Link href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
+                    <Settings />
                     <span>Settings</span>
                 </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                 <Link href="/support">
-                    <LifeBuoy className="mr-2 h-4 w-4" />
+                    <LifeBuoy />
                     <span>Support</span>
                 </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut />
                 <span>Log out</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>

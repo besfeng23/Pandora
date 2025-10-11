@@ -3,27 +3,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  Settings,
-  Search,
-  Network,
-  ChevronsRightLeft,
-  FileText,
-  LayoutGrid,
-  HeartPulse,
-  Code,
-  DollarSign,
-  FileWarning,
-  BookOpen,
-} from "lucide-react";
+import { BookOpen, ChevronsRightLeft, Code, DollarSign, FileText, FileWarning, HeartPulse, Home, LayoutGrid, Network, Search, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   SidebarFooter,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [

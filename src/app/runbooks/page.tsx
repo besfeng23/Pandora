@@ -10,7 +10,7 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, PlayCircle, PlusCircle, Book, Code, Database, Loader2 } from "lucide-react";
+import { Book, BookOpen, Code, Database, Loader2, PlayCircle, PlusCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
@@ -55,7 +55,7 @@ export default function RunbooksPage() {
                     <p className="text-muted-foreground">Standardized operational procedures for your team.</p>
                 </div>
             </div>
-            <Button className="rounded-xl"><PlusCircle className="mr-2" /> Create Runbook</Button>
+            <Button className="rounded-xl"><PlusCircle /> Create Runbook</Button>
         </div>
 
         {isLoading ? (
@@ -83,7 +83,7 @@ export default function RunbooksPage() {
                             </CardContent>
                             <CardFooter>
                                 <Button className="w-full rounded-xl" onClick={() => handleExecute(runbook.title)}>
-                                    <PlayCircle className="mr-2"/>
+                                    <PlayCircle />
                                     Execute
                                 </Button>
                             </CardFooter>

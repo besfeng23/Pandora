@@ -2,19 +2,19 @@
 "use client";
 
 import {
-  Github,
-  FileJson,
-  Cloud,
-  Bot,
   Blocks,
-  Database,
-  FileText,
+  Bot,
+  Box,
+  Cloud,
   Component,
-  type LucideProps,
   CreditCard,
-  Box
+  Database,
+  FileJson,
+  FileText,
+  Github,
+  type LucideProps,
 } from "lucide-react";
-import { SiNotion, SiSlack, SiLinear } from "@icons-pack/react-simple-icons";
+import { SiLinear, SiNotion, SiSlack } from "@icons-pack/react-simple-icons";
 
 const logos: { [key: string]: React.ElementType } = {
   github: Github,

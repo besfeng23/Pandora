@@ -3,7 +3,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Wand2, RefreshCw, Check, MoreHorizontal } from "lucide-react";
+import { Check, MoreHorizontal, RefreshCw, Wand2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -54,11 +54,11 @@ export default function AiCopilot() {
   };
   
   useEffect(() => {
-    if (!servicesLoading && services) {
+    if (!servicesLoading && services && !recommendations) {
       fetchRecommendations();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [services, servicesLoading])
+  }, [services, servicesLoading]);
 
   const handleApply = (recommendation: string) => {
     const prompt = encodeURIComponent(recommendation);
@@ -110,7 +110,7 @@ export default function AiCopilot() {
           <>
             <p className="text-xs text-muted-foreground truncate" title={recommendations.reasoning}>Why these?</p>
             <Button variant="outline" size="sm" onClick={fetchRecommendations} disabled={isPending || servicesLoading}>
-                <MoreHorizontal className="mr-2 h-4 w-4" />
+                <MoreHorizontal />
                 More
             </Button>
           </>

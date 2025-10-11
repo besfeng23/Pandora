@@ -26,20 +26,13 @@ export async function getPersonalizedRecommendations(input: PersonalizedRecommen
 export async function queryLogs(input: NaturalLanguageLogQueryInput): Promise<NaturalLanguageLogQueryOutput> {
     const result = await handleFlow(naturalLanguageLogQueryFlow, input, { results: "[]" });
     try {
-        // AI sometimes returns a JSON object with a 'results' key, and sometimes just the array.
-        // This handles both cases.
         const parsed = JSON.parse(result.results);
-        if (parsed.results && Array.isArray(parsed.results)) {
-            return { results: JSON.stringify(parsed.results) };
-        }
-        if (Array.isArray(parsed)) {
-            return { results: JSON.stringify(parsed) };
-        }
-        return { results: JSON.stringify([parsed]) }; // Fallback for unexpected format
+        // The AI can return the array directly or nested in a `results` property.
+        const logs = Array.isArray(parsed) ? parsed : (parsed.results || []);
+        return { results: logs };
     } catch (e) {
-        console.warn("AI returned non-JSON string for log query, returning raw string.", result.results);
-        // If parsing fails, it's likely a raw string. We wrap it in a structured way.
-        return { results: JSON.stringify([{ raw_string_response: result.results }]) };
+        console.error("Failed to parse AI log query results:", e, "Raw result:", result.results);
+        return { results: [] }; // Return empty array on parsing failure
     }
 }
 
@@ -63,5 +56,3 @@ export async function cloudWastageDetection(input: CloudWastageDetectionInput): 
 export async function predictEquipmentFailure(input: PredictiveMaintenanceInput): Promise<PredictiveMaintenanceOutput | null> {
     return handleFlow(predictEquipmentFailureFlow, input, null);
 }
-
-    

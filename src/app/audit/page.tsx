@@ -2,29 +2,27 @@
 "use client";
 
 import * as React from "react";
+import { collection, limit, orderBy, query, where } from "firebase/firestore";
+import { Calendar as CalendarIcon, CheckCircle2, ChevronLeft, ChevronRight, CircleHelp, Download, Filter, Loader2, RefreshCw, Search, ShieldAlert, X } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Filter, Download, RefreshCw, Search, ChevronLeft, ChevronRight, Loader2, ShieldAlert, CheckCircle2, CircleHelp, X } from "lucide-react";
-import { collection, query, where, limit, orderBy } from "firebase/firestore";
 
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useDebounced } from "@/hooks/use-client-helpers";
+import { type AuditEvent } from "@/lib/data-types";
+import { cn } from "@/lib/utils";
+import { queryLogs } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  Select, SelectTrigger, SelectContent, SelectItem, SelectValue
-} from "@/components/ui/select";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar } from "@/components/ui/calendar";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
-import { useDebounced } from "@/hooks/use-client-helpers";
-import { queryLogs } from "@/lib/actions";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import type { AuditEvent } from "@/lib/data-types";
+import { Badge } from "@/components/ui/badge";
 import { headerActions } from "@/components/layout/header";
 
 // ---------- Types ----------
@@ -148,27 +146,19 @@ export default function AuditPage() {
   }, [auditLogs, isAiSearch, aiResults, debouncedQ]);
 
   const total = rows.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const canGoNext = auditLogs && auditLogs.length === (PAGE_SIZE * page);
+  const totalPages = Math.max(1, page + (canGoNext ? 1 : 0));
+
 
   const handleAiSearch = React.useCallback(() => {
-    if (!debouncedQ || !auditLogs) {
+    if (!debouncedQ) {
       setAiResults(null);
       return;
     }
     startTransition(async () => {
-      const allLogsString = JSON.stringify(auditLogs);
-      const result = await queryLogs({ query: debouncedQ, logs: allLogsString });
-      try {
-        const parsedResult = JSON.parse(result.results);
-        if (Array.isArray(parsedResult)) {
-          setAiResults(parsedResult);
-        } else if (parsedResult.results && Array.isArray(parsedResult.results)) {
-          setAiResults(parsedResult.results);
-        }
-      } catch (e) {
-        console.error("Failed to parse AI search results:", e);
-        setAiResults([]);
-      }
+      const logsToSearch = auditLogs || [];
+      const result = await queryLogs({ query: debouncedQ, logs: JSON.stringify(logsToSearch) });
+      setAiResults(result.results);
     });
   }, [debouncedQ, auditLogs]);
 
@@ -211,10 +201,10 @@ export default function AuditPage() {
     URL.revokeObjectURL(url);
   }
 
-  const handleRefresh = () => {
+  const handleRefresh = React.useCallback(() => {
     setRefreshKey(oldKey => oldKey + 1);
     toast({ title: 'Refreshing logs...'})
-  };
+  }, [toast]);
 
   React.useEffect(() => {
     headerActions.on('refresh', handleRefresh);
@@ -222,7 +212,8 @@ export default function AuditPage() {
     return () => {
         // Cleanup if component unmounts
     }
-  }, [rows]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, handleRefresh]);
 
   return (
     <div className="space-y-6">
@@ -387,7 +378,7 @@ export default function AuditPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Prev
                 </Button>
-                <Button variant="outline" size="sm" disabled={page >= totalPages || loading || isTransitioning} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                <Button variant="outline" size="sm" disabled={!canGoNext || loading || isTransitioning} onClick={() => setPage(p => p + 1)}>
                   Next
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>

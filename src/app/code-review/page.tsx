@@ -89,7 +89,7 @@ export default function CodeReviewPage() {
           />
         </CardContent>
         <CardFooter>
-          <Button onClick={runAnalysis} disabled={isPending}>
+          <Button onClick={runAnalysis} disabled={isPending} type="button">
             {isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

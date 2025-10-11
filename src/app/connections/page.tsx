@@ -3,17 +3,17 @@
 
 import React, { useMemo, useState } from "react";
 import {
+  CheckCircle,
+  ChevronRight,
   ChevronsUpDown,
+  Download,
+  Loader2,
   MoreVertical,
   Pause,
   Play,
   RotateCcw,
   Search,
-  CheckCircle,
   XCircle,
-  ChevronRight,
-  Download,
-  Loader2
 } from "lucide-react";
 import { IntegrationLogo } from "@/components/connections/integration-logo";
 import {
@@ -191,7 +191,7 @@ export default function ConnectionsPage() {
                   Sort by: {sortBy}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="rounded-xl">
                 <DropdownMenuItem onClick={() => setSortBy("name")}>Name</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setSortBy("lastSync")}>Last Sync</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setSortBy("status")}>Status</DropdownMenuItem>

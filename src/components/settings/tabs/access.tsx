@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -23,6 +24,8 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import type { Role, UserProfile } from '@/lib/data-types';
 import { Loader2 } from 'lucide-react';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Image from "next/image";
 
 const roleColors: { [key: string]: 'default' | 'secondary' | 'destructive' } = {
   Admin: 'destructive',
@@ -44,6 +47,8 @@ export default function SettingsAccessTab() {
     [firestore]
   );
   const { data: roles, isLoading: rolesLoading } = useCollection<Role>(rolesQuery);
+  const placeholderAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+
 
   const getRoleName = (roleId: string | undefined) => {
     if (!roles || !roleId) return 'N/A';
@@ -84,12 +89,14 @@ export default function SettingsAccessTab() {
             ) : (
               users?.map(user => {
                 const roleName = getRoleName(user.roleId);
+                const userAvatar = user.avatar || placeholderAvatar?.imageUrl;
+
                 return (
                   <TableRow key={user.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar>
-                          {user.avatar && <AvatarImage src={user.avatar} />}
+                          {userAvatar && <Image src={userAvatar} alt="User avatar" width={40} height={40} className="rounded-full" />}
                           <AvatarFallback>
                             {user.name ? user.name.charAt(0) : user.email.charAt(0)}
                           </AvatarFallback>

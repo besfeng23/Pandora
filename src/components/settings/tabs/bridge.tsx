@@ -1,6 +1,6 @@
 
-"use client";
 
+'use client';
 import { BridgeConfigCard } from "@/components/settings/bridge-config-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";

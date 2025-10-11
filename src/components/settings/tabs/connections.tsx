@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { AddConnectionCard } from "@/components/settings/add-connection-card";
@@ -16,13 +17,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { collection, query } from "firebase/firestore";
 import type { Connection } from "@/lib/data-types";
 
 
 export default function SettingsConnectionsTab() {
   const firestore = useFirestore();
-  const connectionsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'connections') : null, [firestore]);
+  const connectionsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'connections')) : null, [firestore]);
   const { data: existingConnections, isLoading } = useCollection<Connection>(connectionsQuery);
 
   return (

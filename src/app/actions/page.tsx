@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFirestore, useUser } from "@/firebase";
+import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { collection, serverTimestamp } from "firebase/firestore";
 
@@ -30,13 +30,10 @@ import { collection, serverTimestamp } from "firebase/firestore";
  */
 
 type McpTool = {
+  id: string;
   name: string;
   description?: string;
   input_schema?: Record<string, any>; // JSON Schema
-};
-
-type ToolsListResponse = {
-  tools: McpTool[];
 };
 
 type ExecuteResponse = {
@@ -82,8 +79,6 @@ function validateArgs(schema: any, value: any): { ok: boolean; errors?: string[]
 export default function ActionsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const [tools, setTools] = useState<McpTool[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string>("");
   const [prompt, setPrompt] = useState("");
   const [args, setArgs] = useState<any>({});
@@ -93,7 +88,10 @@ export default function ActionsPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const selectedTool = useMemo(() => tools.find(t => t.name === selected), [tools, selected]);
+  const toolsQuery = useMemoFirebase(() => collection(firestore, 'tools'), [firestore]);
+  const { data: tools, isLoading: loading } = useCollection<McpTool>(toolsQuery);
+
+  const selectedTool = useMemo(() => tools?.find(t => t.name === selected), [tools, selected]);
 
   // Auto-size textarea without external lib
   const taRef = useRef<HTMLTextAreaElement | null>(null);
@@ -105,32 +103,14 @@ export default function ActionsPage() {
   }, [prompt]);
 
   useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        setLoading(true);
-        // MOCK IMPLEMENTATION: In a real app, this would fetch from a live API.
-        const mockTools: McpTool[] = [
-          { name: "CreateTicket", description: "Creates a new ticket in the system.", input_schema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, priority: { type: "string", enum: ["low", "medium", "high"] } }, required: ["title"] } },
-          { name: "RestartService", description: "Restarts a specified service.", input_schema: { type: "object", properties: { serviceId: { type: "string" } }, required: ["serviceId"] } }
-        ];
-        if (!active) return;
-        setTools(mockTools);
-        if (mockTools.length && !selected) {
-          setSelected(mockTools[0].name);
-          const first = mockTools[0];
-          const defArgs = defaultArgsFromSchema(first.input_schema);
-          setArgs(defArgs);
-          setArgText(pretty(defArgs));
-        }
-      } catch (e: any) {
-        setError(e?.message || "Failed to load tools");
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => { active = false; };
-  }, [selected]);
+    if (tools && tools.length > 0 && !selected) {
+        const first = tools[0];
+        setSelected(first.name);
+        const defArgs = defaultArgsFromSchema(first.input_schema);
+        setArgs(defArgs);
+        setArgText(pretty(defArgs));
+    }
+  }, [tools, selected]);
 
   useEffect(() => {
     // Keep argText in sync if args are programmatically replaced
@@ -139,6 +119,7 @@ export default function ActionsPage() {
   }, [selected]);
 
   function onSelectTool(name: string) {
+    if (!tools) return;
     setSelected(name);
     const tool = tools.find(t => t.name === name);
     const def = defaultArgsFromSchema(tool?.input_schema);
@@ -292,7 +273,7 @@ export default function ActionsPage() {
             <CardContent>
               {loading ? (
                 <Skeleton className="h-10 w-full rounded-xl" />
-              ) : tools.length === 0 ? (
+              ) : !tools || tools.length === 0 ? (
                 <div className="text-sm text-destructive flex items-center gap-2"><AlertCircle /> No tools available.</div>
               ) : (
                 <Select value={selected} onValueChange={onSelectTool}>

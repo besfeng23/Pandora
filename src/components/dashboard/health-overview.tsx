@@ -46,7 +46,7 @@ export default function HealthOverview() {
             case 'Failures':
                 return { ...kpi, value: latestHealth.failures.toString() };
             case 'Uptime':
-                const uptimePercentage = Math.min(100, (latestHealth.uptime / (latestHealth.uptime + 1)) * 100);
+                const uptimePercentage = Math.min(100, (latestHealth.uptime / (30 * 24 * 60 * 60)) * 100);
                 return { ...kpi, value: `${uptimePercentage.toFixed(2)}%` };
             default:
                 return kpi;

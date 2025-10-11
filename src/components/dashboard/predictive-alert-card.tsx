@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState, useTransition } from "react";
-import { BarChart, Bell, BrainCircuit } from "lucide-react";
+import { Bell, BrainCircuit, Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -18,7 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { getPredictedAlert } from "@/lib/actions";
+import { predictiveAlert } from "@/lib/actions";
 import type { PredictiveAlertOutput } from "@/ai/flows/predictive-alerting";
 import { Skeleton } from "../ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
@@ -29,9 +30,10 @@ export default function PredictiveAlertCard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const fetchPrediction = () => {
+    setPrediction(null);
     startTransition(async () => {
       setIsDialogOpen(true);
-      const result = await getPredictedAlert({
+      const result = await predictiveAlert({
         metricName: "CPU Utilization",
         currentValue: 85,
         trendData: [60, 65, 70, 72, 75, 78, 81, 85],
@@ -63,7 +65,11 @@ export default function PredictiveAlertCard() {
         </CardContent>
         <CardFooter>
           <Button onClick={fetchPrediction} disabled={isPending}>
-            <BrainCircuit className="mr-2 h-4 w-4" />
+            {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                <BrainCircuit className="mr-2 h-4 w-4" />
+            )}
             Run Prediction
           </Button>
         </CardFooter>

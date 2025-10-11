@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Wand2, RefreshCw, Check, MoreHorizontal } from "lucide-react";
 import {
@@ -13,40 +13,38 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getRecommendations } from "@/lib/actions";
+import { getPersonalizedRecommendations } from "@/lib/actions";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type Recommendation = {
-  recommendation: string;
-  reason: string;
-};
+import type { PersonalizedRecommendationsOutput } from "@/ai/flows/personalized-recommendations";
 
 export default function AiCopilot() {
-  const [recommendations, setRecommendations] = useState<string[]>([]);
-  const [reasoning, setReasoning] = useState<string>("");
+  const [recommendations, setRecommendations] = useState<PersonalizedRecommendationsOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
 
   const fetchRecommendations = () => {
     startTransition(async () => {
-      const result = await getRecommendations({
+      const result = await getPersonalizedRecommendations({
         userNeeds: "Improve system stability and reduce latency.",
         userPreferences: "Prefer non-disruptive actions, prioritize cost-saving.",
         systemState: "Auth Service healthy, Billing API healthy, User Profiles degraded, Content Processor healthy, Realtime Analytics down."
       });
-      if (result.recommendations.length > 0) {
-        setRecommendations(result.recommendations);
-        setReasoning(result.reasoning);
+      if (result && result.recommendations.length > 0) {
+        setRecommendations(result);
       } else {
         toast({
           title: "AI Copilot",
-          description: result.reasoning || "No new recommendations found.",
+          description: result?.reasoning || "No new recommendations found.",
         });
       }
     });
   };
+  
+  useEffect(() => {
+    fetchRecommendations();
+  }, [])
 
   const handleApply = (recommendation: string) => {
     const prompt = encodeURIComponent(recommendation);
@@ -68,15 +66,15 @@ export default function AiCopilot() {
         <CardDescription>AI-driven suggestions based on real-time events.</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
-        {isPending ? (
+        {isPending && !recommendations ? (
             <div className="space-y-4">
                 <Skeleton className="h-8 w-full" />
                 <Skeleton className="h-8 w-3/4" />
                 <Skeleton className="h-8 w-full" />
             </div>
-        ) : recommendations.length > 0 ? (
+        ) : recommendations && recommendations.recommendations.length > 0 ? (
           <ul className="space-y-3">
-            {recommendations.map((rec, index) => (
+            {recommendations.recommendations.map((rec, index) => (
               <li key={index} className="flex items-start justify-between gap-2 p-3 bg-secondary/50 rounded-xl">
                 <p className="text-sm leading-relaxed">{rec}</p>
                 <div className="flex gap-1">
@@ -94,9 +92,9 @@ export default function AiCopilot() {
         )}
       </CardContent>
       <CardFooter className="flex justify-between items-center">
-         {recommendations.length > 0 && (
+         {recommendations && recommendations.recommendations.length > 0 && (
           <>
-            <p className="text-xs text-muted-foreground truncate" title={reasoning}>Why these?</p>
+            <p className="text-xs text-muted-foreground truncate" title={recommendations.reasoning}>Why these?</p>
             <Button variant="outline" size="sm" onClick={fetchRecommendations} disabled={isPending}>
                 <MoreHorizontal className="mr-2 h-4 w-4" />
                 More

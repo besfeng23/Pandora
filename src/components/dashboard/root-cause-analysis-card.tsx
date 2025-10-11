@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState, useTransition } from "react";
-import { BrainCircuit, Search } from "lucide-react";
+import { BrainCircuit, Search, Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -18,7 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { analyzeRootCause } from "@/lib/actions";
+import { rootCauseAnalysis } from "@/lib/actions";
 import type { RootCauseAnalysisOutput } from "@/ai/flows/root-cause-analysis";
 import { Skeleton } from "../ui/skeleton";
 
@@ -28,9 +29,10 @@ export default function RootCauseAnalysisCard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const runAnalysis = () => {
+    setAnalysis(null);
     startTransition(async () => {
       setIsDialogOpen(true);
-      const result = await analyzeRootCause({
+      const result = await rootCauseAnalysis({
         incidentDescription: "High latency and 5xx errors on 'User Profiles' service starting at 10:15 AM. Database CPU is at 95%. Logs show 'connection timeout' errors.",
       });
       setAnalysis(result);
@@ -58,7 +60,11 @@ export default function RootCauseAnalysisCard() {
         </CardContent>
         <CardFooter>
           <Button onClick={runAnalysis} disabled={isPending}>
-            <BrainCircuit className="mr-2 h-4 w-4" />
+            {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                <BrainCircuit className="mr-2 h-4 w-4" />
+            )}
             Analyze Last Incident
           </Button>
         </CardFooter>

@@ -371,6 +371,19 @@
             "time": { "type": "string" }
         },
         "required": ["id", "title", "status", "priority", "services", "time"]
+    },
+    "Tool": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Tool",
+      "type": "object",
+      "description": "Represents an executable tool in the MCP system.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "input_schema": { "type": "object" }
+      },
+      "required": ["id", "name"]
     }
   },
   "auth": {
@@ -428,6 +441,10 @@
     "/incidents/{incidentId}": {
         "schema": { "$ref": "#/entities/Incident" },
         "description": "Stores incident data."
+    },
+    "/tools/{toolId}": {
+        "schema": { "$ref": "#/entities/Tool" },
+        "description": "Stores tool definitions for the Actions page."
     }
   }
 }

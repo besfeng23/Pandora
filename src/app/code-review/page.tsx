@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { reviewCode } from "@/lib/actions";
+import { automatedCodeReview } from "@/lib/actions";
 import type { AutomatedCodeReviewOutput } from "@/ai/flows/automated-code-review";
 import { Badge } from "@/components/ui/badge";
 
@@ -42,7 +42,7 @@ export default function CodeReviewPage() {
   const runAnalysis = () => {
     setAnalysis(null);
     startTransition(async () => {
-      const result = await reviewCode({
+      const result = await automatedCodeReview({
         code: code,
         language: "JavaScript",
       });

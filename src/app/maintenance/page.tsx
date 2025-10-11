@@ -70,7 +70,11 @@ export default function MaintenancePage() {
         </CardContent>
         <CardFooter>
           <Button onClick={runAnalysis} disabled={isPending}>
-            <BrainCircuit className="mr-2 h-4 w-4" />
+            {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                <BrainCircuit className="mr-2 h-4 w-4" />
+            )}
             Analyze DB Server Health
           </Button>
         </CardFooter>

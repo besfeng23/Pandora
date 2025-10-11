@@ -4,7 +4,7 @@
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
-import { Auth, onAuthStateChanged, User } from 'firebase/auth';
+import { Auth } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 // Combined state for the Firebase context
@@ -78,39 +78,6 @@ export const useFirebaseApp = (): FirebaseApp => {
   return firebaseApp;
 };
 
-export interface UserHookResult {
-  user: User | null;
-  isUserLoading: boolean;
-  userError: Error | null;
-}
-
-export const useUser = (): UserHookResult => {
-  const auth = useAuth();
-  const [userState, setUserState] = React.useState<UserHookResult>({
-    user: auth.currentUser,
-    isUserLoading: true,
-    userError: null,
-  });
-
-  React.useEffect(() => {
-    setUserState({ user: auth.currentUser, isUserLoading: true, userError: null });
-
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (firebaseUser) => {
-        setUserState({ user: firebaseUser, isUserLoading: false, userError: null });
-      },
-      (error) => {
-        console.error("useUser: onAuthStateChanged error:", error);
-        setUserState({ user: null, isUserLoading: false, userError: error });
-      }
-    );
-
-    return () => unsubscribe();
-  }, [auth]);
-
-  return userState;
-};
 
 type MemoFirebase <T> = T & {__memo?: boolean};
 
@@ -123,3 +90,5 @@ export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | 
   
   return memoized;
 }
+
+    

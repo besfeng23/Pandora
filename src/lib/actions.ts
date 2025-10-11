@@ -26,23 +26,23 @@ export async function getPersonalizedRecommendations(input: PersonalizedRecommen
 export async function queryLogs(input: NaturalLanguageLogQueryInput): Promise<NaturalLanguageLogQueryOutput> {
     const result = await handleFlow(naturalLanguageLogQueryFlow, input, { results: "[]" });
     try {
+        // AI sometimes returns a JSON object with a 'results' key, and sometimes just the array.
+        // This handles both cases.
         const parsed = JSON.parse(result.results);
         if (parsed.results && Array.isArray(parsed.results)) {
             return { results: JSON.stringify(parsed.results) };
         }
-        // If the result is already an array, stringify it.
         if (Array.isArray(parsed)) {
             return { results: JSON.stringify(parsed) };
         }
-        // If it's something else, wrap it in an array. This is a fallback.
-        return { results: JSON.stringify([parsed]) };
+        return { results: JSON.stringify([parsed]) }; // Fallback for unexpected format
     } catch (e) {
-        // If parsing fails, the AI likely returned a string that is not valid JSON.
-        // We'll return it as a string inside the 'results' JSON object.
-        console.warn("AI returned non-JSON string for log query. Returning raw string.");
+        console.warn("AI returned non-JSON string for log query, returning raw string.", result.results);
+        // If parsing fails, it's likely a raw string. We wrap it in a structured way.
         return { results: JSON.stringify([{ raw_string_response: result.results }]) };
     }
 }
+
 
 export async function predictiveAlert(input: PredictiveAlertInput): Promise<PredictiveAlertOutput | null> {
     return handleFlow(predictAlertFlow, input, null);
@@ -63,3 +63,5 @@ export async function cloudWastageDetection(input: CloudWastageDetectionInput): 
 export async function predictEquipmentFailure(input: PredictiveMaintenanceInput): Promise<PredictiveMaintenanceOutput | null> {
     return handleFlow(predictEquipmentFailureFlow, input, null);
 }
+
+    

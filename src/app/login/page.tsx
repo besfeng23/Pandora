@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -23,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, initiateEmailSignIn, initiateEmailSignUp } from '@/firebase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -68,8 +69,7 @@ export default function LoginPage() {
     setLoading('email');
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push('/');
+      initiateEmailSignIn(auth, email, password);
     } catch (e: any) {
       console.error(e);
       setError('Invalid email or password. Please try again.');
@@ -82,8 +82,7 @@ export default function LoginPage() {
     setLoading('email');
     setError(null);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.push('/');
+      initiateEmailSignUp(auth, email, password);
     } catch (e: any) {
       console.error(e);
       setError('Could not create account. The email may be in use.');
@@ -186,3 +185,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

@@ -164,7 +164,7 @@ export default function ConnectionsPage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle>Connections</CardTitle>
+              
               <CardDescription>Manage and monitor your service integrations.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -503,5 +503,3 @@ function TestsTab({ connection, onRunTests }: { connection: Connection, onRunTes
         </div>
     )
 }
-
-    

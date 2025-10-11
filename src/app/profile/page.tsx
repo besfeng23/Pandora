@@ -1,18 +1,15 @@
 
+'use client';
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { CheckCircle, Clock } from "lucide-react";
-
-const userStats = [
-  { label: "Tools Run", value: "1,204" },
-  { label: "Incidents Resolved", value: "87" },
-  { label: "Commits Pushed", value: "432" },
-  { label: "Avg. Response Time", value: "24min" },
-];
+import { CheckCircle, Clock, Loader2 } from "lucide-react";
+import { useUser, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, where, limit } from "firebase/firestore";
+import type { Role, AuditEvent, FavoriteAction } from "@/lib/data-types";
 
 const recentActivity = [
   { id: 1, action: "Rotated API key for", target: "GitHub Integration", time: "2h ago", success: true },
@@ -22,7 +19,21 @@ const recentActivity = [
 ];
 
 export default function ProfilePage() {
-  const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const userQuery = useMemoFirebase(() => (user && firestore) ? query(collection(firestore, 'users'), where('id', '==', user.uid), limit(1)) : null, [user, firestore]);
+  const { data: userData, isLoading: userLoading } = useCollection<any>(userQuery);
+  const profile = userData?.[0];
+
+  const rolesQuery = useMemoFirebase(() => (firestore) ? collection(firestore, 'roles') : null, [firestore]);
+  const { data: rolesData, isLoading: rolesLoading } = useCollection<Role>(rolesQuery);
+  
+  const userRole = rolesData?.find(r => r.id === profile?.roleId);
+
+  if (userLoading || rolesLoading) {
+    return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+  }
 
   return (
     <div className="space-y-6">
@@ -31,14 +42,12 @@ export default function ProfilePage() {
         <CardContent className="p-6 pt-0">
           <div className="flex flex-col items-center md:flex-row md:items-end -mt-16 gap-6">
             <Avatar className="h-32 w-32 border-4 border-background">
-              {userAvatar && (
-                <AvatarImage src={userAvatar.imageUrl} alt="User Avatar" data-ai-hint={userAvatar.imageHint} />
-              )}
-              <AvatarFallback>U</AvatarFallback>
+                {user?.photoURL && <AvatarImage src={user.photoURL} alt="User Avatar" />}
+                <AvatarFallback>{user?.email?.[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-grow text-center md:text-left">
-              <h1 className="text-3xl font-bold font-headline">Pandora User</h1>
-              <p className="text-muted-foreground">user@pandora.dev</p>
+              <h1 className="text-3xl font-bold font-headline">{user?.displayName || 'Pandora User'}</h1>
+              <p className="text-muted-foreground">{user?.email}</p>
             </div>
             <Button className="rounded-xl">Edit Profile</Button>
           </div>
@@ -82,12 +91,14 @@ export default function ProfilePage() {
               <CardTitle>Statistics</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-              {userStats.map((stat) => (
-                <div key={stat.label} className="p-3 bg-muted/50 rounded-xl">
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-semibold">{stat.value}</p>
+                <div className="p-3 bg-muted/50 rounded-xl">
+                  <p className="text-sm text-muted-foreground">Tools Run</p>
+                  <p className="text-2xl font-semibold">0</p>
                 </div>
-              ))}
+                <div className="p-3 bg-muted/50 rounded-xl">
+                  <p className="text-sm text-muted-foreground">Avg. Response</p>
+                  <p className="text-2xl font-semibold">N/A</p>
+                </div>
             </CardContent>
           </Card>
           <Card className="rounded-2xl shadow-lg">
@@ -95,8 +106,8 @@ export default function ProfilePage() {
               <CardTitle>Roles & Permissions</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
-              <Badge className="rounded-md text-base" variant="destructive">Admin</Badge>
-              <Badge className="rounded-md text-base" variant="secondary">Developer</Badge>
+              {userRole && <Badge className="rounded-md text-base" variant={userRole.name === 'Admin' ? 'destructive' : 'secondary'}>{userRole.name}</Badge>}
+              {!userRole && <Badge className="rounded-md text-base">No role assigned</Badge>}
             </CardContent>
           </Card>
         </div>

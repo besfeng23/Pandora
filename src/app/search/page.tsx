@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from '@/components/ui/button';
 import { Search as SearchIcon, FileText, LayoutGrid, BookOpen, Loader2 } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
-import type { Service } from "@/lib/data-types";
+import { collection, query, where, limit } from "firebase/firestore";
+import type { Service, AuditEvent, Runbook } from "@/lib/data-types";
 
 type SearchResult = {
   title: string;
@@ -19,40 +19,49 @@ type SearchResult = {
 type SearchResults = {
   services: SearchResult[];
   audit: SearchResult[];
-  docs: SearchResult[];
+  runbooks: SearchResult[];
 }
 
 export default function SearchPage() {
-  const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [queryVal, setQueryVal] = useState('');
+  const [isPending, startTransition] = useTransition();
   const [results, setResults] = useState<SearchResults | null>(null);
 
   const firestore = useFirestore();
-  const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
+  
+  const servicesQuery = useMemoFirebase(() => {
+    if (!firestore || !queryVal) return null;
+    return query(collection(firestore, 'services'), where('name', '>=', queryVal), where('name', '<=', queryVal + '\uf8ff'), limit(3));
+  }, [firestore, queryVal]);
   const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
 
+  const auditLogsQuery = useMemoFirebase(() => {
+    if (!firestore || !queryVal) return null;
+    return query(collection(firestore, 'auditLogs'), where('action', '>=', queryVal), where('action', '<=', queryVal + '\uf8ff'), limit(3));
+  }, [firestore, queryVal]);
+  const { data: auditLogs, isLoading: auditLoading } = useCollection<AuditEvent>(auditLogsQuery);
+
+  const runbooksQuery = useMemoFirebase(() => {
+    if (!firestore || !queryVal) return null;
+    return query(collection(firestore, 'runbooks'), where('title', '>=', queryVal), where('title', '<=', queryVal + '\uf8ff'), limit(3));
+  }, [firestore, queryVal]);
+  const { data: runbooks, isLoading: runbooksLoading } = useCollection<Runbook>(runbooksQuery);
+
   const handleSearch = () => {
-    if (!query || !services) {
+    if (!queryVal) {
       setResults(null);
       return;
     }
-    setLoading(true);
-    // Simulate API call for other results, but use live services data
-    setTimeout(() => {
+    startTransition(() => {
       setResults({
-        services: services.filter(s => s.name.toLowerCase().includes(query.toLowerCase())).slice(0, 3)
-          .map(s => ({ title: s.name, description: `Service - ${s.status}`, href: `/services/${s.id}` })),
-        audit: [
-          { title: `User login failed: ${query}`, description: 'Audit Event - ID: evt-12345', href: '/audit' },
-          { title: 'API Key rotation', description: 'Audit Event - ID: evt-12346', href: '/audit' },
-        ],
-        docs: [
-          { title: `Documentation for '${query}'`, description: 'Connecting to the Billing API', href: '#' },
-        ]
+        services: (services || []).map(s => ({ title: s.name, description: `Service - ${s.status}`, href: `/services/${s.id}` })),
+        audit: (auditLogs || []).map(a => ({ title: a.action, description: `Audit Event - ${a.id.slice(0,8)}`, href: `/audit` })),
+        runbooks: (runbooks || []).map(r => ({ title: r.title, description: `Runbook - ${r.category}`, href: `/runbooks` })),
       });
-      setLoading(false);
-    }, 1000);
+    });
   }
+  
+  const isLoading = servicesLoading || auditLoading || runbooksLoading || isPending;
 
   const ResultSection = ({ title, icon: Icon, items }: { title: string, icon: React.ElementType, items: SearchResult[] }) => (
     <Card className="shadow-none">
@@ -90,20 +99,20 @@ export default function SearchPage() {
           <div className="relative w-full max-w-2xl mx-auto flex gap-2">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  value={queryVal}
+                  onChange={(e) => setQueryVal(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   placeholder="Search for 'Billing API', user emails, incident IDs..." 
                   className="pl-10 h-11 rounded-xl text-base"
               />
-              <Button onClick={handleSearch} disabled={loading || servicesLoading} className="h-11 rounded-xl">
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Search'}
+              <Button onClick={handleSearch} disabled={isLoading} className="h-11 rounded-xl">
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Search'}
               </Button>
           </div>
         </CardContent>
       </Card>
 
-      {loading ? (
+      {isLoading && !results ? (
         <div className="text-center p-12">
           <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
           <p className="mt-2 text-muted-foreground">Searching...</p>
@@ -112,7 +121,7 @@ export default function SearchPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <ResultSection title="Services" icon={LayoutGrid} items={results.services} />
           <ResultSection title="Audit Logs" icon={FileText} items={results.audit} />
-          <ResultSection title="Documentation" icon={BookOpen} items={results.docs} />
+          <ResultSection title="Runbooks" icon={BookOpen} items={results.runbooks} />
         </div>
       )}
     </div>

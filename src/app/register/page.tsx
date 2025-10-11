@@ -9,7 +9,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { Key, Loader2, LogIn, Mail, UserPlus } from 'lucide-react';
+import { Key, Loader2, Mail, UserPlus } from 'lucide-react';
 import { SiGithub, SiGoogle } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,9 +22,9 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { initiateEmailSignIn, useAuth, useUser } from '@/firebase';
+import { initiateEmailSignUp, useAuth, useUser } from '@/firebase';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<'google' | 'github' | 'email' | null>(null);
@@ -62,18 +62,16 @@ export default function LoginPage() {
     }
   };
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading('email');
     setError(null);
     try {
-      // This is now non-blocking
-      initiateEmailSignIn(auth, email, password);
+      initiateEmailSignUp(auth, email, password);
     } catch (e: any) {
       console.error(e);
-      setError('Invalid email or password. Please try again.');
+      setError('Could not create account. The email may be in use.');
     } finally {
-      // Loading state might be handled differently, e.g., optimistic UI
       setLoading(null);
     }
   };
@@ -110,11 +108,11 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm rounded-2xl shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
-          <CardDescription>Sign in to access your dashboard</CardDescription>
+          <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
+          <CardDescription>Get started with Pandora</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleEmailSignIn} className="space-y-4">
+          <form onSubmit={handleEmailSignUp} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -140,21 +138,20 @@ export default function LoginPage() {
               />
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
-
             <Button type="submit" className="w-full" disabled={!!loading}>
                 {loading === 'email' ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                <LogIn className="mr-2 h-4 w-4" />
+                  <UserPlus className="mr-2 h-4 w-4" />
                 )}
-                Sign In
-            </Button>
+                Sign Up
+              </Button>
           </form>
 
           <div className="relative my-6">
             <Separator />
             <span className="absolute left-1/2 -top-3 -translate-x-1/2 bg-card px-2 text-xs text-muted-foreground">
-              OR CONTINUE WITH
+              OR
             </span>
           </div>
 
@@ -165,9 +162,9 @@ export default function LoginPage() {
         </CardContent>
          <CardFooter className="flex-col gap-4 text-sm">
             <div className="text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline font-medium">
-                    Sign Up
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary hover:underline font-medium">
+                    Sign In
                 </Link>
             </div>
         </CardFooter>

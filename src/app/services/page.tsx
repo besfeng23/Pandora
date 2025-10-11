@@ -193,7 +193,7 @@ function SkeletonGrid() {
               <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
             </div>
           </div>
-            <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="mt-3 grid grid-cols-3 gap-3">
                 <div className="space-y-1">
                     <div className="h-3 w-8 rounded bg-muted/50" />
                     <div className="h-4 w-12 rounded bg-muted" />
@@ -208,7 +208,7 @@ function SkeletonGrid() {
                 </div>
             </div>
           <div className="mt-4 pt-4 border-t flex items-center justify-between">
-            <div className="h-3 w-20 rounded bg-muted" />
+             <div className="h-3 w-20 rounded bg-muted" />
             <div className="h-8 w-20 rounded-lg bg-muted" />
           </div>
         </li>

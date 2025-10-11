@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import type { LucideIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Runbook = {
     id: string;
@@ -59,9 +60,14 @@ export default function RunbooksPage() {
         </div>
 
         {isLoading ? (
-             <div className="text-center p-8">
-                <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-                <p className="mt-2 text-muted-foreground">Loading runbooks...</p>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({length: 6}).map((_, i) => (
+                    <Card key={i} className="rounded-2xl shadow-lg">
+                        <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
+                        <CardContent><Skeleton className="h-10 w-full" /></CardContent>
+                        <CardFooter><Skeleton className="h-10 w-full" /></CardFooter>
+                    </Card>
+                ))}
             </div>
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

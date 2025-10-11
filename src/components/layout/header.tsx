@@ -48,6 +48,11 @@ const pageDetails: { [key: string]: { title: string; description: string; action
   '/billing': { title: 'Billing & Usage', description: 'Track your cloud spend and resource usage.' },
   '/runbooks': { title: 'Runbooks', description: 'Create and execute step-by-step operational procedures.' },
   '/login': { title: 'Login', description: 'Sign in to your account.' },
+  '/register': { title: 'Register', description: 'Create an account.' },
+  '/cost-optimization': { title: 'Cost Optimization', description: 'Use AI to find savings.'},
+  '/code-review': { title: 'Code Review', description: 'Use AI to improve code quality.'},
+  '/maintenance': { title: 'Predictive Maintenance', description: 'Use AI to predict failures.'},
+  '/actions': { title: 'Actions', description: 'Execute tools and scripts.'},
 };
 
 function getDetailsFromPathname(pathname: string) {
@@ -106,8 +111,8 @@ export default function Header() {
     router.push('/login');
   };
 
-  if (pathname === '/login') {
-    return null; // Don't render header on login page
+  if (pathname === '/login' || pathname === '/register') {
+    return null; // Don't render header on auth pages
   }
 
   const PageActions = details.actions;

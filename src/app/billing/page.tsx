@@ -47,9 +47,9 @@ type RecentCharge = {
 export default function BillingPage() {
   const firestore = useFirestore();
 
-  const summaryQuery = useMemoFirebase(() => collection(firestore, 'billingSummary'), [firestore]);
-  const costByServiceQuery = useMemoFirebase(() => collection(firestore, 'costByService'), [firestore]);
-  const recentChargesQuery = useMemoFirebase(() => collection(firestore, 'recentCharges'), [firestore]);
+  const summaryQuery = useMemoFirebase(() => firestore ? collection(firestore, 'billingSummary'): null, [firestore]);
+  const costByServiceQuery = useMemoFirebase(() => firestore ? collection(firestore, 'costByService') : null, [firestore]);
+  const recentChargesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'recentCharges') : null, [firestore]);
 
   const { data: summaryData, isLoading: summaryLoading } = useCollection<BillingSummary>(summaryQuery);
   const { data: costByService, isLoading: costByServiceLoading } = useCollection<CostByService>(costByServiceQuery);

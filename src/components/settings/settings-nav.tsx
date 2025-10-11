@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/settings", label: "Overview", icon: Settings },
   { href: "/settings/profile", label: "Profile", icon: User },
+  { href: "/settings/teams", label: "Teams", icon: Users },
   { href: "/settings/access", label: "Access", icon: Users },
   { href: "/settings/billing", label: "Billing", icon: CreditCard },
   { href: "/settings/notifications", label: "Notifications", icon: Bell },

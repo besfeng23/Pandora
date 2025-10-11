@@ -3,7 +3,7 @@
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, ChevronDown, Circle, Download, LifeBuoy, LogOut, PanelLeft, RefreshCw, Search, Settings, User } from 'lucide-react';
+import { Bell, Circle, Download, LifeBuoy, LogOut, PanelLeft, RefreshCw, Settings, User } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,

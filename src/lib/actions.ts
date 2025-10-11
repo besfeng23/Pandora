@@ -26,10 +26,16 @@ export async function getPersonalizedRecommendations(input: PersonalizedRecommen
 export async function queryLogs(input: NaturalLanguageLogQueryInput): Promise<NaturalLanguageLogQueryOutput> {
     const result = await handleFlow(naturalLanguageLogQueryFlow, input, { results: "[]" });
     try {
+      if (typeof result.results === 'string') {
         const parsed = JSON.parse(result.results);
-        // The AI can return the array directly or nested in a `results` property.
+         // The AI can return the array directly or nested in a `results` property.
         const logs = Array.isArray(parsed) ? parsed : (parsed.results || []);
         return { results: logs };
+      }
+      if (Array.isArray(result.results)) {
+        return { results: result.results };
+      }
+      return { results: [] };
     } catch (e) {
         console.error("Failed to parse AI log query results:", e, "Raw result:", result.results);
         return { results: [] }; // Return empty array on parsing failure

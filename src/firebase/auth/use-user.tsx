@@ -38,5 +38,3 @@ export const useUser = (): UserHookResult => {
 
   return userState;
 };
-
-    

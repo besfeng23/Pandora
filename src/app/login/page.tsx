@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { initiateEmailSignUp, useAuth, useUser } from '@/firebase';
+import { initiateEmailSignUp, initiateEmailSignIn, useAuth, useUser } from '@/firebase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

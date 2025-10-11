@@ -94,6 +94,8 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
+      // Instead of directly removing, we update the state to open: false
+      // and let the toast component handle the exit animation.
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -162,12 +164,6 @@ function toast({ ...props }: Toast) {
       },
     },
   })
-  
-  // Auto-dismiss logic
-  setTimeout(() => {
-    dismiss()
-  }, TOAST_REMOVE_DELAY);
-
 
   return {
     id: id,

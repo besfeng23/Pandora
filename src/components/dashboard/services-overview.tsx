@@ -14,7 +14,7 @@ import { Skeleton } from "../ui/skeleton";
 export default function ServicesOverview() {
   const firestore = useFirestore();
   const servicesQuery = useMemoFirebase(() => 
-    query(collection(firestore, 'services'), limit(6))
+    firestore ? query(collection(firestore, 'services'), limit(6)) : null
   , [firestore]);
   const { data: overviewServices, isLoading } = useCollection<Service>(servicesQuery);
 

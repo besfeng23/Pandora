@@ -47,7 +47,6 @@ export default function CostOptimizationPage() {
               <DollarSign />
             </div>
             <div>
-              <CardTitle className="font-headline">Cloud Cost Optimization</CardTitle>
               <CardDescription>Use AI to detect cloud wastage and get optimization recommendations.</CardDescription>
             </div>
           </div>

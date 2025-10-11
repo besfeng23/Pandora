@@ -4,25 +4,15 @@
  * @fileOverview An AI agent that provides personalized recommendations to users based on their needs and preferences.
  *
  * - getPersonalizedRecommendations - A function that returns personalized recommendations.
- * - PersonalizedRecommendationsInput - The input type for the getPersonalizedRecommendations function.
- * - PersonalizedRecommendationsOutput - The return type for the getPersonalizedRecommendations function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const PersonalizedRecommendationsInputSchema = z.object({
-  userNeeds: z.string().describe('The user needs.'),
-  userPreferences: z.string().describe('The user preferences.'),
-  systemState: z.string().describe('The current system state.'),
-});
-export type PersonalizedRecommendationsInput = z.infer<typeof PersonalizedRecommendationsInputSchema>;
-
-const PersonalizedRecommendationsOutputSchema = z.object({
-  recommendations: z.array(z.string()).describe('An array of personalized recommendations.'),
-  reasoning: z.string().describe('The reasoning behind the recommendations.'),
-});
-export type PersonalizedRecommendationsOutput = z.infer<typeof PersonalizedRecommendationsOutputSchema>;
+import {
+  type PersonalizedRecommendationsInput,
+  PersonalizedRecommendationsInputSchema,
+  type PersonalizedRecommendationsOutput,
+  PersonalizedRecommendationsOutputSchema,
+} from './types';
 
 export async function getPersonalizedRecommendations(input: PersonalizedRecommendationsInput): Promise<PersonalizedRecommendationsOutput> {
   return personalizedRecommendationsFlow(input);

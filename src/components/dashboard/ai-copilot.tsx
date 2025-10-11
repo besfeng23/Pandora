@@ -3,7 +3,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Check, MoreHorizontal, RefreshCw, Wand2 } from "lucide-react";
+import { MoreHorizontal, RefreshCw, Wand2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -16,9 +16,9 @@ import { Button } from "@/components/ui/button";
 import { getPersonalizedRecommendations } from "@/lib/actions";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { PersonalizedRecommendationsOutput } from "@/ai/flows/personalized-recommendations";
+import type { PersonalizedRecommendationsOutput } from "@/ai/flows/types";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, query, limit } from "firebase/firestore";
 import type { Service } from "@/lib/data-types";
 
 export default function AiCopilot() {

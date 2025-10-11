@@ -20,7 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { predictEquipmentFailure } from "@/lib/actions";
-import type { PredictiveMaintenanceOutput } from "@/ai/flows/predictive-maintenance";
+import type { PredictiveMaintenanceOutput } from "@/ai/flows/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 

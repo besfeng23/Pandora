@@ -5,42 +5,15 @@
  *
  * It identifies idle cloud resources and provides suggestions to optimize resource utilization, helping users reduce unnecessary cloud costs.
  * - cloudWastageDetection - A function that orchestrates the cloud wastage detection process.
- * - CloudWastageDetectionInput - The input type for the cloudWastageDetection function.
- * - CloudWastageDetectionOutput - The return type for the cloudWastageDetection function, providing insights and optimization suggestions.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const CloudWastageDetectionInputSchema = z.object({
-  cloudProvider: z.string().describe('The cloud provider (e.g., AWS, Azure, GCP).'),
-  accountId: z.string().describe('The ID of the cloud account.'),
-  region: z.string().describe('The region to analyze (e.g., us-west-2).'),
-  resourceTypes: z
-    .array(z.string())
-    .describe('The types of cloud resources to analyze (e.g., EC2 instances, S3 buckets).'),
-  costThreshold: z
-    .number()
-    .optional()
-    .describe('The cost threshold above which resources are considered for optimization.'),
-});
-export type CloudWastageDetectionInput = z.infer<typeof CloudWastageDetectionInputSchema>;
-
-const CloudWastageDetectionOutputSchema = z.object({
-  idleResources: z
-    .array(
-      z.object({
-        resourceId: z.string().describe('The ID of the idle resource.'),
-        resourceType: z.string().describe('The type of the idle resource.'),
-        estimatedWastedCost: z.number().describe('The estimated wasted cost for the resource.'),
-        recommendation: z.string().describe('A suggestion to optimize the resource utilization.'),
-        evidence: z.array(z.string()).describe('Links to metrics/events that provide evidence for the recommendation.'),
-        relevanceScore: z.number().describe('A score indicating the relevance of the recommendation (0-1).'),
-      })
-    )
-    .describe('A list of idle cloud resources and optimization suggestions.'),
-});
-export type CloudWastageDetectionOutput = z.infer<typeof CloudWastageDetectionOutputSchema>;
+import {
+  type CloudWastageDetectionInput,
+  CloudWastageDetectionInputSchema,
+  type CloudWastageDetectionOutput,
+  CloudWastageDetectionOutputSchema,
+} from './types';
 
 export async function cloudWastageDetection(input: CloudWastageDetectionInput): Promise<CloudWastageDetectionOutput> {
   return cloudWastageDetectionFlow(input);

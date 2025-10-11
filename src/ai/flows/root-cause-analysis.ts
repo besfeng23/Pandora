@@ -6,30 +6,15 @@
  * The flow takes an incident description as input and returns a potential root cause.
  *
  * @file RootCauseAnalysisFlow - A function that performs root cause analysis.
- * @file RootCauseAnalysisInput - The input type for the RootCauseAnalysisFlow function.
- * @file RootCauseAnalysisOutput - The return type for the RootCauseAnalysisFlow function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const RootCauseAnalysisInputSchema = z.object({
-  incidentDescription: z
-    .string()
-    .describe('A detailed description of the incident, including symptoms, affected systems, and any relevant logs or metrics.'),
-});
-export type RootCauseAnalysisInput = z.infer<typeof RootCauseAnalysisInputSchema>;
-
-const RootCauseAnalysisOutputSchema = z.object({
-  potentialRootCause: z
-    .string()
-    .describe('A concise explanation of the most likely root cause of the incident.'),
-  supportingEvidence: z
-    .string()
-    .optional()
-    .describe('Optional: Any specific logs, metrics, or events that support the identified root cause.'),
-});
-export type RootCauseAnalysisOutput = z.infer<typeof RootCauseAnalysisOutputSchema>;
+import {
+  type RootCauseAnalysisInput,
+  RootCauseAnalysisInputSchema,
+  type RootCauseAnalysisOutput,
+  RootCauseAnalysisOutputSchema,
+} from './types';
 
 export async function performRootCauseAnalysis(
   input: RootCauseAnalysisInput

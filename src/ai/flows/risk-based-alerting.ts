@@ -4,25 +4,15 @@
  * @fileOverview A flow that prioritizes alerts based on their potential impact and likelihood of occurrence.
  *
  * - getRiskBasedAlertPrioritization - A function that handles the alert prioritization process.
- * - RiskBasedAlertingInput - The input type for the getRiskBasedAlertPrioritization function.
- * - RiskBasedAlertingOutput - The return type for the getRiskBasedAlertPrioritization function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const RiskBasedAlertingInputSchema = z.object({
-  alertDescription: z.string().describe('A description of the alert.'),
-  potentialImpact: z.string().describe('The potential impact of the alert (e.g., high, medium, low).'),
-  likelihoodOfOccurrence: z.string().describe('The likelihood of the alert occurring (e.g., high, medium, low).'),
-});
-export type RiskBasedAlertingInput = z.infer<typeof RiskBasedAlertingInputSchema>;
-
-const RiskBasedAlertingOutputSchema = z.object({
-  priorityScore: z.number().describe('A numerical score representing the priority of the alert.'),
-  rationale: z.string().describe('The rationale behind the assigned priority score.'),
-});
-export type RiskBasedAlertingOutput = z.infer<typeof RiskBasedAlertingOutputSchema>;
+import {
+  type RiskBasedAlertingInput,
+  RiskBasedAlertingInputSchema,
+  type RiskBasedAlertingOutput,
+  RiskBasedAlertingOutputSchema,
+} from './types';
 
 export async function getRiskBasedAlertPrioritization(input: RiskBasedAlertingInput): Promise<RiskBasedAlertingOutput> {
   return riskBasedAlertingFlow(input);

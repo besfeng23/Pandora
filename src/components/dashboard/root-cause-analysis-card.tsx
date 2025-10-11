@@ -19,8 +19,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { rootCauseAnalysis } from "@/lib/actions";
-import type { RootCauseAnalysisOutput } from "@/ai/flows/root-cause-analysis";
+import { performRootCauseAnalysis } from "@/lib/actions";
+import type { RootCauseAnalysisOutput } from "@/ai/flows/types";
 import { Skeleton } from "../ui/skeleton";
 
 export default function RootCauseAnalysisCard() {
@@ -32,7 +32,7 @@ export default function RootCauseAnalysisCard() {
     setAnalysis(null);
     startTransition(async () => {
       setIsDialogOpen(true);
-      const result = await rootCauseAnalysis({
+      const result = await performRootCauseAnalysis({
         incidentDescription: "High latency and 5xx errors on 'User Profiles' service starting at 10:15 AM. Database CPU is at 95%. Logs show 'connection timeout' errors.",
       });
       setAnalysis(result);

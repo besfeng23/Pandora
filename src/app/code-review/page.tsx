@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { automatedCodeReview } from "@/lib/actions";
-import type { AutomatedCodeReviewOutput } from "@/ai/flows/automated-code-review";
+import type { AutomatedCodeReviewOutput } from "@/ai/flows/types";
 import { Badge } from "@/components/ui/badge";
 
 const exampleCode = `function insecure_query(userInput) {

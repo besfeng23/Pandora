@@ -1,13 +1,25 @@
 
 "use server";
 
-import { getPersonalizedRecommendations as getPersonalizedRecommendationsFlow, type PersonalizedRecommendationsInput, type PersonalizedRecommendationsOutput } from "@/ai/flows/personalized-recommendations";
-import { naturalLanguageLogQuery as naturalLanguageLogQueryFlow, type NaturalLanguageLogQueryInput, type NaturalLanguageLogQueryOutput } from "@/ai/flows/natural-language-log-query";
-import { predictAlert as predictAlertFlow, type PredictiveAlertInput, type PredictiveAlertOutput } from "@/ai/flows/predictive-alerting";
-import { performRootCauseAnalysis as rootCauseAnalysisFlow, type RootCauseAnalysisInput, type RootCauseAnalysisOutput } from "@/ai/flows/root-cause-analysis";
-import { automatedCodeReview as automatedCodeReviewFlow, type AutomatedCodeReviewInput, type AutomatedCodeReviewOutput } from "@/ai/flows/automated-code-review";
-import { cloudWastageDetection as cloudWastageDetectionFlow, type CloudWastageDetectionInput, type CloudWastageDetectionOutput } from "@/ai/flows/cloud-wastage-detection";
-import { predictEquipmentFailure as predictEquipmentFailureFlow, type PredictiveMaintenanceInput, type PredictiveMaintenanceOutput } from "@/ai/flows/predictive-maintenance";
+import { getPersonalizedRecommendations as getPersonalizedRecommendationsFlow } from "@/ai/flows/personalized-recommendations";
+import { naturalLanguageLogQuery as naturalLanguageLogQueryFlow } from "@/ai/flows/natural-language-log-query";
+import { predictAlert as predictAlertFlow } from "@/ai/flows/predictive-alerting";
+import { performRootCauseAnalysis as rootCauseAnalysisFlow } from "@/ai/flows/root-cause-analysis";
+import { automatedCodeReview as automatedCodeReviewFlow } from "@/ai/flows/automated-code-review";
+import { cloudWastageDetection as cloudWastageDetectionFlow } from "@/ai/flows/cloud-wastage-detection";
+import { predictEquipmentFailure as predictEquipmentFailureFlow } from "@/ai/flows/predictive-maintenance";
+import { getToolArguments as getToolArgumentsFlow } from "@/ai/flows/get-tool-arguments";
+
+import type { 
+    PersonalizedRecommendationsInput, PersonalizedRecommendationsOutput,
+    NaturalLanguageLogQueryInput, NaturalLanguageLogQueryOutput,
+    PredictiveAlertInput, PredictiveAlertOutput,
+    RootCauseAnalysisInput, RootCauseAnalysisOutput,
+    AutomatedCodeReviewInput, AutomatedCodeReviewOutput,
+    CloudWastageDetectionInput, CloudWastageDetectionOutput,
+    PredictiveMaintenanceInput, PredictiveMaintenanceOutput,
+    GetToolArgumentsInput, GetToolArgumentsOutput
+} from "@/ai/flows/types";
 
 // Helper to wrap Genkit flows with error handling.
 async function handleFlow<I, O>(flow: (input: I) => Promise<O>, input: I, defaultOnError: O): Promise<O> {
@@ -23,7 +35,7 @@ export async function getPersonalizedRecommendations(input: PersonalizedRecommen
     return handleFlow(getPersonalizedRecommendationsFlow, input, { recommendations: [], reasoning: "Could not retrieve recommendations at this time." });
 }
 
-export async function queryLogs(input: NaturalLanguageLogQueryInput): Promise<NaturalLanguageLogQueryOutput> {
+export async function queryLogs(input: NaturalLanguageLogQueryInput): Promise<{ results: any[] }> {
     const result = await handleFlow(naturalLanguageLogQueryFlow, input, { results: "[]" });
     try {
       if (typeof result.results === 'string') {
@@ -51,6 +63,10 @@ export async function rootCauseAnalysis(input: RootCauseAnalysisInput): Promise<
     return handleFlow(rootCauseAnalysisFlow, input, null);
 }
 
+export async function performRootCauseAnalysis(input: RootCauseAnalysisInput): Promise<RootCauseAnalysisOutput> {
+    return handleFlow(rootCauseAnalysisFlow, input, { potentialRootCause: "Could not determine root cause.", supportingEvidence: "N/A" });
+}
+
 export async function automatedCodeReview(input: AutomatedCodeReviewInput): Promise<AutomatedCodeReviewOutput> {
     return handleFlow(automatedCodeReviewFlow, input, { securityIssues: [], performanceIssues: [], suggestions: ["Could not review code at this time."] });
 }
@@ -61,4 +77,8 @@ export async function cloudWastageDetection(input: CloudWastageDetectionInput): 
 
 export async function predictEquipmentFailure(input: PredictiveMaintenanceInput): Promise<PredictiveMaintenanceOutput | null> {
     return handleFlow(predictEquipmentFailureFlow, input, null);
+}
+
+export async function getToolArguments(input: GetToolArgumentsInput): Promise<GetToolArgumentsOutput | null> {
+    return handleFlow(getToolArgumentsFlow, input, null);
 }

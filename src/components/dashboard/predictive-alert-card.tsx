@@ -20,7 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { predictiveAlert } from "@/lib/actions";
-import type { PredictiveAlertOutput } from "@/ai/flows/predictive-alerting";
+import type { PredictiveAlertOutput } from "@/ai/flows/types";
 import { Skeleton } from "../ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 

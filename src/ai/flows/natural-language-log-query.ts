@@ -4,23 +4,15 @@
  * @fileOverview A natural language log query AI agent.
  *
  * - naturalLanguageLogQuery - A function that handles the natural language log query process.
- * - NaturalLanguageLogQueryInput - The input type for the naturalLanguageLogQuery function.
- * - NaturalLanguageLogQueryOutput - The return type for the naturalLanguageLogQuery function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const NaturalLanguageLogQueryInputSchema = z.object({
-  query: z.string().describe('The natural language query to use to search the logs.'),
-  logs: z.string().describe('The logs to search through in JSON format.'),
-});
-export type NaturalLanguageLogQueryInput = z.infer<typeof NaturalLanguageLogQueryInputSchema>;
-
-const NaturalLanguageLogQueryOutputSchema = z.object({
-  results: z.string().describe('The logs that match the query, returned as a JSON string of an array of log objects.'),
-});
-export type NaturalLanguageLogQueryOutput = z.infer<typeof NaturalLanguageLogQueryOutputSchema>;
+import {
+  type NaturalLanguageLogQueryInput,
+  NaturalLanguageLogQueryInputSchema,
+  type NaturalLanguageLogQueryOutput,
+  NaturalLanguageLogQueryOutputSchema,
+} from './types';
 
 export async function naturalLanguageLogQuery(input: NaturalLanguageLogQueryInput): Promise<NaturalLanguageLogQueryOutput> {
   return naturalLanguageLogQueryFlow(input);

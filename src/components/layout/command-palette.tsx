@@ -11,7 +11,6 @@ import {
   Zap,
   Search,
   Network,
-  ChevronsRightLeft,
   LayoutGrid
 } from "lucide-react"
 import { motion, useReducedMotion } from "framer-motion"
@@ -142,3 +141,5 @@ export function CommandPalette() {
     </CommandDialog>
   )
 }
+
+    

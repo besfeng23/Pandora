@@ -38,3 +38,5 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
     });
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }
+
+    

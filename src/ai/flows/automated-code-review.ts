@@ -4,39 +4,15 @@
  * @fileOverview An AI-driven code review flow that automatically flags potential security and performance issues.
  *
  * - automatedCodeReview - A function that handles the code review process.
- * - AutomatedCodeReviewInput - The input type for the automatedCodeReview function.
- * - AutomatedCodeReviewOutput - The return type for the automatedCodeReview function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const AutomatedCodeReviewInputSchema = z.object({
-  code: z.string().describe('The code to be reviewed.'),
-  language: z.string().describe('The programming language of the code.'),
-  securityBestPractices: z
-    .string()
-    .optional()
-    .describe('Security best practices to consider during the review.'),
-  performanceBestPractices: z
-    .string()
-    .optional()
-    .describe('Performance best practices to consider during the review.'),
-});
-export type AutomatedCodeReviewInput = z.infer<typeof AutomatedCodeReviewInputSchema>;
-
-const AutomatedCodeReviewOutputSchema = z.object({
-  securityIssues: z
-    .array(z.string())
-    .describe('A list of potential security issues found in the code.'),
-  performanceIssues: z
-    .array(z.string())
-    .describe('A list of potential performance issues found in the code.'),
-  suggestions: z
-    .array(z.string())
-    .describe('A list of suggestions to improve the code.'),
-});
-export type AutomatedCodeReviewOutput = z.infer<typeof AutomatedCodeReviewOutputSchema>;
+import {
+  type AutomatedCodeReviewInput,
+  AutomatedCodeReviewInputSchema,
+  type AutomatedCodeReviewOutput,
+  AutomatedCodeReviewOutputSchema,
+} from './types';
 
 export async function automatedCodeReview(input: AutomatedCodeReviewInput): Promise<AutomatedCodeReviewOutput> {
   return automatedCodeReviewFlow(input);

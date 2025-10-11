@@ -41,9 +41,8 @@ import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { cn, fmtRel } from "@/lib/utils";
 import { useDebounced, useLocalStorage } from "@/hooks/use-client-helpers";
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
-import { collection, serverTimestamp } from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import type { Connection, Env, Status, TestResult } from "@/lib/data-types";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 
 // In-memory mock data for quick connect providers, will be replaced with Firestore data
@@ -201,7 +200,9 @@ export default function ConnectionsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <QuickConnectCard onConnect={onConnect} busyProvider={busy}/>
-            {isLoading ? Array.from({length: 6}).map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl" />) : list.map((conn) => (
+            {isLoading ? Array.from({length: 6}).map((_, i) => (
+              <Card key={i} className="h-48 rounded-2xl shadow-sm flex flex-col p-4"><div className="animate-pulse flex-grow bg-muted rounded-lg"></div></Card>
+             )) : list.map((conn) => (
               <ConnectionCard key={conn.id} connection={conn} onSelect={() => handleSelectConnection(conn)} />
             ))}
           </div>
@@ -502,3 +503,5 @@ function TestsTab({ connection, onRunTests }: { connection: Connection, onRunTes
         </div>
     )
 }
+
+    

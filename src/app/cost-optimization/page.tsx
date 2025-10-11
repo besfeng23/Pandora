@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cloudWastageDetection } from "@/lib/actions";
-import type { CloudWastageDetectionOutput } from "@/ai/flows/cloud-wastage-detection";
+import type { CloudWastageDetectionOutput } from "@/ai/flows/types";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

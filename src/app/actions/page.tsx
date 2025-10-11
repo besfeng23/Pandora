@@ -10,7 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { addDocumentNonBlocking, useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
-// import { getToolArguments } from "@/lib/actions";
+import { getToolArguments } from "@/lib/actions";
 
 type McpTool = {
   id: string;
@@ -133,14 +133,14 @@ export default function ActionsPage() {
     }
     setBusy("ai");
     try {
-    //   const result = await getToolArguments({ prompt, schema: selectedTool.input_schema || {} });
-    //   if (result) {
-    //     setArgs(result);
-    //     setArgText(pretty(result));
-    //     toast({ title: "AI generated arguments from your prompt." });
-    //   } else {
-    //     toast({ title: "Could not generate arguments.", variant: "destructive" });
-    //   }
+      const result = await getToolArguments({ prompt, schema: selectedTool.input_schema || {} });
+      if (result) {
+        setArgs(result);
+        setArgText(pretty(result));
+        toast({ title: "AI generated arguments from your prompt." });
+      } else {
+        toast({ title: "Could not generate arguments.", variant: "destructive" });
+      }
     } catch (e) {
         toast({ title: "Failed to generate arguments.", variant: "destructive" });
     } finally {
@@ -349,3 +349,5 @@ export default function ActionsPage() {
     </div>
   );
 }
+
+    

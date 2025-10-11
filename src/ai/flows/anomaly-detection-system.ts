@@ -4,27 +4,16 @@
  * @fileOverview This file defines a Genkit flow for anomaly detection in system behavior.
  *
  * The flow takes in system logs and metrics as input and uses an AI model to identify anomalous patterns.
- * It exports the AnomalyDetectionInput and AnomalyDetectionOutput types, as well as the detectAnomalies function.
+ * It exports the detectAnomalies function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const AnomalyDetectionInputSchema = z.object({
-  systemLogs: z.string().describe('System logs to analyze.'),
-  systemMetrics: z.string().describe('System metrics data to analyze.'),
-});
-
-export type AnomalyDetectionInput = z.infer<typeof AnomalyDetectionInputSchema>;
-
-const AnomalyDetectionOutputSchema = z.object({
-  isAnomalous: z.boolean().describe('Whether anomalous behavior is detected.'),
-  anomalyDescription: z
-    .string()
-    .describe('A description of the detected anomaly, if any.'),
-});
-
-export type AnomalyDetectionOutput = z.infer<typeof AnomalyDetectionOutputSchema>;
+import {
+  type AnomalyDetectionInput,
+  AnomalyDetectionInputSchema,
+  type AnomalyDetectionOutput,
+  AnomalyDetectionOutputSchema,
+} from './types';
 
 export async function detectAnomalies(
   input: AnomalyDetectionInput

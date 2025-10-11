@@ -4,35 +4,15 @@
  * @fileOverview Predictive maintenance flow using machine learning to predict equipment failures and schedule maintenance proactively.
  *
  * - predictEquipmentFailure - A function that predicts equipment failures and suggests proactive maintenance.
- * - PredictiveMaintenanceInput - The input type for the predictEquipmentFailure function.
- * - PredictiveMaintenanceOutput - The return type for the predictEquipmentFailure function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const PredictiveMaintenanceInputSchema = z.object({
-  equipmentType: z.string().describe('Type of equipment being monitored.'),
-  equipmentId: z.string().describe('Unique identifier for the equipment.'),
-  historicalData: z.string().describe('Historical performance data of the equipment in JSON format.'),
-  maintenanceLogs: z.string().describe('Maintenance logs for the equipment in JSON format.'),
-});
-export type PredictiveMaintenanceInput = z.infer<typeof PredictiveMaintenanceInputSchema>;
-
-const PredictiveMaintenanceOutputSchema = z.object({
-  failurePrediction: z.object({
-    predictedFailure: z.boolean().describe('Whether or not a failure is predicted.'),
-    failureProbability: z.number().describe('Probability of failure occurring (0-1).'),
-    estimatedTimeToFailure: z.string().describe('Estimated time until failure.'),
-    failureReason: z.string().describe('Reason for the predicted failure.'),
-  }),
-  maintenanceRecommendation: z.object({
-    recommendedActions: z.array(z.string()).describe('List of recommended maintenance actions.'),
-    priority: z.string().describe('Priority of the recommended maintenance (e.g., High, Medium, Low).'),
-    justification: z.string().describe('Justification for the recommended maintenance.'),
-  }),
-});
-export type PredictiveMaintenanceOutput = z.infer<typeof PredictiveMaintenanceOutputSchema>;
+import {
+  type PredictiveMaintenanceInput,
+  PredictiveMaintenanceInputSchema,
+  type PredictiveMaintenanceOutput,
+  PredictiveMaintenanceOutputSchema,
+} from './types';
 
 export async function predictEquipmentFailure(input: PredictiveMaintenanceInput): Promise<PredictiveMaintenanceOutput> {
   return predictiveMaintenanceFlow(input);

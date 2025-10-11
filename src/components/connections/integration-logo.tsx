@@ -34,3 +34,5 @@ export const IntegrationLogo = ({ name, ...props }: { name: string } & LucidePro
   const LogoComponent = logos[name.toLowerCase()] || logos.default;
   return <LogoComponent {...props} />;
 };
+
+    

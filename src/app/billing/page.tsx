@@ -48,12 +48,8 @@ export default function BillingPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/10 rounded-lg text-primary"><CreditCard /></div>
-                <div>
-                    
-                    <p className="text-muted-foreground">Track your cloud spend and resource usage.</p>
-                </div>
+            <div>
+                {/* This title is now handled by the global header */}
             </div>
             <Button className="rounded-xl"><Download className="mr-2" /> Export Report</Button>
       </div>

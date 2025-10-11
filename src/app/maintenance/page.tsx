@@ -50,19 +50,11 @@ export default function MaintenancePage() {
   };
 
   return (
-    <>
+    <div className="space-y-6">
       <Card className="rounded-2xl shadow-lg">
          <CardHeader>
-            <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/10 rounded-lg text-primary">
-                    <HeartPulse />
-                </div>
-                <div>
-                    
-                    <CardDescription>Use AI to predict equipment failures and schedule proactive maintenance.</CardDescription>
-                </div>
-            </div>
-        </CardHeader>
+            {/* This title is now handled by the global header */}
+         </CardHeader>
         <CardContent>
             <p className="text-sm text-muted-foreground">
                 Analyze historical performance data and maintenance logs to identify patterns that may indicate an impending failure. Get proactive recommendations to prevent downtime.
@@ -133,6 +125,6 @@ export default function MaintenancePage() {
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

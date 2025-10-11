@@ -52,12 +52,8 @@ export default function RunbooksPage() {
   return (
     <div className="space-y-6">
         <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/10 rounded-lg text-primary"><BookOpen /></div>
-                <div>
-                    
-                    <p className="text-muted-foreground">Standardized operational procedures for your team.</p>
-                </div>
+            <div>
+              {/* This title is now handled by the global header */}
             </div>
             <Dialog>
                 <DialogTrigger asChild>

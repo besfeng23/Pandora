@@ -76,100 +76,96 @@ export default function IncidentsPage() {
   const { data: incidents, isLoading } = useCollection<Incident>(incidentsQuery);
 
   return (
-    <Card className="rounded-2xl shadow-lg">
-      <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/10 rounded-lg text-primary"><FileWarning /></div>
-                <div>
-                    
-                    <CardDescription>Track and manage active and past incidents.</CardDescription>
-                </div>
-            </div>
-        </div>
-        <div className="flex items-center gap-2">
-            <DropdownMenu>
+    <div className="space-y-6">
+      <Card className="rounded-2xl shadow-lg">
+        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+              {/* This title is now handled by the global header */}
+          </div>
+          <div className="flex items-center gap-2">
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="rounded-xl"><Filter className="mr-2"/> Filter</Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="rounded-xl">
+                      <DropdownMenuItem onClick={() => setFilter('all')}>All Statuses</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setFilter('investigating')}>Investigating</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setFilter('identified')}>Identified</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setFilter('monitoring')}>Monitoring</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setFilter('resolved')}>Resolved</DropdownMenuItem>
+                  </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="rounded-xl"><Filter className="mr-2"/> Filter</Button>
+                  <Button variant="outline" className="h-10 rounded-xl">
+                    <ChevronsUpDown className="mr-2 h-4 w-4" />
+                    Sort by: {sortBy}
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="rounded-xl">
-                    <DropdownMenuItem onClick={() => setFilter('all')}>All Statuses</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilter('investigating')}>Investigating</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilter('identified')}>Identified</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilter('monitoring')}>Monitoring</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilter('resolved')}>Resolved</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy("time")}>Time</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy("priority")}>Priority</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy("status")}>Status</DropdownMenuItem>
                 </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-10 rounded-xl">
-                  <ChevronsUpDown className="mr-2 h-4 w-4" />
-                  Sort by: {sortBy}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-xl">
-                <DropdownMenuItem onClick={() => setSortBy("time")}>Time</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("priority")}>Priority</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("status")}>Status</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <NewIncidentDialog />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="border rounded-xl overflow-hidden">
-            <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead>Incident</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Affected Services</TableHead>
-                <TableHead>Last Update</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {isLoading ? (
-                    <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
-                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-                        </TableCell>
-                    </TableRow>
-                ) : (incidents || []).length === 0 ? (
-                    <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                            No incidents found for this filter.
-                        </TableCell>
-                    </TableRow>
-                ) : (incidents || []).map((incident) => (
-                <TableRow key={incident.id} className="hover:bg-muted/50 cursor-pointer">
-                    <TableCell>
-                        <div className="font-medium">{incident.title}</div>
-                        <div className="text-xs text-muted-foreground font-mono">{incident.id}</div>
-                    </TableCell>
-                    <TableCell>
-                        <Badge variant="outline" className={cn("capitalize rounded-md", statusConfig[incident.status]?.className)}>
-                            {statusConfig[incident.status]?.label || incident.status}
-                        </Badge>
-                    </TableCell>
-                    <TableCell>
-                        <Badge variant="outline" className={cn("capitalize rounded-md", priorityConfig[incident.priority]?.className)}>
-                            {priorityConfig[incident.priority]?.label || incident.priority}
-                        </Badge>
-                    </TableCell>
-                     <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                            {incident.services.map(s => <Badge key={s} variant="secondary" className="rounded-md">{s}</Badge>)}
-                        </div>
-                     </TableCell>
-                     <TableCell className="text-muted-foreground text-xs">{incident.time}</TableCell>
-                </TableRow>
-                ))}
-            </TableBody>
-            </Table>
-        </div>
-      </CardContent>
-    </Card>
+              </DropdownMenu>
+              <NewIncidentDialog />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="border rounded-xl overflow-hidden">
+              <Table>
+              <TableHeader>
+                  <TableRow>
+                  <TableHead>Incident</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Affected Services</TableHead>
+                  <TableHead>Last Update</TableHead>
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {isLoading ? (
+                      <TableRow>
+                          <TableCell colSpan={5} className="h-24 text-center">
+                              <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+                          </TableCell>
+                      </TableRow>
+                  ) : (incidents || []).length === 0 ? (
+                      <TableRow>
+                          <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                              No incidents found for this filter.
+                          </TableCell>
+                      </TableRow>
+                  ) : (incidents || []).map((incident) => (
+                  <TableRow key={incident.id} className="hover:bg-muted/50 cursor-pointer">
+                      <TableCell>
+                          <div className="font-medium">{incident.title}</div>
+                          <div className="text-xs text-muted-foreground font-mono">{incident.id}</div>
+                      </TableCell>
+                      <TableCell>
+                          <Badge variant="outline" className={cn("capitalize rounded-md", statusConfig[incident.status]?.className)}>
+                              {statusConfig[incident.status]?.label || incident.status}
+                          </Badge>
+                      </TableCell>
+                      <TableCell>
+                          <Badge variant="outline" className={cn("capitalize rounded-md", priorityConfig[incident.priority]?.className)}>
+                              {priorityConfig[incident.priority]?.label || incident.priority}
+                          </Badge>
+                      </TableCell>
+                       <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                              {incident.services.map(s => <Badge key={s} variant="secondary" className="rounded-md">{s}</Badge>)}
+                          </div>
+                       </TableCell>
+                       <TableCell className="text-muted-foreground text-xs">{incident.time}</TableCell>
+                  </TableRow>
+                  ))}
+              </TableBody>
+              </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

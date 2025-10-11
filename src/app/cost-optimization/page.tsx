@@ -42,15 +42,7 @@ export default function CostOptimizationPage() {
     <div className="space-y-6">
       <Card className="rounded-2xl shadow-lg">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg text-primary">
-              <DollarSign />
-            </div>
-            <div>
-              
-              <CardDescription>Use AI to detect cloud wastage and get optimization recommendations.</CardDescription>
-            </div>
-          </div>
+          {/* This title is now handled by the global header */}
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
              <div className="space-y-2">

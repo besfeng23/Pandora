@@ -242,7 +242,7 @@ export default function ActionsPage() {
     <div className="w-full space-y-6">
        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <p className="text-muted-foreground">Natural language → MCP tool + args → result</p>
+          {/* This title is now handled by the global header */}
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={dryRun} disabled={busy !== "idle" || !selected} variant="outline" className="rounded-lg"><BrainCircuit /> Dry Run</Button>

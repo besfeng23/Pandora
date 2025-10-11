@@ -161,13 +161,12 @@ export default function ConnectionsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full space-y-6">
       <Card className="rounded-2xl">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              
-              <CardDescription>Manage and monitor your service integrations.</CardDescription>
+              {/* This title is now handled by the global header */}
             </div>
             <div className="flex items-center gap-2">
               <EnvSwitch env={env} onChange={setEnv} />
@@ -213,7 +212,7 @@ export default function ConnectionsPage() {
       
       <ConnectionDetailsDrawer 
         connection={selectedConnection} 
-        open={isDrawerOpen} 
+        open={isDrawerOpen} _
         onOpenChange={setIsDrawerOpen}
         onConnectionUpdate={updateConnection}
       />

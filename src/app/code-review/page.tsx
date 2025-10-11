@@ -70,15 +70,7 @@ export default function CodeReviewPage() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="rounded-2xl shadow-lg">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg text-primary">
-              <Code />
-            </div>
-            <div>
-              
-              <CardDescription>Use AI to find security and performance issues in your code.</CardDescription>
-            </div>
-          </div>
+          {/* This title is now handled by the global header */}
         </CardHeader>
         <CardContent>
           <Textarea

@@ -25,18 +25,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileWarning, PlusCircle, Filter } from "lucide-react";
+import { FileWarning, PlusCircle, Filter, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, where } from "firebase/firestore";
 
 type IncidentStatus = "investigating" | "identified" | "monitoring" | "resolved";
 type IncidentPriority = "P1" | "P2" | "P3" | "P4";
 
-const incidents = [
-  { id: "INC-1204", title: "High latency on User Profiles service", status: "investigating" as IncidentStatus, priority: "P1" as IncidentPriority, services: ["User Profiles"], time: "2h ago" },
-  { id: "INC-1203", title: "Realtime Analytics DB is down", status: "identified" as IncidentStatus, priority: "P1" as IncidentPriority, services: ["Realtime Analytics"], time: "5h ago" },
-  { id: "INC-1202", title: "Billing API returning intermittent 500s", status: "monitoring" as IncidentStatus, priority: "P2" as IncidentPriority, services: ["Billing API"], time: "1d ago" },
-  { id: "INC-1201", title: "Failed deployment to staging", status: "resolved" as IncidentStatus, priority: "P3" as IncidentPriority, services: ["CI/CD Pipeline"], time: "2d ago" },
-];
+type Incident = {
+    id: string;
+    title: string;
+    status: IncidentStatus;
+    priority: IncidentPriority;
+    services: string[];
+    time: string;
+}
 
 const statusConfig: Record<IncidentStatus, { label: string; className: string }> = {
   investigating: { label: "Investigating", className: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -54,8 +58,17 @@ const priorityConfig: Record<IncidentPriority, { label: string; className: strin
 
 export default function IncidentsPage() {
   const [filter, setFilter] = useState<IncidentStatus | 'all'>('all');
+  const firestore = useFirestore();
 
-  const filteredIncidents = incidents.filter(inc => filter === 'all' || inc.status === filter);
+  const incidentsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    if (filter === 'all') {
+        return collection(firestore, 'incidents');
+    }
+    return query(collection(firestore, 'incidents'), where('status', '==', filter));
+  }, [firestore, filter]);
+
+  const { data: incidents, isLoading } = useCollection<Incident>(incidentsQuery);
 
   return (
     <Card className="rounded-2xl shadow-lg">
@@ -98,20 +111,26 @@ export default function IncidentsPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {filteredIncidents.map((incident) => (
+                {isLoading ? (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+                        </TableCell>
+                    </TableRow>
+                ) : (incidents || []).map((incident) => (
                 <TableRow key={incident.id} className="hover:bg-muted/50 cursor-pointer">
                     <TableCell>
                         <div className="font-medium">{incident.title}</div>
                         <div className="text-xs text-muted-foreground font-mono">{incident.id}</div>
                     </TableCell>
                     <TableCell>
-                        <Badge variant="outline" className={cn("capitalize rounded-md", statusConfig[incident.status].className)}>
-                            {statusConfig[incident.status].label}
+                        <Badge variant="outline" className={cn("capitalize rounded-md", statusConfig[incident.status]?.className)}>
+                            {statusConfig[incident.status]?.label || incident.status}
                         </Badge>
                     </TableCell>
                     <TableCell>
-                        <Badge variant="outline" className={cn("capitalize rounded-md", priorityConfig[incident.priority].className)}>
-                            {priorityConfig[incident.priority].label}
+                        <Badge variant="outline" className={cn("capitalize rounded-md", priorityConfig[incident.priority]?.className)}>
+                            {priorityConfig[incident.priority]?.label || incident.priority}
                         </Badge>
                     </TableCell>
                      <TableCell>

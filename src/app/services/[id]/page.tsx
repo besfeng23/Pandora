@@ -15,7 +15,7 @@ import { ServiceIcon } from "@/components/services/service-icon";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
-import { useDoc, useFirestore } from "@/firebase";
+import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Service } from "@/lib/data-types";
@@ -40,7 +40,11 @@ export default function ServiceDetailPage() {
   const firestore = useFirestore();
   const serviceId = Array.isArray(params.id) ? params.id[0] : params.id;
   
-  const serviceRef = doc(firestore, "services", serviceId);
+  const serviceRef = useMemoFirebase(() => {
+      if (!firestore || !serviceId) return null;
+      return doc(firestore, "services", serviceId);
+  }, [firestore, serviceId]);
+  
   const { data: service, isLoading } = useDoc<Service>(serviceRef);
 
   if (isLoading) {
@@ -177,5 +181,3 @@ export default function ServiceDetailPage() {
     </div>
   );
 }
-
-    

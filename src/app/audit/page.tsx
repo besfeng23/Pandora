@@ -169,7 +169,7 @@ export default function AuditPage() {
         setAiResults([]);
       }
     });
-  }, [debouncedQ, auditLogs, startTransition]);
+  }, [debouncedQ, auditLogs]);
 
   React.useEffect(() => {
     setPage(1); 

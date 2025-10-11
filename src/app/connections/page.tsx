@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ChevronsUpDown,
   MoreVertical,
@@ -436,7 +436,7 @@ function OverviewTab({ connection }: { connection: Connection }) {
                 <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Last Sync</span>
-                        <span>{fmtRel(connection.health.lastSyncISO)}</span>
+                        <span>{connection.health.lastSyncISO ? fmtRel(connection.health.lastSyncISO) : 'N/A'}</span>
                     </div>
                      <div className="flex justify-between">
                         <span className="text-muted-foreground">Latency p95</span>
@@ -462,7 +462,7 @@ function OverviewTab({ connection }: { connection: Connection }) {
                 </div>
                 <div className="flex justify-between">
                     <span className="text-muted-foreground">Last Rotated</span>
-                    <span>{fmtRel(connection.lastRotatedISO)}</span>
+                    <span>{connection.lastRotatedISO ? fmtRel(connection.lastRotatedISO) : 'N/A'}</span>
                 </div>
               </div>
             </div>

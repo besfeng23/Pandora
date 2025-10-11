@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth, useFirestore, useUser } from "@/firebase";
+import { useFirestore, useUser } from "@/firebase";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { collection, serverTimestamp } from "firebase/firestore";
 
@@ -231,6 +231,10 @@ export default function ActionsPage() {
       timestamp: serverTimestamp(),
     };
 
+    if (!firestore) {
+        toast({ title: "Firestore not available", variant: "destructive" });
+        return;
+    }
     const favsCollection = collection(firestore, 'users', user.uid, 'favoriteActions');
     addDocumentNonBlocking(favsCollection, favoriteData);
     
@@ -411,5 +415,3 @@ export default function ActionsPage() {
     </div>
   );
 }
-
-    

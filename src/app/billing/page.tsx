@@ -20,28 +20,50 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreditCard, DollarSign, Download, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const billingData = {
-  mtdCost: 1234.56,
-  forecastedCost: 2500.00,
-  budget: 3000.00,
-  costByService: [
-    { name: "Compute", cost: 650.12, color: "bg-blue-500" },
-    { name: "Storage", cost: 234.56, color: "bg-green-500" },
-    { name: "Database", cost: 150.88, color: "bg-yellow-500" },
-    { name: "Networking", cost: 100.00, color: "bg-purple-500" },
-    { name: "Other", cost: 99.00, color: "bg-gray-500" },
-  ],
-  recentCharges: [
-    { id: "ch_1", description: "GCP Compute Engine", amount: 25.50, date: "2023-10-26" },
-    { id: "ch_2", description: "AWS S3 Storage", amount: 12.34, date: "2023-10-26" },
-    { id: "ch_3", description: "Stripe Transaction Fees", amount: 8.99, date: "2023-10-25" },
-    { id: "ch_4", description: "Neon DB", amount: 20.00, date: "2023-10-25" },
-  ],
+type BillingSummary = {
+  id: string;
+  mtdCost: number;
+  forecastedCost: number;
+  budget: number;
+};
+
+type CostByService = {
+  id: string;
+  name: string;
+  cost: number;
+};
+
+type RecentCharge = {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
 };
 
 export default function BillingPage() {
-  const progress = (billingData.mtdCost / billingData.budget) * 100;
+  const firestore = useFirestore();
+
+  const summaryQuery = useMemoFirebase(() => collection(firestore, 'billingSummary'), [firestore]);
+  const costByServiceQuery = useMemoFirebase(() => collection(firestore, 'costByService'), [firestore]);
+  const recentChargesQuery = useMemoFirebase(() => collection(firestore, 'recentCharges'), [firestore]);
+
+  const { data: summaryData, isLoading: summaryLoading } = useCollection<BillingSummary>(summaryQuery);
+  const { data: costByService, isLoading: costByServiceLoading } = useCollection<CostByService>(costByServiceQuery);
+  const { data: recentCharges, isLoading: recentChargesLoading } = useCollection<RecentCharge>(recentChargesQuery);
+
+  const billingSummary = summaryData?.[0];
+  const isLoading = summaryLoading || costByServiceLoading || recentChargesLoading;
+
+  if (isLoading || !billingSummary || !costByService || !recentCharges) {
+    return <BillingPageSkeleton />;
+  }
+
+  const progress = (billingSummary.mtdCost / billingSummary.budget) * 100;
+  const mtdCost = billingSummary.mtdCost;
 
   return (
     <div className="space-y-6">
@@ -62,7 +84,7 @@ export default function BillingPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2"><DollarSign/> Month-to-date Cost</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">${billingData.mtdCost.toLocaleString()}</p>
+            <p className="text-3xl font-bold">${billingSummary.mtdCost.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card className="rounded-2xl">
@@ -70,13 +92,13 @@ export default function BillingPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2"><TrendingUp/> Forecasted Cost</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">${billingData.forecastedCost.toLocaleString()}</p>
+            <p className="text-3xl font-bold">${billingSummary.forecastedCost.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">Budget</CardTitle>
-            <CardDescription>${billingData.budget.toLocaleString()}</CardDescription>
+            <CardDescription>${billingSummary.budget.toLocaleString()}</CardDescription>
           </CardHeader>
           <CardContent>
             <Progress value={progress} className="h-2"/>
@@ -92,13 +114,13 @@ export default function BillingPage() {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {billingData.costByService.map(service => (
-                        <div key={service.name}>
+                    {costByService.map(service => (
+                        <div key={service.id}>
                             <div className="flex justify-between text-sm mb-1">
                                 <span className="font-medium">{service.name}</span>
                                 <span className="text-muted-foreground">${service.cost.toLocaleString()}</span>
                             </div>
-                            <Progress value={(service.cost / billingData.mtdCost) * 100} className="h-2" />
+                            <Progress value={(service.cost / mtdCost) * 100} className="h-2" />
                         </div>
                     ))}
                 </div>
@@ -118,7 +140,7 @@ export default function BillingPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {billingData.recentCharges.map((charge) => (
+                {recentCharges.map((charge) => (
                   <TableRow key={charge.id}>
                     <TableCell className="font-medium">{charge.description}</TableCell>
                     <TableCell className="text-muted-foreground">{charge.date}</TableCell>
@@ -132,4 +154,30 @@ export default function BillingPage() {
       </div>
     </div>
   );
+}
+
+function BillingPageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className="p-3 bg-primary/10 rounded-lg text-primary"><CreditCard /></div>
+                <div>
+                    <h1 className="text-3xl font-bold font-headline">Billing & Usage</h1>
+                    <p className="text-muted-foreground">Track your cloud spend and resource usage.</p>
+                </div>
+            </div>
+            <Button className="rounded-xl"><Download className="mr-2" /> Export Report</Button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Skeleton className="h-36 rounded-2xl" />
+        <Skeleton className="h-36 rounded-2xl" />
+        <Skeleton className="h-36 rounded-2xl" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <Skeleton className="lg:col-span-5 h-80 rounded-2xl" />
+        <Skeleton className="lg:col-span-7 h-80 rounded-2xl" />
+      </div>
+    </div>
+  )
 }

@@ -40,17 +40,19 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <FirebaseClientProvider>
-            <SidebarProvider>
-              <SidebarNav />
-              <SidebarInset>
-                <Header />
-                <main className="flex flex-1 flex-col gap-6 p-6">
-                  {children}
-                </main>
-              </SidebarInset>
-            </SidebarProvider>
-            <Toaster />
-            <CommandPalette />
+            <AuthGuard>
+              <SidebarProvider>
+                <SidebarNav />
+                <SidebarInset>
+                  <Header />
+                  <main className="flex flex-1 flex-col gap-6 p-6">
+                    {children}
+                  </main>
+                </SidebarInset>
+              </SidebarProvider>
+              <Toaster />
+              <CommandPalette />
+            </AuthGuard>
           </FirebaseClientProvider>
         </ThemeProvider>
       </body>

@@ -322,12 +322,62 @@
         }
       },
       "required": ["id", "name", "providerId", "env", "status"]
+    },
+    "BillingSummary": {
+      "title": "BillingSummary",
+      "type": "object",
+      "description": "Represents the overall billing summary.",
+      "properties": {
+        "id": { "type": "string" },
+        "mtdCost": { "type": "number" },
+        "forecastedCost": { "type": "number" },
+        "budget": { "type": "number" }
+      },
+      "required": ["id", "mtdCost", "forecastedCost", "budget"]
+    },
+    "CostByService": {
+      "title": "CostByService",
+      "type": "object",
+      "description": "Represents the cost breakdown by service.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "cost": { "type": "number" }
+      },
+      "required": ["id", "name", "cost"]
+    },
+    "RecentCharge": {
+      "title": "RecentCharge",
+      "type": "object",
+      "description": "Represents a single recent charge.",
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date" }
+      },
+      "required": ["id", "description", "amount", "date"]
+    },
+    "Incident": {
+        "title": "Incident",
+        "type": "object",
+        "description": "Represents an incident.",
+        "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "status": { "type": "string", "enum": ["investigating", "identified", "monitoring", "resolved"] },
+            "priority": { "type": "string", "enum": ["P1", "P2", "P3", "P4"] },
+            "services": { "type": "array", "items": { "type": "string" } },
+            "time": { "type": "string" }
+        },
+        "required": ["id", "title", "status", "priority", "services", "time"]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {
@@ -362,6 +412,22 @@
     "/connections/{connectionId}": {
         "schema": { "$ref": "#/entities/Connection" },
         "description": "Stores connection data. Supports dynamic updates for Bridge Configuration."
+    },
+    "/billingSummary/{summaryId}": {
+      "schema": { "$ref": "#/entities/BillingSummary" },
+      "description": "Stores the overall billing summary."
+    },
+    "/costByService/{serviceCostId}": {
+      "schema": { "$ref": "#/entities/CostByService" },
+      "description": "Stores the cost breakdown by service."
+    },
+    "/recentCharges/{chargeId}": {
+      "schema": { "$ref": "#/entities/RecentCharge" },
+      "description": "Stores recent billing charges."
+    },
+    "/incidents/{incidentId}": {
+        "schema": { "$ref": "#/entities/Incident" },
+        "description": "Stores incident data."
     }
   }
 }

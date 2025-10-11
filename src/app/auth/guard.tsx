@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser } from '@/firebase';
@@ -11,26 +12,24 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isUserLoading && !user && pathname !== '/login') {
+    if (isUserLoading) return; // Wait for user status to be determined
+
+    if (!user && pathname !== '/login') {
       router.replace('/login');
+    } else if (user && pathname === '/login') {
+      router.replace('/');
     }
   }, [user, isUserLoading, router, pathname]);
 
-  if (isUserLoading || (!user && pathname !== '/login')) {
+  // Show a loader if we are still determining the auth state, or if a redirect is imminent.
+  const showLoader = isUserLoading || (!user && pathname !== '/login') || (user && pathname === '/login');
+
+  if (showLoader) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-  
-  if (user && pathname === '/login') {
-    router.replace('/');
-    return (
-        <div className="flex h-screen w-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      );
   }
 
   return <>{children}</>;

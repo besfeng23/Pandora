@@ -2,18 +2,8 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Service } from "@/lib/data";
-import { ServiceIcon } from "./service-icon";
-import { LineChart, Line, ResponsiveContainer } from "recharts";
+import type { Service } from "@/lib/data-types";
 
 type ServiceCardProps = {
   service: Service;
@@ -46,5 +36,3 @@ export default function ServiceCard({ service }: ServiceCardProps) {
     </Link>
   );
 }
-
-    

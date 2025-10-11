@@ -1,5 +1,4 @@
 
-
 export type Service = {
   id: string;
   name: string;
@@ -88,4 +87,15 @@ export type Connection = {
   lastTests?: TestResult[];
 };
 
-    
+export type SystemHealth = {
+    id: string;
+    uptime: number;
+    healthy: boolean;
+    degraded: boolean;
+    down: boolean;
+    unknown: boolean;
+    activeOperations: number;
+    failures: number;
+    connectedServices: number;
+    timestamp: string;
+};

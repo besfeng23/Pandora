@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase";
-import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useFirestore, useUser, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
 
 /**
@@ -88,7 +87,7 @@ export default function ActionsPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const toolsQuery = useMemoFirebase(() => collection(firestore, 'tools'), [firestore]);
+  const toolsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'tools') : null, [firestore]);
   const { data: tools, isLoading: loading } = useCollection<McpTool>(toolsQuery);
 
   const selectedTool = useMemo(() => tools?.find(t => t.name === selected), [tools, selected]);
@@ -195,7 +194,7 @@ export default function ActionsPage() {
   }
 
   const saveFavorite = () => {
-    if (!user) {
+    if (!user || !firestore) {
       toast({ title: "Please sign in to save favorites.", variant: "destructive" });
       return;
     }
@@ -212,10 +211,6 @@ export default function ActionsPage() {
       timestamp: serverTimestamp(),
     };
 
-    if (!firestore) {
-        toast({ title: "Firestore not available", variant: "destructive" });
-        return;
-    }
     const favsCollection = collection(firestore, 'users', user.uid, 'favoriteActions');
     addDocumentNonBlocking(favsCollection, favoriteData);
     

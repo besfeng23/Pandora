@@ -24,18 +24,23 @@ export async function getPersonalizedRecommendations(input: PersonalizedRecommen
 }
 
 export async function queryLogs(input: NaturalLanguageLogQueryInput): Promise<NaturalLanguageLogQueryOutput> {
-     const result = await handleFlow(naturalLanguageLogQueryFlow, input, { results: "[]" });
-      try {
-        // The AI might return a string that contains a JSON object with a 'results' key.
-        // Or it might return the array directly as a string. We need to handle both.
+    const result = await handleFlow(naturalLanguageLogQueryFlow, input, { results: "[]" });
+    try {
         const parsed = JSON.parse(result.results);
         if (parsed.results && Array.isArray(parsed.results)) {
             return { results: JSON.stringify(parsed.results) };
         }
-        return { results: JSON.stringify(parsed) };
+        // If the result is already an array, stringify it.
+        if (Array.isArray(parsed)) {
+            return { results: JSON.stringify(parsed) };
+        }
+        // If it's something else, wrap it in an array. This is a fallback.
+        return { results: JSON.stringify([parsed]) };
     } catch (e) {
-            // If parsing fails, maybe the AI returned the JSON string directly without the outer object.
-            return result;
+        // If parsing fails, the AI likely returned a string that is not valid JSON.
+        // We'll return it as a string inside the 'results' JSON object.
+        console.warn("AI returned non-JSON string for log query. Returning raw string.");
+        return { results: JSON.stringify([{ raw_string_response: result.results }]) };
     }
 }
 

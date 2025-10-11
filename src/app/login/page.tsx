@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import {
   GithubAuthProvider,
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
 } from 'firebase/auth';
-import { Mail, Key, LogIn, Loader2 } from 'lucide-react';
+import { Mail, Key, LogIn, Loader2, UserPlus } from 'lucide-react';
 import { SiGithub, SiGoogle } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 import {
@@ -76,6 +77,20 @@ export default function LoginPage() {
       setLoading(null);
     }
   };
+  
+  const handleEmailSignUp = async () => {
+    setLoading('email');
+    setError(null);
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      router.push('/');
+    } catch (e: any) {
+      console.error(e);
+      setError('Could not create account. The email may be in use.');
+    } finally {
+      setLoading(null);
+    }
+  };
 
   const ProviderButton = ({
     provider,
@@ -109,8 +124,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm rounded-2xl shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
-          <CardDescription>Sign in to access your dashboard</CardDescription>
+          <CardTitle className="text-2xl font-headline">Welcome</CardTitle>
+          <CardDescription>Sign in or create an account to continue</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleEmailSignIn} className="space-y-4">
@@ -139,20 +154,26 @@ export default function LoginPage() {
               />
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
-            <Button type="submit" className="w-full" disabled={!!loading}>
-              {loading === 'email' ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LogIn className="mr-2 h-4 w-4" />
-              )}
-              Sign In
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" className="w-full" disabled={!!loading}>
+                {loading === 'email' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <LogIn className="mr-2 h-4 w-4" />
+                )}
+                Sign In
+              </Button>
+               <Button type="button" variant="secondary" className="w-full" disabled={!!loading} onClick={handleEmailSignUp}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Sign Up
+              </Button>
+            </div>
           </form>
 
           <div className="relative my-6">
             <Separator />
             <span className="absolute left-1/2 -top-3 -translate-x-1/2 bg-card px-2 text-xs text-muted-foreground">
-              OR CONTINUE WITH
+              OR
             </span>
           </div>
 
@@ -161,11 +182,6 @@ export default function LoginPage() {
             <ProviderButton provider="github" icon={SiGithub} label="GitHub" />
           </div>
         </CardContent>
-        <CardFooter className="justify-center">
-            <p className="text-xs text-muted-foreground">
-                Don't have an account? <a href="#" className="text-primary hover:underline">Sign Up</a>
-            </p>
-        </CardFooter>
       </Card>
     </div>
   );

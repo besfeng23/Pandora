@@ -82,7 +82,7 @@ export default function IncidentsPage() {
             <div className="flex items-center gap-3">
                 <div className="p-3 bg-primary/10 rounded-lg text-primary"><FileWarning /></div>
                 <div>
-                    <CardTitle className="font-headline">Incidents</CardTitle>
+                    
                     <CardDescription>Track and manage active and past incidents.</CardDescription>
                 </div>
             </div>
@@ -213,5 +213,3 @@ function NewIncidentDialog() {
       </Dialog>
     )
 }
-
-    

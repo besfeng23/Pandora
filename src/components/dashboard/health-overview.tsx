@@ -6,6 +6,7 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit } from "firebase/firestore";
 import type { SystemHealth } from "@/lib/data-types";
 import KpiCard from "./kpi-card";
+import { Skeleton } from "../ui/skeleton";
 
 const staticKpis = [
     { title: 'System', value: 'Healthy', change: '', description: 'All systems operational', status: 'success' as const },
@@ -57,7 +58,7 @@ export default function HealthOverview() {
   if (isLoading && !kpis.length) {
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-            {Array.from({length: 7}).map((_, i) => <div key={i} className="h-24 w-full rounded-2xl bg-muted animate-pulse" />)}
+            {Array.from({length: 7}).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
         </div>
     )
   }

@@ -35,7 +35,7 @@ export default function RunbooksPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const runbooksQuery = useMemoFirebase(() => collection(firestore, 'runbooks'), [firestore]);
+  const runbooksQuery = useMemoFirebase(() => firestore ? collection(firestore, 'runbooks') : null, [firestore]);
   const { data: runbooks, isLoading } = useCollection<Runbook>(runbooksQuery);
 
   const handleExecute = (title: string) => {

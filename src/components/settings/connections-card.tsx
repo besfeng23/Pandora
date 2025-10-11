@@ -4,14 +4,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertCircle, Cog, Loader2 } from "lucide-react";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import type { Connection } from "@/lib/data-types";
 import { useMemo } from "react";
 
 export function ConnectionsCard() {
     const firestore = useFirestore();
-    const { data: connections, isLoading } = useCollection<Connection>(collection(firestore, 'connections'));
+    const connectionsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'connections') : null, [firestore]);
+    const { data: connections, isLoading } = useCollection<Connection>(connectionsQuery);
 
     const connectionSummary = useMemo(() => {
         if (!connections) {

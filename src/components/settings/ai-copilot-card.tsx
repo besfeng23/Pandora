@@ -7,6 +7,7 @@ import { CheckCircle2, AlertTriangle, ChevronRight, Loader2 } from "lucide-react
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { useMemo } from "react";
+import type { AuditEvent } from "@/lib/data-types";
 
 const statusIcons = {
     info: <CheckCircle2 className="h-5 w-5 text-green-500" />,
@@ -23,7 +24,8 @@ type CopilotSuggestion = {
 
 export function AiCopilotCard() {
     const firestore = useFirestore();
-    const { data: auditLog, isLoading: auditLoading } = useCollection(useMemoFirebase(() => collection(firestore, 'auditLogs'), [firestore]));
+    const auditLogQuery = useMemoFirebase(() => firestore ? collection(firestore, 'auditLogs') : null, [firestore]);
+    const { data: auditLog, isLoading: auditLoading } = useCollection<AuditEvent>(auditLogQuery);
 
     const suggestions = useMemo(() => {
         const suggs: CopilotSuggestion[] = [];

@@ -49,7 +49,7 @@ export function CommandPalette() {
   const prefersReduced = useReducedMotion();
 
   const firestore = useFirestore();
-  const servicesQuery = useMemoFirebase(() => collection(firestore, 'services'), [firestore]);
+  const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
   const { data: services } = useCollection<Service>(servicesQuery);
 
   const variants = prefersReduced

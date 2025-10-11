@@ -22,7 +22,7 @@ import type { Connection } from "@/lib/data-types";
 
 export default function SettingsConnectionsTab() {
   const firestore = useFirestore();
-  const connectionsQuery = useMemoFirebase(() => collection(firestore, 'connections'), [firestore]);
+  const connectionsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'connections') : null, [firestore]);
   const { data: existingConnections, isLoading } = useCollection<Connection>(connectionsQuery);
 
   return (

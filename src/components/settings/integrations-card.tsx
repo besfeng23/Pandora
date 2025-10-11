@@ -54,7 +54,7 @@ export function IntegrationsCard({ onSelectIntegration }: { onSelectIntegration:
     const [filter, setFilter] = useState("All");
     
     const firestore = useFirestore();
-    const connectionsQuery = useMemoFirebase(() => collection(firestore, 'connections'), [firestore]);
+    const connectionsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'connections') : null, [firestore]);
     const { data: integrations, isLoading } = useCollection<Connection>(connectionsQuery);
 
     const filteredIntegrations = (integrations || []).filter(integration => {

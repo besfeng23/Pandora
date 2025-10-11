@@ -41,7 +41,7 @@ import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { cn, fmtRel } from "@/lib/utils";
 import { useDebounced, useLocalStorage } from "@/hooks/use-client-helpers";
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, serverTimestamp } from "firebase/firestore";
 import type { Connection, Env, Status, TestResult } from "@/lib/data-types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
@@ -502,5 +502,3 @@ function TestsTab({ connection, onRunTests }: { connection: Connection, onRunTes
         </div>
     )
 }
-
-    

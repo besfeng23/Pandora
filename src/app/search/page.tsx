@@ -28,7 +28,7 @@ export default function SearchPage() {
   const [results, setResults] = useState<SearchResults | null>(null);
 
   const firestore = useFirestore();
-  const servicesQuery = useMemoFirebase(() => collection(firestore, 'services'), [firestore]);
+  const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
   const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
 
   const handleSearch = () => {
@@ -118,5 +118,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    

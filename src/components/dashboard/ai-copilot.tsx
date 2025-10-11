@@ -17,6 +17,9 @@ import { getPersonalizedRecommendations } from "@/lib/actions";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PersonalizedRecommendationsOutput } from "@/ai/flows/personalized-recommendations";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, where, orderBy, limit } from "firebase/firestore";
+import type { Service } from "@/lib/data-types";
 
 export default function AiCopilot() {
   const [recommendations, setRecommendations] = useState<PersonalizedRecommendationsOutput | null>(null);
@@ -24,12 +27,20 @@ export default function AiCopilot() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const firestore = useFirestore();
+  const servicesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'services'), limit(10)) : null, [firestore]);
+  const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
+
   const fetchRecommendations = () => {
+    if (servicesLoading || !services) return;
+    
     startTransition(async () => {
+      const systemState = services.map(s => `${s.name} ${s.status}`).join(', ');
+
       const result = await getPersonalizedRecommendations({
         userNeeds: "Improve system stability and reduce latency.",
         userPreferences: "Prefer non-disruptive actions, prioritize cost-saving.",
-        systemState: "Auth Service healthy, Billing API healthy, User Profiles degraded, Content Processor healthy, Realtime Analytics down."
+        systemState: systemState || "No services found."
       });
       if (result && result.recommendations.length > 0) {
         setRecommendations(result);
@@ -43,8 +54,11 @@ export default function AiCopilot() {
   };
   
   useEffect(() => {
-    fetchRecommendations();
-  }, [])
+    if (!servicesLoading && services) {
+      fetchRecommendations();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [services, servicesLoading])
 
   const handleApply = (recommendation: string) => {
     const prompt = encodeURIComponent(recommendation);
@@ -59,14 +73,14 @@ export default function AiCopilot() {
             <Wand2 className="text-primary" />
             AI Copilot
           </CardTitle>
-          <Button variant="ghost" size="icon" onClick={fetchRecommendations} disabled={isPending}>
+          <Button variant="ghost" size="icon" onClick={fetchRecommendations} disabled={isPending || servicesLoading}>
             <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
           </Button>
         </div>
         <CardDescription>AI-driven suggestions based on real-time events.</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
-        {isPending && !recommendations ? (
+        {(isPending || servicesLoading) && !recommendations ? (
             <div className="space-y-4">
                 <Skeleton className="h-8 w-full" />
                 <Skeleton className="h-8 w-3/4" />
@@ -95,7 +109,7 @@ export default function AiCopilot() {
          {recommendations && recommendations.recommendations.length > 0 && (
           <>
             <p className="text-xs text-muted-foreground truncate" title={recommendations.reasoning}>Why these?</p>
-            <Button variant="outline" size="sm" onClick={fetchRecommendations} disabled={isPending}>
+            <Button variant="outline" size="sm" onClick={fetchRecommendations} disabled={isPending || servicesLoading}>
                 <MoreHorizontal className="mr-2 h-4 w-4" />
                 More
             </Button>

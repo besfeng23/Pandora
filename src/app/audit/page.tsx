@@ -123,7 +123,8 @@ export default function AuditPage() {
 
   const { data: auditLogs, isLoading: loading } = useCollection<AuditEvent>(auditLogQuery);
 
-  const { data: serviceOptionsData } = useCollection<{name: string}>(useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]));
+  const serviceOptionsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
+  const { data: serviceOptionsData } = useCollection<{name: string}>(serviceOptionsQuery);
   const serviceOptions = React.useMemo(() => [...new Set(serviceOptionsData?.map(s => s.name) || [])], [serviceOptionsData]);
 
   const rows = React.useMemo(() => {

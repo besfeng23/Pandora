@@ -58,7 +58,7 @@ export default function MaintenancePage() {
                     <HeartPulse />
                 </div>
                 <div>
-                    <CardTitle className="font-headline">Predictive Maintenance</CardTitle>
+                    
                     <CardDescription>Use AI to predict equipment failures and schedule proactive maintenance.</CardDescription>
                 </div>
             </div>

@@ -241,7 +241,6 @@ export default function ActionsPage() {
     <div className="w-full space-y-6">
        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline">Actions</h1>
           <p className="text-muted-foreground">Natural language → MCP tool + args → result</p>
         </div>
         <div className="flex items-center gap-2">

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { AiCopilotCard } from "@/components/settings/ai-copilot-card";
@@ -22,5 +23,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

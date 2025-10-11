@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React from "react";
@@ -10,7 +11,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { addDocumentNonBlocking, useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
-import { getToolArguments } from "@/lib/actions";
+import { getToolArguments } from "@/ai/flows/get-tool-arguments";
+import { useSearchParams } from "next/navigation";
+
 
 type McpTool = {
   id: string;
@@ -61,9 +64,10 @@ export default function ActionsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
 
   const [selected, setSelected] = React.useState<string>("");
-  const [prompt, setPrompt] = React.useState("");
+  const [prompt, setPrompt] = React.useState(searchParams.get('prompt') || "");
   const [args, setArgs] = React.useState<any>({});
   const [argText, setArgText] = React.useState<string>("{}");
   
@@ -92,21 +96,28 @@ export default function ActionsPage() {
         setArgText(pretty(defArgs));
     }
   }, [tools, selected]);
+  
+  React.useEffect(() => {
+    if(selectedTool) {
+      const def = defaultArgsFromSchema(selectedTool?.input_schema);
+      setArgs(def);
+      setArgText(pretty(def));
+      setResult(null);
+      setError(null);
+    }
+  }, [selectedTool]);
 
   React.useEffect(() => {
-    setArgText(pretty(args));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+    if (prompt && selectedTool) {
+      getArgsFromPrompt();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prompt, selectedTool]);
+
 
   function onSelectTool(name: string) {
     if (!tools) return;
     setSelected(name);
-    const tool = tools.find(t => t.name === name);
-    const def = defaultArgsFromSchema(tool?.input_schema);
-    setArgs(def);
-    setArgText(pretty(def));
-    setResult(null);
-    setError(null);
   }
 
   function onArgTextChange(v: string) {

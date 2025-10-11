@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -45,7 +46,7 @@ export default function SettingsTeamsPage() {
   const isLoading = teamsLoading || usersLoading;
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="flex items-center gap-2"><Users /> Teams</CardTitle>
@@ -53,7 +54,7 @@ export default function SettingsTeamsPage() {
             Manage your teams and team members.
           </CardDescription>
         </div>
-        <Button>Create team</Button>
+        <Button className="rounded-xl">Create team</Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
@@ -67,7 +68,7 @@ export default function SettingsTeamsPage() {
                     <div key={team.id}>
                         <h3 className="text-lg font-semibold">{team.name}</h3>
                         <p className="text-sm text-muted-foreground mb-4">{team.description}</p>
-                         <div className="border rounded-lg">
+                         <div className="border rounded-xl overflow-hidden">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -80,7 +81,7 @@ export default function SettingsTeamsPage() {
                                     {teamMembers.map(member => {
                                         const userAvatar = member.avatar || placeholderAvatar?.imageUrl;
                                         return (
-                                        <TableRow key={member.id}>
+                                        <TableRow key={member.id} className="hover:bg-muted/50">
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="h-8 w-8">
@@ -95,7 +96,7 @@ export default function SettingsTeamsPage() {
                                             </TableCell>
                                             <TableCell className="text-muted-foreground">{member.roleId}</TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="ghost" size="sm">Remove</Button>
+                                                <Button variant="ghost" size="sm" className="rounded-lg">Remove</Button>
                                             </TableCell>
                                         </TableRow>
                                     )})}
@@ -110,5 +111,3 @@ export default function SettingsTeamsPage() {
     </Card>
   );
 }
-
-    

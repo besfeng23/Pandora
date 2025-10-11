@@ -1,4 +1,5 @@
 
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Code, KeyRound } from "lucide-react";
@@ -13,7 +14,7 @@ export default function SettingsApiPage() {
             <p className="text-muted-foreground">Manage API keys and access tokens for programmatic access.</p>
         </div>
       </div>
-      <Card>
+      <Card className="rounded-2xl shadow-lg">
         <CardHeader>
           <CardTitle>API Keys</CardTitle>
           <CardDescription>
@@ -21,25 +22,23 @@ export default function SettingsApiPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 border rounded-xl">
             <div>
               <p className="font-semibold">Default API Key</p>
               <p className="text-sm text-muted-foreground font-mono">pan_sk_test_••••••••••••</p>
             </div>
-            <Button variant="outline">Manage</Button>
+            <Button variant="outline" className="rounded-lg">Manage</Button>
           </div>
-           <div className="flex items-center justify-between p-4 border rounded-lg">
+           <div className="flex items-center justify-between p-4 border rounded-xl">
             <div>
               <p className="font-semibold">Read-only Key</p>
               <p className="text-sm text-muted-foreground font-mono">pan_sk_readonly_••••••••</p>
             </div>
-            <Button variant="outline">Manage</Button>
+            <Button variant="outline" className="rounded-lg">Manage</Button>
           </div>
-          <Button><KeyRound className="mr-2 h-4 w-4" /> Create new key</Button>
+          <Button className="rounded-xl"><KeyRound className="mr-2 h-4 w-4" /> Create new key</Button>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    

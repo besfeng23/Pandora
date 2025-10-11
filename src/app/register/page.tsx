@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState } from 'react';
@@ -87,7 +88,7 @@ export default function RegisterPage() {
   }) => (
     <Button
       variant="outline"
-      className="w-full"
+      className="w-full rounded-lg"
       onClick={() =>
         handleProviderSignIn(
           provider === 'google' ? new GoogleAuthProvider() : new GithubAuthProvider()
@@ -119,7 +120,7 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 placeholder="Email"
-                className="pl-10"
+                className="pl-10 rounded-lg"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -131,14 +132,14 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 placeholder="Password"
-                className="pl-10"
+                className="pl-10 rounded-lg"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
-            <Button type="submit" className="w-full" disabled={!!loading}>
+            <Button type="submit" className="w-full rounded-lg" disabled={!!loading}>
                 {loading === 'email' ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -172,5 +173,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
-    

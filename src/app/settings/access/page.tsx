@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -57,7 +58,7 @@ export default function SettingsAccessPage() {
   const isLoading = usersLoading || rolesLoading;
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Access Management</CardTitle>
@@ -65,73 +66,73 @@ export default function SettingsAccessPage() {
             Manage who can access your system and their roles.
           </CardDescription>
         </div>
-        <Button>Invite user</Button>
+        <Button className="rounded-xl">Invite user</Button>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Last Active</TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-                </TableCell>
-              </TableRow>
-            ) : (
-              users?.map(user => {
-                const roleName = getRoleName(user.roleId);
-                const userAvatar = user.avatar || placeholderAvatar?.imageUrl;
+        <div className="border rounded-xl overflow-hidden">
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Last Active</TableHead>
+                <TableHead></TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {isLoading ? (
+                <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                    <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+                    </TableCell>
+                </TableRow>
+                ) : (
+                users?.map(user => {
+                    const roleName = getRoleName(user.roleId);
+                    const userAvatar = user.avatar || placeholderAvatar?.imageUrl;
 
-                return (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          {userAvatar && <Image src={userAvatar} alt="User avatar" width={40} height={40} className="rounded-full" />}
-                          <AvatarFallback>
-                            {user.name ? user.name.charAt(0) : user.email.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{user.name || 'N/A'}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {user.email}
-                          </p>
+                    return (
+                    <TableRow key={user.id} className="hover:bg-muted/50">
+                        <TableCell>
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                            {userAvatar && <Image src={userAvatar} alt="User avatar" width={32} height={32} className="rounded-full" />}
+                            <AvatarFallback>
+                                {user.name ? user.name.charAt(0) : user.email.charAt(0)}
+                            </AvatarFallback>
+                            </Avatar>
+                            <div>
+                            <p className="font-medium">{user.name || 'N/A'}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {user.email}
+                            </p>
+                            </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={roleColors[roleName] || 'default'}
-                        className="rounded-md"
-                      >
-                        {roleName}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {user.lastActive || 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        Manage
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+                        </TableCell>
+                        <TableCell>
+                        <Badge
+                            variant={roleColors[roleName] || 'default'}
+                            className="rounded-md capitalize"
+                        >
+                            {roleName}
+                        </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                        {user.lastActive || 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" className="rounded-lg">
+                            Manage
+                        </Button>
+                        </TableCell>
+                    </TableRow>
+                    );
+                })
+                )}
+            </TableBody>
+            </Table>
+        </div>
       </CardContent>
     </Card>
   );
 }
-
-    

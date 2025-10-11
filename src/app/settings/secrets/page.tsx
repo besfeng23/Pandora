@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -56,7 +57,7 @@ export default function SettingsSecretsPage() {
   };
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Secrets Management</CardTitle>
@@ -64,71 +65,71 @@ export default function SettingsSecretsPage() {
             Manage secret references and rotation policies.
           </CardDescription>
         </div>
-        <Button>Add Secret</Button>
+        <Button className="rounded-xl">Add Secret</Button>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Reference</TableHead>
-              <TableHead>Last Rotated</TableHead>
-              <TableHead>Policy</TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-                </TableCell>
-              </TableRow>
-            ) : secrets.length > 0 ? (
-              secrets.map(secret => (
-                <TableRow key={secret.id}>
-                  <TableCell className="font-medium">{secret.name}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <code className="text-muted-foreground">
-                        {secret.reference}
-                      </code>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => copyToClipboard(secret.reference)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>{secret.lastRotated}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="rounded-md">
-                      {secret.policy}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm" className="rounded-lg">
-                      <RotateCcw className="mr-2 h-4 w-4" />
-                      Rotate
-                    </Button>
-                  </TableCell>
+        <div className="border rounded-xl overflow-hidden">
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Reference</TableHead>
+                <TableHead>Last Rotated</TableHead>
+                <TableHead>Policy</TableHead>
+                <TableHead></TableHead>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  No secrets found. Add a connection to see its secret here.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+                {isLoading ? (
+                <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                    <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+                    </TableCell>
+                </TableRow>
+                ) : secrets.length > 0 ? (
+                secrets.map(secret => (
+                    <TableRow key={secret.id} className="hover:bg-muted/50">
+                    <TableCell className="font-medium">{secret.name}</TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-2">
+                        <code className="text-muted-foreground">
+                            {secret.reference}
+                        </code>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => copyToClipboard(secret.reference)}
+                        >
+                            <Copy className="h-4 w-4" />
+                        </Button>
+                        </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{secret.lastRotated}</TableCell>
+                    <TableCell>
+                        <Badge variant="secondary" className="rounded-md">
+                        {secret.policy}
+                        </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                        <Button variant="outline" size="sm" className="rounded-lg">
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Rotate
+                        </Button>
+                    </TableCell>
+                    </TableRow>
+                ))
+                ) : (
+                <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                    No secrets found. Add a connection to see its secret here.
+                    </TableCell>
+                </TableRow>
+                )}
+            </TableBody>
+            </Table>
+        </div>
       </CardContent>
     </Card>
   );
 }
-
-    

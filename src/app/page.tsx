@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import HealthOverview from "@/components/dashboard/health-overview";
@@ -42,5 +43,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

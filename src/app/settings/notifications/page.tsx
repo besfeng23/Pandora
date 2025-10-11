@@ -1,4 +1,5 @@
 
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -22,7 +23,7 @@ export default function SettingsNotificationsPage() {
             <p className="text-muted-foreground">Manage how you receive alerts and updates.</p>
         </div>
       </div>
-      <Card>
+      <Card className="rounded-2xl shadow-lg">
         <CardHeader>
           <CardTitle>Email Notifications</CardTitle>
           <CardDescription>
@@ -31,7 +32,7 @@ export default function SettingsNotificationsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {notificationSettings.map(setting => (
-             <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg">
+             <div key={setting.id} className="flex items-center justify-between p-4 border rounded-xl">
                 <div>
                     <Label htmlFor={setting.id} className="font-semibold">{setting.label}</Label>
                     <p className="text-sm text-muted-foreground">{setting.description}</p>
@@ -41,7 +42,7 @@ export default function SettingsNotificationsPage() {
           ))}
         </CardContent>
       </Card>
-       <Card>
+       <Card className="rounded-2xl shadow-lg">
         <CardHeader>
           <CardTitle>Other Channels</CardTitle>
           <CardDescription>
@@ -49,7 +50,7 @@ export default function SettingsNotificationsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-           <div className="flex items-center justify-between p-4 border rounded-lg">
+           <div className="flex items-center justify-between p-4 border rounded-xl">
                 <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-muted-foreground" />
                     <div>
@@ -57,9 +58,9 @@ export default function SettingsNotificationsPage() {
                       <p className="text-sm text-green-600">Primary email</p>
                     </div>
                 </div>
-                <Button variant="outline" disabled>Manage</Button>
+                <Button variant="outline" disabled className="rounded-lg">Manage</Button>
             </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 border rounded-xl">
                 <div className="flex items-center gap-3">
                     <MessageSquare className="h-5 w-5 text-muted-foreground" />
                     <div>
@@ -67,12 +68,10 @@ export default function SettingsNotificationsPage() {
                       <p className="text-sm text-muted-foreground">Not connected</p>
                     </div>
                 </div>
-                <Button variant="secondary">Connect</Button>
+                <Button variant="secondary" className="rounded-lg">Connect</Button>
             </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    

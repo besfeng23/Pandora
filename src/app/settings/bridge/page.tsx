@@ -1,4 +1,5 @@
 
+
 "use client";
 import { BridgeConfigCard } from "@/components/settings/bridge-config-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -27,7 +28,7 @@ export default function SettingsBridgePage() {
   return (
     <div className="space-y-6">
       <BridgeConfigCard />
-      <Card>
+      <Card className="rounded-2xl shadow-lg">
         <CardHeader>
           <CardTitle>Health & Metrics</CardTitle>
           <CardDescription>P95 latency over the last 7 days.</CardDescription>
@@ -49,7 +50,7 @@ export default function SettingsBridgePage() {
                             cursor={false}
                             content={<ChartTooltipContent indicator="dot" />} 
                         />
-                        <Bar dataKey="latency" fill="var(--color-latency)" radius={4} />
+                        <Bar dataKey="latency" fill="var(--color-latency)" radius={8} />
                     </BarChart>
                 </ResponsiveContainer>
             </ChartContainer>
@@ -59,5 +60,3 @@ export default function SettingsBridgePage() {
     </div>
   );
 }
-
-    

@@ -38,6 +38,10 @@ export default function BillingPage() {
   const billingSummary = summaryData?.[0];
   const isLoading = summaryLoading || costByServiceLoading || recentChargesLoading;
 
+  const handlePayWithBPI = () => {
+    window.open('https://bpibizko.com/sme/pay/jdrblastmedia', '_blank');
+  };
+
   if (isLoading || !billingSummary || !costByService || !recentCharges) {
     return <BillingPageSkeleton />;
   }
@@ -51,7 +55,12 @@ export default function BillingPage() {
             <div>
                 {/* This title is now handled by the global header */}
             </div>
-            <Button className="rounded-xl"><Download className="mr-2" /> Export Report</Button>
+            <div className="flex gap-2">
+                <Button onClick={handlePayWithBPI} className="rounded-xl bg-blue-600 hover:bg-blue-700">
+                    <CreditCard className="mr-2" /> Pay with BPI
+                </Button>
+                <Button className="rounded-xl"><Download className="mr-2" /> Export Report</Button>
+            </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

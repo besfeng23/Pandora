@@ -1,51 +1,35 @@
 'use server';
 
-/**
- * @fileOverview Predictive maintenance flow using machine learning to predict equipment failures and schedule maintenance proactively.
- *
- * - predictEquipmentFailure - A function that predicts equipment failures and suggests proactive maintenance.
- */
-
-import {ai} from '@/ai/genkit';
 import {
-  type PredictiveMaintenanceInput,
   PredictiveMaintenanceInputSchema,
+  type PredictiveMaintenanceInput,
   type PredictiveMaintenanceOutput,
-  PredictiveMaintenanceOutputSchema,
 } from './types';
 
-export async function predictEquipmentFailure(input: PredictiveMaintenanceInput): Promise<PredictiveMaintenanceOutput> {
-  return predictiveMaintenanceFlow(input);
+export async function predictEquipmentFailure(
+  input: PredictiveMaintenanceInput,
+): Promise<PredictiveMaintenanceOutput> {
+  const parsed = PredictiveMaintenanceInputSchema.parse(input);
+  const hasWarning = /error|fail|degraded/i.test(parsed.historicalData + parsed.maintenanceLogs);
+
+  return {
+    failurePrediction: {
+      predictedFailure: hasWarning,
+      failureProbability: hasWarning ? 0.42 : 0.12,
+      estimatedTimeToFailure: hasWarning ? 'PT48H' : 'PT240H',
+      failureReason: hasWarning
+        ? 'Recent logs show repeated degradation patterns.'
+        : 'No degradation trends detected.',
+    },
+    maintenanceRecommendation: {
+      recommendedActions: hasWarning
+        ? ['Schedule inspection', 'Increase monitoring frequency', 'Run diagnostics']
+        : ['Continue standard maintenance cadence'],
+      priority: hasWarning ? 'High' : 'Low',
+      justification: hasWarning
+        ? 'Detected repeated error signatures in historical data.'
+        : 'No anomalies detected in recent history.',
+    },
+  };
 }
 
-const prompt = ai.definePrompt({
-  name: 'predictiveMaintenancePrompt',
-  input: {schema: PredictiveMaintenanceInputSchema},
-  output: {schema: PredictiveMaintenanceOutputSchema},
-  prompt: `You are an expert in predictive maintenance using machine learning.
-
-You will analyze the historical data and maintenance logs of a given piece of equipment to predict potential failures and recommend proactive maintenance actions.
-
-Provide a failure prediction and a maintenance recommendation based on your analysis.
-
-Consider the following:
-Equipment Type: {{{equipmentType}}}
-Equipment ID: {{{equipmentId}}}
-Historical Data: {{{historicalData}}}
-Maintenance Logs: {{{maintenanceLogs}}}
-
-Output the failure prediction and maintenance recommendation in the following format:
-{{outputSchema}}`,
-});
-
-const predictiveMaintenanceFlow = ai.defineFlow(
-  {
-    name: 'predictiveMaintenanceFlow',
-    inputSchema: PredictiveMaintenanceInputSchema,
-    outputSchema: PredictiveMaintenanceOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

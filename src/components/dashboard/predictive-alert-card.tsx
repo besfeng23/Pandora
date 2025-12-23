@@ -19,28 +19,54 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { predictiveAlert } from "@/lib/actions";
 import type { PredictiveAlertOutput } from "@/ai/flows/types";
 import { Skeleton } from "../ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/firebase";
+import { getCurrentUserToken } from "@/lib/firebase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function PredictiveAlertCard() {
   const [prediction, setPrediction] = useState<PredictiveAlertOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const auth = useAuth();
+  const { toast } = useToast();
 
   const fetchPrediction = () => {
     setPrediction(null);
     startTransition(async () => {
       setIsDialogOpen(true);
-      const result = await predictiveAlert({
-        metricName: "CPU Utilization",
-        currentValue: 85,
-        trendData: [60, 65, 70, 72, 75, 78, 81, 85],
-        threshold: 90,
-        timeWindow: "last 2 hours",
-      });
-      setPrediction(result);
+      try {
+        const token = await getCurrentUserToken(auth);
+        const response = await fetch("/api/ai/predictive-alert", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            metricName: "CPU Utilization",
+            currentValue: 85,
+            trendData: [60, 65, 70, 72, 75, 78, 81, 85],
+            threshold: 90,
+            timeWindow: "last 2 hours",
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+        const result = (await response.json()) as PredictiveAlertOutput;
+        setPrediction(result);
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Prediction failed",
+          description: "Authentication is required to run predictive alerting.",
+          variant: "destructive",
+        });
+        setPrediction(null);
+      }
     });
   };
 

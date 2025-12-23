@@ -20,6 +20,7 @@ const logos: { [key: string]: React.ElementType } = {
   github: Github,
   openai: Bot,
   gcp: Cloud,
+  vercel: Cloud,
   linear: SiLinear,
   firebase: Component,
   neon: Database,

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search } from "lucide-react";
 
 // ---------- Config ----------
-const CATEGORIES = ["core", "billing", "api", "user", "db", "media", "worker", "data", "realtime", "storage", "aws", "devops", "automation", "integration", "events", "cli", "tooling", "docs", "generator"] as const;
+const CATEGORIES = ["core", "billing", "api", "user", "db", "media", "worker", "data", "realtime", "storage", "vercel", "firebase", "github", "devops", "automation", "integration", "events", "cli", "tooling", "docs", "generator"] as const;
 const STATUS = ["healthy", "degraded", "down", "unknown"] as const;
 
 // ---------- Page component ----------

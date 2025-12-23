@@ -13,9 +13,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { automatedCodeReview } from "@/lib/actions";
 import type { AutomatedCodeReviewOutput } from "@/ai/flows/types";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/firebase";
+import { getCurrentUserToken } from "@/lib/firebase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const exampleCode = `function insecure_query(userInput) {
     const sqlite3 = require('sqlite3').verbose();
@@ -38,15 +40,40 @@ export default function CodeReviewPage() {
   const [code, setCode] = useState(exampleCode);
   const [analysis, setAnalysis] = useState<AutomatedCodeReviewOutput | null>(null);
   const [isPending, startTransition] = useTransition();
+  const auth = useAuth();
+  const { toast } = useToast();
 
   const runAnalysis = () => {
     setAnalysis(null);
     startTransition(async () => {
-      const result = await automatedCodeReview({
-        code: code,
-        language: "JavaScript",
-      });
-      setAnalysis(result);
+      try {
+        const token = await getCurrentUserToken(auth);
+        const response = await fetch("/api/ai/code-review", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            code: code,
+            language: "JavaScript",
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        const result = (await response.json()) as AutomatedCodeReviewOutput;
+        setAnalysis(result);
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Code review failed",
+          description: "Authentication is required to review code.",
+          variant: "destructive",
+        });
+      }
     });
   };
 

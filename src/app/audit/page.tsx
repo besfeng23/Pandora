@@ -10,7 +10,6 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { useDebounced } from "@/hooks/use-client-helpers";
 import { type AuditEvent } from "@/lib/data-types";
 import { cn } from "@/lib/utils";
-import { queryLogs } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +23,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { headerActions } from "@/components/layout/header";
+import { useAuth } from "@/firebase";
+import { getCurrentUserToken } from "@/lib/firebase/client";
 
 // ---------- Types ----------
 type Severity = AuditEvent['severity'];
@@ -86,6 +87,7 @@ function toCSV(rows: AuditEvent[]) {
 // ---------- Page ----------
 export default function AuditPage() {
   const { toast } = useToast();
+  const auth = useAuth();
   const firestore = useFirestore();
   const [isAiSearch, setIsAiSearch] = React.useState(false);
   const [aiResults, setAiResults] = React.useState<AuditEvent[] | null>(null);
@@ -157,10 +159,31 @@ export default function AuditPage() {
     }
     startTransition(async () => {
       const logsToSearch = auditLogs || [];
-      const result = await queryLogs({ query: debouncedQ, logs: JSON.stringify(logsToSearch) });
-      setAiResults(result.results);
+      try {
+        const token = await getCurrentUserToken(auth);
+        const response = await fetch("/api/ai/query-logs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ query: debouncedQ, logs: JSON.stringify(logsToSearch) }),
+        });
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+        const result = await response.json();
+        setAiResults(result.results);
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "AI search failed",
+          description: "Authenticate to run AI-powered log queries.",
+          variant: "destructive",
+        });
+      }
     });
-  }, [debouncedQ, auditLogs]);
+  }, [debouncedQ, auditLogs, auth, toast]);
 
   React.useEffect(() => {
     setPage(1); 

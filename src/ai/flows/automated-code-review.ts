@@ -1,38 +1,42 @@
 'use server';
 
-/**
- * @fileOverview An AI-driven code review flow that automatically flags potential security and performance issues.
- *
- * - automatedCodeReview - A function that handles the code review process.
- */
-
-import {ai} from '@/ai/genkit';
 import {
-  type AutomatedCodeReviewInput,
   AutomatedCodeReviewInputSchema,
+  type AutomatedCodeReviewInput,
   type AutomatedCodeReviewOutput,
-  AutomatedCodeReviewOutputSchema,
 } from './types';
 
-export async function automatedCodeReview(input: AutomatedCodeReviewInput): Promise<AutomatedCodeReviewOutput> {
-  return automatedCodeReviewFlow(input);
+const SECURITY_SMELLS = [
+  { match: /eval\s*\(/i, message: 'Avoid eval; prefer safe parsers or whitelisted operations.' },
+  { match: /innerHTML\s*=/i, message: 'Direct innerHTML assignment can lead to XSS; sanitize first.' },
+  { match: /any/g, message: 'TypeScript any hides unsafe data paths; prefer precise types.' },
+];
+
+const PERFORMANCE_SMELLS = [
+  { match: /for\s*\(\s*var\s/i, message: 'Prefer const/let and array helpers for clarity and safety.' },
+  { match: /console\.log/g, message: 'Drop verbose logging in production hot paths.' },
+  { match: /setInterval\s*\(/i, message: 'Ensure intervals are cleared to avoid leaks.' },
+];
+
+export async function automatedCodeReview(
+  input: AutomatedCodeReviewInput,
+): Promise<AutomatedCodeReviewOutput> {
+  const parsed = AutomatedCodeReviewInputSchema.parse(input);
+  const code = parsed.code;
+
+  const securityIssues = SECURITY_SMELLS.filter(({ match }) => match.test(code)).map(
+    issue => issue.message,
+  );
+  const performanceIssues = PERFORMANCE_SMELLS.filter(({ match }) => match.test(code)).map(
+    issue => issue.message,
+  );
+
+  const suggestions = [
+    ...(securityIssues.length ? ['Add input validation and escape user-controlled values.'] : []),
+    ...(performanceIssues.length ? ['Profile the hottest loops and debounce noisy logs.'] : []),
+    'Ensure lint/typecheck gates run in CI before merge.',
+  ];
+
+  return { securityIssues, performanceIssues, suggestions };
 }
 
-const prompt = ai.definePrompt({
-  name: 'automatedCodeReviewPrompt',
-  input: {schema: AutomatedCodeReviewInputSchema},
-  output: {schema: AutomatedCodeReviewOutputSchema},
-  prompt: `You are an AI-powered code reviewer that automatically flags potential security and performance issues in the given code.\n\nAnalyze the following code and identify any security and performance issues. Also, provide suggestions to improve the code.\n\nProgramming Language: {{{language}}}\n\nCode:\n{{code}}\n\nSecurity Best Practices (Optional): {{{securityBestPractices}}}\n\nPerformance Best Practices (Optional): {{{performanceBestPractices}}}\n\nOutput the security issues, performance issues, and suggestions as a JSON object. Make sure to include the schema descriptions in the response.`,
-});
-
-const automatedCodeReviewFlow = ai.defineFlow(
-  {
-    name: 'automatedCodeReviewFlow',
-    inputSchema: AutomatedCodeReviewInputSchema,
-    outputSchema: AutomatedCodeReviewOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

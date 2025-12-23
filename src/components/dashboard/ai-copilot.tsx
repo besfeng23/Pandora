@@ -13,19 +13,21 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getPersonalizedRecommendations } from "@/lib/actions";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PersonalizedRecommendationsOutput } from "@/ai/flows/types";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, limit } from "firebase/firestore";
 import type { Service } from "@/lib/data-types";
+import { useAuth } from "@/firebase";
+import { getCurrentUserToken } from "@/lib/firebase/client";
 
 export default function AiCopilot() {
   const [recommendations, setRecommendations] = useState<PersonalizedRecommendationsOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
+  const auth = useAuth();
 
   const firestore = useFirestore();
   const servicesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'services'), limit(10)) : null, [firestore]);
@@ -37,17 +39,40 @@ export default function AiCopilot() {
     startTransition(async () => {
       const systemState = services.map(s => `${s.name} ${s.status}`).join(', ');
 
-      const result = await getPersonalizedRecommendations({
-        userNeeds: "Improve system stability and reduce latency.",
-        userPreferences: "Prefer non-disruptive actions, prioritize cost-saving.",
-        systemState: systemState || "No services found."
-      });
-      if (result && result.recommendations.length > 0) {
-        setRecommendations(result);
-      } else {
+      try {
+        const token = await getCurrentUserToken(auth);
+        const response = await fetch("/api/ai/personalized-recommendations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userNeeds: "Improve system stability and reduce latency.",
+            userPreferences: "Prefer non-disruptive actions, prioritize cost-saving.",
+            systemState: systemState || "No services found."
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        const result = await response.json() as PersonalizedRecommendationsOutput;
+        if (result && result.recommendations.length > 0) {
+          setRecommendations(result);
+        } else {
+          toast({
+            title: "AI Copilot",
+            description: result?.reasoning || "No new recommendations found.",
+          });
+        }
+      } catch (error) {
+        console.error(error);
         toast({
-          title: "AI Copilot",
-          description: result?.reasoning || "No new recommendations found.",
+          title: "Authentication required",
+          description: "Sign in to fetch AI copilot recommendations.",
+          variant: "destructive",
         });
       }
     });

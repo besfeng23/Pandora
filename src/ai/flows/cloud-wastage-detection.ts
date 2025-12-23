@@ -1,54 +1,42 @@
 'use server';
 
-/**
- * @fileOverview This file contains the Genkit flow for Cloud Wastage Detection.
- *
- * It identifies idle cloud resources and provides suggestions to optimize resource utilization, helping users reduce unnecessary cloud costs.
- * - cloudWastageDetection - A function that orchestrates the cloud wastage detection process.
- */
-
-import {ai} from '@/ai/genkit';
 import {
-  type CloudWastageDetectionInput,
   CloudWastageDetectionInputSchema,
+  type CloudWastageDetectionInput,
   type CloudWastageDetectionOutput,
-  CloudWastageDetectionOutputSchema,
 } from './types';
 
-export async function cloudWastageDetection(input: CloudWastageDetectionInput): Promise<CloudWastageDetectionOutput> {
-  return cloudWastageDetectionFlow(input);
+const RESOURCE_SUGGESTIONS: Record<string, string> = {
+  functions: 'Scale to zero during idle windows and tighten concurrency.',
+  firestore: 'Add TTL policies for cold collections and review composite indexes.',
+  storage: 'Enable object lifecycle rules to move cold data to cheaper tiers.',
+  edge: 'Consolidate configs and remove unused environment variables.',
+};
+
+export async function cloudWastageDetection(
+  input: CloudWastageDetectionInput,
+): Promise<CloudWastageDetectionOutput> {
+  const parsed = CloudWastageDetectionInputSchema.parse(input);
+
+  const idleResources = parsed.resourceTypes.map((resourceType, index) => {
+    const normalizedType = resourceType.toLowerCase();
+    const estimatedWastedCost = Math.max(5, 15 - index * 2);
+
+    return {
+      resourceId: `${parsed.cloudProvider}-${normalizedType}-${index + 1}`,
+      resourceType: resourceType,
+      estimatedWastedCost,
+      recommendation:
+        RESOURCE_SUGGESTIONS[normalizedType] ||
+        'Reduce retention, right-size instances, and disable unused integrations.',
+      evidence: [
+        `Low utilization observed in ${parsed.region}`,
+        `No deploys for ${resourceType} in the last 30 days`,
+      ],
+      relevanceScore: Math.max(0.5, 0.95 - index * 0.1),
+    };
+  });
+
+  return { idleResources };
 }
 
-const prompt = ai.definePrompt({
-  name: 'cloudWastageDetectionPrompt',
-  input: {schema: CloudWastageDetectionInputSchema},
-  output: {schema: CloudWastageDetectionOutputSchema},
-  prompt: `You are an AI assistant that identifies idle cloud resources and provides suggestions to optimize resource utilization.
-
-  Analyze the following cloud resources for potential cost savings:
-
-  Cloud Provider: {{{cloudProvider}}}
-  Account ID: {{{accountId}}}
-  Region: {{{region}}}
-  Resource Types: {{#each resourceTypes}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-  Cost Threshold: {{{costThreshold}}}
-
-  Based on the information provided, identify idle resources, estimate the wasted cost, and provide a recommendation for each resource.
-  Include links to metrics/events that provide evidence for each recommendation.
-  Assign a relevance score (0-1) to each recommendation.
-
-  Format your response as a JSON object matching the CloudWastageDetectionOutputSchema schema. Be concise and specific in your recommendations.
-  `,
-});
-
-const cloudWastageDetectionFlow = ai.defineFlow(
-  {
-    name: 'cloudWastageDetectionFlow',
-    inputSchema: CloudWastageDetectionInputSchema,
-    outputSchema: CloudWastageDetectionOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

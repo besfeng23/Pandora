@@ -19,23 +19,49 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { performRootCauseAnalysis } from "@/lib/actions";
 import type { RootCauseAnalysisOutput } from "@/ai/flows/types";
 import { Skeleton } from "../ui/skeleton";
+import { useAuth } from "@/firebase";
+import { getCurrentUserToken } from "@/lib/firebase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function RootCauseAnalysisCard() {
   const [analysis, setAnalysis] = useState<RootCauseAnalysisOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const auth = useAuth();
+  const { toast } = useToast();
 
   const runAnalysis = () => {
     setAnalysis(null);
     startTransition(async () => {
       setIsDialogOpen(true);
-      const result = await performRootCauseAnalysis({
-        incidentDescription: "High latency and 5xx errors on 'User Profiles' service starting at 10:15 AM. Database CPU is at 95%. Logs show 'connection timeout' errors.",
-      });
-      setAnalysis(result);
+      try {
+        const token = await getCurrentUserToken(auth);
+        const response = await fetch("/api/ai/root-cause", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            incidentDescription: "High latency and 5xx errors on 'User Profiles' service starting at 10:15 AM. Database CPU is at 95%. Logs show 'connection timeout' errors.",
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+        const result = (await response.json()) as RootCauseAnalysisOutput;
+        setAnalysis(result);
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Analysis failed",
+          description: "Authentication is required to run root cause analysis.",
+          variant: "destructive",
+        });
+        setAnalysis(null);
+      }
     });
   };
 

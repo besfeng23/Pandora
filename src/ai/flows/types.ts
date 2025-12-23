@@ -1,8 +1,8 @@
 /**
- * @fileOverview This file contains all the Zod schemas and TypeScript types for the Genkit flows.
+ * @fileOverview This file contains all the Zod schemas and TypeScript types for the AI helper flows.
  */
 
-import {z} from 'genkit';
+import { z } from 'zod';
 
 // === anomaly-detection-system.ts ===
 export const AnomalyDetectionInputSchema = z.object({
@@ -51,12 +51,12 @@ export type AutomatedCodeReviewOutput = z.infer<typeof AutomatedCodeReviewOutput
 
 // === cloud-wastage-detection.ts ===
 export const CloudWastageDetectionInputSchema = z.object({
-  cloudProvider: z.string().describe('The cloud provider (e.g., AWS, Azure, GCP).'),
-  accountId: z.string().describe('The ID of the cloud account.'),
-  region: z.string().describe('The region to analyze (e.g., us-west-2).'),
+  cloudProvider: z.enum(['vercel', 'firebase']).describe('The supported platform (vercel or firebase).'),
+  accountId: z.string().describe('The deployment or project identifier.'),
+  region: z.string().describe('The region to analyze (e.g., iad1 for Vercel, us-central1 for Firebase).'),
   resourceTypes: z
     .array(z.string())
-    .describe('The types of cloud resources to analyze (e.g., EC2 instances, S3 buckets).'),
+    .describe('The types of resources to analyze (e.g., functions, firestore collections, edge config).'),
   costThreshold: z
     .number()
     .optional()
@@ -168,8 +168,8 @@ export type PredictiveAlertOutput = z.infer<typeof PredictiveAlertOutputSchema>;
 
 // === predictive-cost-recommendations.ts ===
 export const PredictiveCostRecommendationsInputSchema = z.object({
-  cloudProvider: z.string().describe('The cloud provider (e.g., AWS, Azure, GCP).'),
-  resourceType: z.string().describe('The type of cloud resource (e.g., EC2 instance, Azure VM, Google Compute Engine).'),
+  cloudProvider: z.enum(['vercel', 'firebase']).describe('The supported platform (vercel or firebase).'),
+  resourceType: z.string().describe('The type of resource (e.g., Vercel deployment, Firebase function, Firestore).'),
   usageData: z.string().describe('JSON string containing historical usage data for the resource.'),
   costData: z.string().describe('JSON string containing historical cost data for the resource.'),
   currentConfiguration: z.string().describe('JSON string containing current configuration details of the resource.'),

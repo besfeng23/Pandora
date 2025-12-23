@@ -97,7 +97,7 @@
 - Federated Search: Seamlessly search across multiple data sources and platforms.
 - OpenTelemetry Support: Natively support OpenTelemetry for standardized telemetry data collection.
 - eBPF-Based Observability: Use eBPF technology to gain deeper insights into system behavior and performance.
-- Multi-Cloud Support: Offer comprehensive monitoring and management capabilities across multiple cloud providers.
+- Stack Scope: GitHub + Vercel + Firebase (Auth + Firestore) only; deployment and automation are limited to this trio.
 - Edge Computing Monitoring: Extend monitoring capabilities to edge computing environments.
 - Serverless Security: Implement specialized security measures for serverless functions.
 - Kubernetes Security Posture Management (KSPM): Provide automated assessment and remediation of security risks in Kubernetes environments.

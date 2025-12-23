@@ -17,9 +17,11 @@ import { Search, Loader2 } from "lucide-react";
 import { type AuditEvent } from "@/lib/data-types";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
-import { queryLogs } from "@/lib/actions";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
+import { useAuth } from "@/firebase";
+import { getCurrentUserToken } from "@/lib/firebase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const severityClasses: Record<AuditEvent['severity'], string> = {
   info: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-700",
@@ -37,6 +39,8 @@ export default function AuditLogTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<AuditEvent[] | null>(null);
   const [isPending, startTransition] = useTransition();
+  const auth = useAuth();
+  const { toast } = useToast();
 
   const firestore = useFirestore();
   const auditLogsQuery = useMemoFirebase(() => query(collection(firestore, 'auditLogs'), orderBy('ts', 'desc')), [firestore]);
@@ -50,19 +54,36 @@ export default function AuditLogTable() {
 
     startTransition(async () => {
       const allLogsString = JSON.stringify(initialLogs);
-      const result = await queryLogs({ query: searchQuery, logs: allLogsString });
       try {
+        const token = await getCurrentUserToken(auth);
+        const response = await fetch("/api/ai/query-logs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ query: searchQuery, logs: allLogsString }),
+        });
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+        const result = await response.json();
         const parsedResult = JSON.parse(result.results);
         if (Array.isArray(parsedResult)) {
           setSearchResults(parsedResult);
         } else if (parsedResult.results && Array.isArray(parsedResult.results)) {
-           setSearchResults(parsedResult.results);
+          setSearchResults(parsedResult.results);
         } else {
           console.error("Unexpected search result format:", parsedResult);
           setSearchResults([]);
         }
       } catch (e) {
         console.error("Failed to parse search results:", e);
+        toast({
+          title: "Search failed",
+          description: "Authentication is required to run AI search.",
+          variant: "destructive",
+        });
         setSearchResults([]);
       }
     });

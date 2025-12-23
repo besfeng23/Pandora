@@ -19,33 +19,58 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { predictEquipmentFailure } from "@/lib/actions";
 import type { PredictiveMaintenanceOutput } from "@/ai/flows/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/firebase";
+import { getCurrentUserToken } from "@/lib/firebase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function MaintenancePage() {
   const [analysis, setAnalysis] = useState<PredictiveMaintenanceOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const auth = useAuth();
+  const { toast } = useToast();
 
   const runAnalysis = () => {
     startTransition(async () => {
       setIsDialogOpen(true);
-      // Using example data for demonstration
-      const result = await predictEquipmentFailure({
-        equipmentType: "Database Server",
-        equipmentId: "db-prod-01",
-        historicalData: JSON.stringify([
-          { timestamp: "2023-10-01T10:00:00Z", cpu: 0.85, memory: 0.92, disk_io: 300 },
-          { timestamp: "2023-10-01T11:00:00Z", cpu: 0.88, memory: 0.93, disk_io: 320 },
-          { timestamp: "2023-10-01T12:00:00Z", cpu: 0.91, memory: 0.95, disk_io: 350 },
-        ]),
-        maintenanceLogs: JSON.stringify([
-          { timestamp: "2023-09-15T08:00:00Z", type: "patch", notes: "Applied security patch" }
-        ]),
-      });
-      setAnalysis(result);
+      try {
+        const token = await getCurrentUserToken(auth);
+        const response = await fetch("/api/ai/predictive-maintenance", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            equipmentType: "Database Server",
+            equipmentId: "db-prod-01",
+            historicalData: JSON.stringify([
+              { timestamp: "2023-10-01T10:00:00Z", cpu: 0.85, memory: 0.92, disk_io: 300 },
+              { timestamp: "2023-10-01T11:00:00Z", cpu: 0.88, memory: 0.93, disk_io: 320 },
+              { timestamp: "2023-10-01T12:00:00Z", cpu: 0.91, memory: 0.95, disk_io: 350 },
+            ]),
+            maintenanceLogs: JSON.stringify([
+              { timestamp: "2023-09-15T08:00:00Z", type: "patch", notes: "Applied security patch" }
+            ]),
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+        const result = (await response.json()) as PredictiveMaintenanceOutput;
+        setAnalysis(result);
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Maintenance analysis failed",
+          description: "Authentication is required to run predictive maintenance.",
+          variant: "destructive",
+        });
+        setAnalysis(null);
+      }
     });
   };
 

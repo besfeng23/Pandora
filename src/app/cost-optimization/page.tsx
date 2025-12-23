@@ -12,27 +12,53 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cloudWastageDetection } from "@/lib/actions";
 import type { CloudWastageDetectionOutput } from "@/ai/flows/types";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/firebase";
+import { getCurrentUserToken } from "@/lib/firebase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function CostOptimizationPage() {
   const [analysis, setAnalysis] = useState<CloudWastageDetectionOutput | null>(null);
   const [isPending, startTransition] = useTransition();
+  const auth = useAuth();
+  const { toast } = useToast();
 
   const runAnalysis = () => {
     setAnalysis(null);
     startTransition(async () => {
-      // Using example data for demonstration
-      const result = await cloudWastageDetection({
-        cloudProvider: "GCP",
-        accountId: "gcp-prod-12345",
-        region: "us-central1",
-        resourceTypes: ["Compute Engine", "Cloud Storage"],
-      });
-      setAnalysis(result);
+      try {
+        const token = await getCurrentUserToken(auth);
+        const response = await fetch("/api/ai/cloud-optimization", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            cloudProvider: "vercel",
+            accountId: "vercel-prod",
+            region: "iad1",
+            resourceTypes: ["functions", "edge", "firestore"],
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        const result = (await response.json()) as CloudWastageDetectionOutput;
+        setAnalysis(result);
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Could not run analysis",
+          description: "Authentication is required to analyze resources.",
+          variant: "destructive",
+        });
+      }
     });
   };
   
@@ -47,19 +73,19 @@ export default function CostOptimizationPage() {
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
              <div className="space-y-2">
                 <Label htmlFor="provider">Cloud Provider</Label>
-                <Input id="provider" defaultValue="GCP" className="rounded-xl" />
+                <Input id="provider" defaultValue="Vercel" className="rounded-xl" />
              </div>
              <div className="space-y-2">
                 <Label htmlFor="account">Account ID</Label>
-                <Input id="account" defaultValue="gcp-prod-12345" className="rounded-xl" />
+                <Input id="account" defaultValue="vercel-prod" className="rounded-xl" />
              </div>
              <div className="space-y-2">
                 <Label htmlFor="region">Region</Label>
-                <Input id="region" defaultValue="us-central1" className="rounded-xl" />
+                <Input id="region" defaultValue="iad1" className="rounded-xl" />
              </div>
              <div className="space-y-2">
                 <Label htmlFor="resources">Resource Types</Label>
-                <Input id="resources" defaultValue="Compute Engine" className="rounded-xl" />
+                <Input id="resources" defaultValue="Functions, Edge" className="rounded-xl" />
              </div>
         </CardContent>
         <CardFooter>

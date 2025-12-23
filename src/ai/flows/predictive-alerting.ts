@@ -1,54 +1,38 @@
 'use server';
 
-/**
- * @fileOverview Implements a Genkit flow for predictive alerting, using machine learning to forecast alert firing based on trends.
- *
- * - predictAlert - Predicts when an alert is likely to fire based on current trends.
- */
-
-import {ai} from '@/ai/genkit';
 import {
-  type PredictiveAlertInput,
   PredictiveAlertInputSchema,
+  type PredictiveAlertInput,
   type PredictiveAlertOutput,
-  PredictiveAlertOutputSchema,
 } from './types';
 
-export async function predictAlert(input: PredictiveAlertInput): Promise<PredictiveAlertOutput> {
-  return predictiveAlertFlow(input);
+export async function predictAlert(
+  input: PredictiveAlertInput,
+): Promise<PredictiveAlertOutput> {
+  const parsed = PredictiveAlertInputSchema.parse(input);
+  const { currentValue, threshold, trendData } = parsed;
+
+  const recentAverage =
+    trendData.length > 0
+      ? trendData.reduce((acc, v) => acc + v, 0) / trendData.length
+      : currentValue;
+
+  const predictedFiringTime =
+    currentValue >= threshold || recentAverage >= threshold
+      ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
+      : null;
+
+  const confidenceLevel = Math.min(
+    1,
+    Math.max(0.3, Math.abs(currentValue - threshold) / (threshold || 1)),
+  );
+
+  return {
+    predictedFiringTime,
+    confidenceLevel,
+    suggestedThresholdAdjustment:
+      currentValue > threshold ? threshold * 1.05 : threshold * 0.95,
+    explanation: `Current=${currentValue}, avg=${recentAverage}, threshold=${threshold}.`,
+  };
 }
 
-const predictiveAlertPrompt = ai.definePrompt({
-  name: 'predictiveAlertPrompt',
-  input: {schema: PredictiveAlertInputSchema},
-  output: {schema: PredictiveAlertOutputSchema},
-  prompt: `You are an AI-powered alerting system that predicts when an alert is likely to fire based on current trends.
-
-  Metric Name: {{{metricName}}}
-  Current Value: {{{currentValue}}}
-  Trend Data: {{{trendData}}}
-  Threshold: {{{threshold}}}
-  Time Window: {{{timeWindow}}}
-
-  Analyze the trend data and the current value to predict if and when the metric will cross the threshold.
-  Provide a confidence level for your prediction (0 to 1).
-  Suggest a threshold adjustment to prevent false positives or missed alerts, if necessary.
-  Explain your reasoning for the prediction and the suggested adjustment.
-
-  Ensure that the predictedFiringTime is an ISO timestamp string.
-
-  If the alert is not predicted to fire within the observable window, set predictedFiringTime to null.
-  `,
-});
-
-const predictiveAlertFlow = ai.defineFlow(
-  {
-    name: 'predictiveAlertFlow',
-    inputSchema: PredictiveAlertInputSchema,
-    outputSchema: PredictiveAlertOutputSchema,
-  },
-  async input => {
-    const {output} = await predictiveAlertPrompt(input);
-    return output!;
-  }
-);
